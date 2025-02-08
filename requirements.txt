@@ -1,0 +1,8 @@
+environs
+bcrypt
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pydantic-settings
+alembic
