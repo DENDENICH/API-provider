@@ -2,7 +2,7 @@ environs
 bcrypt
 fastapi
 uvicorn
-sqlalchemy
+sqlalchemy[asyncio]
 pydantic
 pydantic-settings
 alembic
