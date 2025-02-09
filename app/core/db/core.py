@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
 )
-from config import config
+from core import settings
 
 
 class DBCore:
@@ -42,9 +42,9 @@ class DBCore:
 
 
 db_core = DBCore(
-    url=str(config.db.url),
-    echo=config.db.echo,
-    echo_pool=config.db.echo_pool,
-    pool_size=config.db.pool_size,
-    max_overflow=config.db.max_overflow,
+    url=str(settings.database.url),
+    echo=settings.database.echo,
+    echo_pool=settings.database.echo_pool,
+    pool_size=settings.database.pool_size,
+    max_overflow=settings.database.max_overflow,
 )
