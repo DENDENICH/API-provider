@@ -3,6 +3,7 @@ bcrypt
 fastapi
 uvicorn
 sqlalchemy[asyncio]
+asyncpg
 pydantic
 pydantic-settings
 alembic
