@@ -36,6 +36,10 @@ class DBCore:
         async with self._session_maker() as session:
             yield session
 
+    async def dispose(self) -> None:
+        await self._engine.dispose()
+
+
 
 db_core = DBCore(
     url=str(config.db.url),
