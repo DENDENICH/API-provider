@@ -8,7 +8,7 @@ from core import settings
 
 
 class DBCore:
-    """Class for core db"""
+    """Класс для настройки ядра подключения к БД SQLAlchemy"""
     def __init__(
         self,
         url: str,
@@ -33,10 +33,12 @@ class DBCore:
         )
 
     async def session_getter(self) -> AsyncGenerator[AsyncSession, None]:
+        """Генерация сессии"""
         async with self._session_maker() as session:
             yield session
 
     async def dispose(self) -> None:
+        """Выключение и закрытие конекта с БД"""
         await self._engine.dispose()
 
 

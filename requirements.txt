@@ -7,3 +7,4 @@ asyncpg
 pydantic
 pydantic-settings
 alembic
+black
