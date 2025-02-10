@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
 
 from core import settings
 from core.db import db_core
@@ -15,8 +16,10 @@ async def lifespan(app: FastAPI):
     print("dispose engine")
     await db_core.dispose()
 
+
 app_main = FastAPI(
-    lifespan=lifespan
+    lifespan=lifespan,
+    default_response_class=ORJSONResponse
 )
 app_main.include_router(router, prefix=settings.api.prefix)
 
