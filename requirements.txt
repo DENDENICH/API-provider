@@ -1,10 +1,19 @@
 environs
-bcrypt
+
+# Фрэймворк и его утилиты
 fastapi
 uvicorn
-sqlalchemy[asyncio]
-asyncpg
+
+# Валидация
 pydantic
 pydantic-settings
+
+# база данных
+asyncpg
+sqlalchemy[asyncio]
 alembic
 black
+
+# хэширование, jwt
+pyjwt
+bcrypt
