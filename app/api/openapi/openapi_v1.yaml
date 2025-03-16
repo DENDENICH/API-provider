@@ -1,0 +1,287 @@
+openapi: 3.0.0
+info:
+  title: Supply Management API
+  description: API для управления поставками, пользователями и товарами
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: Локальный сервер разработки
+
+paths:
+  /auth/register:
+    post:
+      summary: Регистрация пользователя
+      description: Регистрация нового пользователя (компания или поставщик)
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        "200":
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  message:
+                    type: string
+        "400":
+          description: Ошибка валидации или пользователь уже существует
+
+  /auth/login:
+    post:
+      summary: Авторизация пользователя
+      description: Вход в систему с выдачей JWT-токена
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
+        "401":
+          description: Неверные учетные данные
+
+  /supplies/:
+    post:
+      summary: Создать новую поставку
+      description: Создает новую поставку и привязывает ее к поставщику и компании
+      operationId: createSupply
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplyCreate"
+      responses:
+        "201":
+          description: Поставка создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  message:
+                    type: string
+        "400":
+          description: Ошибка валидации
+
+    get:
+      summary: Получить список всех поставок
+      description: Возвращает список поставок с возможностью фильтрации
+      operationId: getSupplies
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [в обработке, собран, в доставке, доставлен]
+        - name: supplier_id
+          in: query
+          schema:
+            type: integer
+        - name: company_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Список поставок
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Supply"
+
+  /supplies/{supply_id}:
+    get:
+      summary: Получить детали поставки
+      description: Возвращает информацию о конкретной поставке
+      operationId: getSupplyById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: supply_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Информация о поставке
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supply"
+
+  /supplies/{supply_id}/status:
+    put:
+      summary: Изменить статус поставки
+      description: Обновляет статус поставки (в обработке, собран, в доставке, доставлен)
+      operationId: updateSupplyStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: supply_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [в обработке, собран, в доставке, доставлен]
+      responses:
+        "200":
+          description: Статус обновлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  new_status:
+                    type: string
+                  message:
+                    type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserCreate:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [company, supplier, employee]
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        password:
+          type: string
+        address:
+          type: string
+        inn:
+          type: string
+        bank_details:
+          type: string
+
+    SupplyCreate:
+      type: object
+      properties:
+        supplier_id:
+          type: integer
+        company_id:
+          type: integer
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: integer
+              quantity:
+                type: integer
+                minimum: 1
+              price_per_unit:
+                type: number
+                format: float
+        delivery_address:
+          type: string
+        order_date:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [в обработке, собран, в доставке, доставлен]
+
+    Supply:
+      type: object
+      properties:
+        id:
+          type: integer
+        supplier:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        company:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              quantity:
+                type: integer
+              price_per_unit:
+                type: number
+        status:
+          type: string
+          enum: [в обработке, собран, в доставке, доставлен]
+        total_price:
+          type: number
+        order_date:
+          type: string
+          format: date-time
+        delivery_address:
+          type: string

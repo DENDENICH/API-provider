@@ -10,8 +10,8 @@ from schemas.user import UserRead
 
 # создание роутера для api пользователя, импорт настроек префикса и тегов
 router = APIRouter(
-    prefix=settings.api.v1.users,
-    tags=settings.api.v1.tags
+    prefix=settings.api.v1.users_prefix,
+    tags=settings.api.v1.users_tags
 )
 
 
