@@ -6,13 +6,14 @@ from .annotades import intpk
 
 
 class Users(Base):
-    __table__ = ['users']
+    """Таблица пользователей"""
+    __tablename__ = ['users']
 
     id: Mapped[intpk]
     role: Mapped[str] = mapped_column(
         String(255),
         CheckConstraint(
-            ("admin", "employ")
+            "role IN ('admin', 'employee')"
         )
     )
     name: Mapped[str] = mapped_column(
@@ -32,5 +33,5 @@ class Users(Base):
         nullable=False
     )
     company_id: Mapped[int] = mapped_column(
-        ForeignKey("organizers")
+        ForeignKey("organizers.id")
     )

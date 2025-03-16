@@ -6,13 +6,14 @@ from .annotades import intpk
 
 
 class Organizers(Base):
-    __table__ = ['organizers']
+    """Таблица организаций"""
+    __tablename__ = ['organizers']
 
     id: Mapped[intpk]
     role: Mapped[str] = mapped_column(
         String(255),
         CheckConstraint(
-            ("company", "supplier")
+            "role IN ('company', 'supplier')"
         )
     )
     name: Mapped[str] = mapped_column(
