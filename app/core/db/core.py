@@ -32,11 +32,13 @@ class DBCore:
             expire_on_commit=False, # сами следим за актуальностью данных, при обращении
         )
 
+    @property
     async def session_getter(self) -> AsyncGenerator[AsyncSession, None]:
         """Генерация сессии"""
         async with self._session_maker() as session:
             yield session
 
+    @property
     async def dispose(self) -> None:
         """Выключение и закрытие конекта с БД"""
         await self._engine.dispose()

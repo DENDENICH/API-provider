@@ -1,6 +1,8 @@
-from pydantic import BaseModel, PostgresDsn, ValidationError
+from pathlib import Path
+from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 class RunConfig(BaseModel):
     host: str = "localhost"
@@ -9,8 +11,10 @@ class RunConfig(BaseModel):
 
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
-    users: str = "/users"
-    tags: list[str] = ["Users"]
+    users_prefix: str = "/users"
+    users_tags: list[str] = ["Users"]
+    supplies_prefix: str = "/supplies"
+    supplies_tags: list[str] = ["Supplies"]
 
 
 class ApiPrefix(BaseModel):
@@ -37,7 +41,10 @@ class DataBaseConfig(BaseModel):
 class Settings(BaseSettings):
     # параметр для подключения базы данных и чтения параметров из env файла
     model_config = SettingsConfigDict(
-        env_file=(".env.template", ".env"),
+        env_file=(
+            BASE_DIR / ".env.template", 
+            BASE_DIR / ".env"
+        ),
         case_sensitive=False,
         env_nested_delimiter="__", # делители в .env файле между классами и полями
         env_prefix="APP_CONFIG__" # начальный префих
