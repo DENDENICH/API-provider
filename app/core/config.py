@@ -4,22 +4,30 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+class ApiUsersPrefix(BaseModel):
+    prefix: str = "/users"
+    tags: list[str] = ["Users"]
+
+class ApiSuppliesPrefix(BaseModel):
+    prefix: str = "/supplies"
+    tags: list[str] = ["Supplies"]
+
+class ApiProductsPrefix(BaseModel):
+    prefix: str = "/products"
+    tags: list[str] = ["Products"]
+
+
+class ApiSetting(BaseModel):
+    prefix: str = "/api"
+    users: ApiUsersPrefix = ApiUsersPrefix()
+    supplies: ApiSuppliesPrefix = ApiSuppliesPrefix()
+    products: ApiProductsPrefix = ApiProductsPrefix()
+
+
 class RunConfig(BaseModel):
     host: str = "localhost"
     port: int = 7654
-
-
-class ApiV1Prefix(BaseModel):
-    prefix: str = "/v1"
-    users_prefix: str = "/users"
-    users_tags: list[str] = ["Users"]
-    supplies_prefix: str = "/supplies"
-    supplies_tags: list[str] = ["Supplies"]
-
-
-class ApiPrefix(BaseModel):
-    prefix: str = "/api"
-    v1: ApiV1Prefix = ApiV1Prefix()
 
 
 class DataBaseConfig(BaseModel):
@@ -50,7 +58,7 @@ class Settings(BaseSettings):
         env_prefix="APP_CONFIG__" # начальный префих
     )
     run: RunConfig = RunConfig()
-    api: ApiPrefix = ApiPrefix()
+    api: ApiSetting = ApiSetting()
     database: DataBaseConfig
 
 

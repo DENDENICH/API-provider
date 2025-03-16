@@ -15,8 +15,8 @@ from utils.jwt_process import jwt_processes
 
 # создание роутера для api пользователя, импорт настроек префикса и тегов
 router = APIRouter(
-    prefix=settings.api.v1.users_prefix,
-    tags=settings.api.v1.users_tags
+    prefix=settings.api.users.prefix,
+    tags=settings.api.users.tags
 )
 oauth2password = OAuth2PasswordBearer(tokenUrl="auth/login")
 

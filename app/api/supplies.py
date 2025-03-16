@@ -6,8 +6,8 @@ from core.db import db_core
 from core import settings
 
 router = APIRouter(
-    prefix=settings.api.v1.supplies_prefix,
-    tags=settings.api.v1.supplies_tags
+    prefix=settings.api.supplies.prefix,
+    tags=settings.api.supplies.tags,
 )
 
 
