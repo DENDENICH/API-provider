@@ -4,5 +4,6 @@
 __pycache__
 
 app/.env
+app/core/certs
 
 
