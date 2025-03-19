@@ -65,8 +65,5 @@ class Organizer(Base):
             address=self.address,
             inn=self.inn,
             bank_details=self.bank_details,
-            employees=self.employees,
-            supplies_as_company=self.supplies_as_company,
-            supplies_as_suplier=self.supplies_as_supplier
         )
     

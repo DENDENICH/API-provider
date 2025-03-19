@@ -17,6 +17,8 @@ class SuppliesDict(TypedDict):
     supplier_id: int
     company_id: int
     status: str
+    delivery_address: str
+    total_price: float
 
 
 class Supply(Base):
@@ -66,6 +68,8 @@ class Supply(Base):
             id=self.id,
             supplier_id=self.supplier_id,
             company_id=self.company_id,
-            status=self.status
+            status=self.status,
+            delivery_address=self.delivery_address,
+            total_price=self.total_price
         )
     

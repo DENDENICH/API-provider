@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from .users import router as router_user
-from .supplies import router as router_supplies
-from .products import router as router_products
+from .user_api import router as router_user
+from .supplie_api import router as router_supplies
+from .product_api import router as router_products
 
 router = APIRouter()
 

@@ -17,7 +17,7 @@ class DBCore:
         pool_size: int = 5,
         max_overflow: int = 10
     ):
-        self._engine = create_async_engine(
+        self.engine = create_async_engine(
             url,
             echo=echo,
             echo_pool=echo_pool,
@@ -25,8 +25,8 @@ class DBCore:
             max_overflow=max_overflow
         )
 
-        self._session_maker = async_sessionmaker(
-            bind=self._engine,
+        self.session_maker = async_sessionmaker(
+            bind=self.engine,
             autoflush=False,
             autocommit=False,
             expire_on_commit=False, # сами следим за актуальностью данных, при обращении
@@ -35,12 +35,12 @@ class DBCore:
     # Оставляем callable объектом для возможности вызова через Dependes()
     async def session_getter(self) -> AsyncGenerator[AsyncSession, None]:
         """Генерация сессии"""
-        async with self._session_maker() as session:
+        async with self.session_maker() as session:
             yield session
 
     async def dispose(self) -> None:
         """Выключение и закрытие конекта с БД"""
-        await self._engine.dispose()
+        await self.engine.dispose()
 
 
 db_core = DBCore(

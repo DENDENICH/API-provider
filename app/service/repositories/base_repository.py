@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 from sqlalchemy import update, delete
 
 from app.core.db import Base 
-from app.service.base_service import BaseService
+from app.service.items_services.base_service import BaseService
 
 
 Model = TypeVar("Model", bound=Base)  # Тип данных для моделей

@@ -8,3 +8,4 @@ router = APIRouter(
     prefix=settings.api.products.prefix,
 )
 
+
