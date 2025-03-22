@@ -1,7 +1,8 @@
 from typing import TypedDict
 from sqlalchemy import (
     String,
-    CheckConstraint,
+    Integer,
+    Enum,
     Text,
     Numeric,
     ForeignKey
@@ -11,28 +12,31 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.db import Base
 
 
-class ProductsDict(TypedDict):
+class ProductDict(TypedDict):
     id: int
+    article: str
     name: str
     category: str
     description: str
-    price: float
+    price: str
     supplier_id: int
-    supplier: object  # TODO: исправить анотацию
-    supply_products: object  # TODO: исправить анотацию
 
 
 class Product(Base):
     """Таблица товаров"""
 
+    article: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        unique=True
+    )
     name: Mapped[str] = mapped_column(
         String(255),
         nullable=False
     )
     category: Mapped[str] = mapped_column(
         String(255),
-        CheckConstraint(
-            """role IN (
+        Enum(
             'hair_coloring', 
             'hair_care',
             'hair_styling',
@@ -40,8 +44,7 @@ class Product(Base):
             'perming',
             'eyebrows',
             'manicure_and_pedicure',
-            'tools_and_equipment'
-            )""",
+            'tools_and_equipment',
             name="product_category"
         )
     )
@@ -56,14 +59,19 @@ class Product(Base):
         ForeignKey("organizers.id", ondelete="CASCADE"),
         nullable=False
     )
+    img_path: Mapped[str] = mapped_column(
+        String,
+        nullable=True
+    )
 
     #relationship
     supplier = relationship("Organizer", back_populates="products")
     supply_products = relationship("SupplyProduct", back_populates="product")
 
     def dict(self):
-        return ProductsDict(
+        return ProductDict(
             id=self.id,
+            article=self.article,
             name=self.name,
             category=self.category,
             description=self.description,

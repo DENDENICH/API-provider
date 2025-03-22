@@ -29,6 +29,7 @@ class SupplyService(BaseService):
     """Бизнес объект поставки"""
     def __init__(
         self,
+        article: int,
         supplier_id: int,
         company_id: int,
         status: str,  # "в обработке", "собран", "в доставке", "доставлен"
@@ -39,6 +40,7 @@ class SupplyService(BaseService):
     ):
         super().__init__(id=id, model_=model_)
         
+        self.article = article
         self.supplier_id = supplier_id
         self.company_id = company_id
         self.status = status
@@ -98,4 +100,26 @@ class ExpenseService(BaseService):
         self.organizer_id = organizer_id
         self.product_id = product_id
         self.quantity = quantity
-        
+
+
+class ProductsDict(BaseService):
+    """Бизнес объект продукта"""
+    def __init__(
+        self,
+        article: int,
+        name: str,
+        category: str,
+        description: str,
+        price: float,
+        supplier_id: int,
+        id: int,
+        model_: Optional[Type[Model]] = None
+    ):
+        super().__init__(id=id, model_=model_)
+
+        self.article = article
+        self.name = name
+        self.category = category
+        self.description = description
+        self.price = price
+        self.supplier_id = supplier_id

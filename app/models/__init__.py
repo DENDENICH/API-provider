@@ -4,3 +4,4 @@ from .supplys import Supply
 from .products import Product
 from .supply_products import SupplyProduct
 from .expenses import Expense
+from .contracts import Contract

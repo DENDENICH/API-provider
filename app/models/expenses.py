@@ -1,6 +1,5 @@
 from typing import TypedDict
-from sqlalchemy import String, Enum, ForeignKey, Integer, Numeric
-from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db import Base
@@ -11,10 +10,6 @@ class ExpenseDict(TypedDict):
     organizer_id: int
     product_id: int
     quantity: int
-
-    organizer: object # TODO: исправить анотацию
-    product: object # TODO: исправить анотацию
-
 
 
 class Expense(Base):

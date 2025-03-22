@@ -14,7 +14,6 @@ class UserDict(TypedDict):
     phone: str
     password: bytes
     organizer_id: int
-    organizer: object  # TODO: исправить анотацию
 
 
 class User(Base):
@@ -60,7 +59,6 @@ class User(Base):
             phone=self.phone,
             password=self.password,
             organizer_id=self.organizer_id,
-            organizer=self.organizer
         )
     
 

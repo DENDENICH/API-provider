@@ -1,7 +1,7 @@
 from typing import TypedDict
 from sqlalchemy import (
     String,
-    CheckConstraint,
+    Enum,
     Integer,
     ForeignKey,
     Text,
@@ -14,6 +14,7 @@ from core.db import Base
 
 class SuppliesDict(TypedDict):
     id: int
+    article: int
     supplier_id: int
     company_id: int
     status: str
@@ -24,6 +25,11 @@ class SuppliesDict(TypedDict):
 class Supply(Base):
     """Поставки"""
 
+    article: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        unique=True
+    )
     supplier_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("organizers.id", ondelete="CASCADE"),
@@ -36,14 +42,13 @@ class Supply(Base):
     )
     status: Mapped[str] = mapped_column(
         String,
-        CheckConstraint(
-            """status IN (
+        Enum(
             'in_processing', 
             'assembled',
             'in_delivery',
             'delivered',
-            'adopted'
-            )""",
+            'adopted',
+            'canceled',
             name="status_supplies"
         ),
         nullable=False,
@@ -66,6 +71,7 @@ class Supply(Base):
     def dict(self):
         return SuppliesDict(
             id=self.id,
+            article=self.article,
             supplier_id=self.supplier_id,
             company_id=self.company_id,
             status=self.status,

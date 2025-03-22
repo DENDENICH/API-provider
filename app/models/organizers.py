@@ -1,4 +1,4 @@
-from typing import TypedDict, Iterable, Optional
+from typing import TypedDict
 
 from sqlalchemy import String,  Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -15,10 +15,6 @@ class OrganizersDict(TypedDict):
     address: str
     inn: int
     bank_details: bytes
-    employees: object  #TODO: исправить анотацию
-    supplies_as_company: int
-    supplies_as_suplier: int
-
 
 
 class Organizer(Base):
@@ -56,6 +52,9 @@ class Organizer(Base):
     employees = relationship("User", back_populates="organizer")
     supplies_as_company = relationship("Supply", back_populates="company", foreign_keys="[Supply.company_id]")
     supplies_as_supplier = relationship("Supply", back_populates="supplier", foreign_keys="[Supply.supplier_id]")
+
+    contract_as_company = relationship("Contract", back_populates="company")
+    contract_as_supplier = relationship("Contract", back_populates="supplier")
 
     def dict(self):
         return OrganizersDict(
