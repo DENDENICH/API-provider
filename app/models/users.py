@@ -1,5 +1,5 @@
 from typing import TypedDict
-from sqlalchemy import String, Enum, ForeignKey
+from sqlalchemy import String, Enum, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -8,6 +8,7 @@ from core.db import Base
 
 class UserDict(TypedDict):
     id: int
+    user_id: int
     role: str
     name: str
     email: str
@@ -19,6 +20,10 @@ class UserDict(TypedDict):
 class User(Base):
     """Таблица пользователей"""
 
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True
+    )
     role: Mapped[str] = mapped_column(
         String(255),
         Enum("admin", "manager", "employee",
@@ -42,7 +47,7 @@ class User(Base):
     )
     organizer_id: Mapped[int] = mapped_column(
         ForeignKey("organizers.id", ondelete="CASCADE"),
-        nullable=False
+        nullable=True
     )
 
     organizer = relationship("Organizer", back_populates="employees")
@@ -53,6 +58,7 @@ class User(Base):
     def dict(self):
         return UserDict(
             id=self.id,
+            user_id=self.user_id,
             name=self.name,
             role=self.role,
             email=self.email,

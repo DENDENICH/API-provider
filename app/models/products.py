@@ -42,7 +42,7 @@ class Product(Base):
             'hair_styling',
             'consumables',
             'perming',
-            'eyebrows',
+            'eyebrows_and_eyelashes',
             'manicure_and_pedicure',
             'tools_and_equipment',
             name="product_category"

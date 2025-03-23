@@ -19,7 +19,7 @@ class ApiProductsPrefix(BaseModel):
 
 
 class ApiSetting(BaseModel):
-    prefix: str = "/api"
+    prefix: str = "/rosso"
     users: ApiUsersPrefix = ApiUsersPrefix()
     supplies: ApiSuppliesPrefix = ApiSuppliesPrefix()
     products: ApiProductsPrefix = ApiProductsPrefix()

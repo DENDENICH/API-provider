@@ -1,158 +1,248 @@
 openapi: 3.0.0
 info:
-  title: Supply Management API
-  description: API для управления поставками, пользователями и товарами
+  title: ROSSO API
+  description: API для управления поставками ROSSO
   version: 1.0.0
 
-servers:
-  - url: http://localhost:8000
-    description: Локальный сервер разработки
 
 paths:
   /auth/register:
     post:
       summary: Регистрация пользователя
-      description: Регистрация нового пользователя (компания или поставщик)
-      operationId: registerUser
+      tags:
+        - Аутентификация и регистрация
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserCreate"
+              $ref: '#/components/schemas/UserRegisterRequest'
       responses:
         "200":
           description: Успешная регистрация
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  message:
-                    type: string
-        "400":
-          description: Ошибка валидации или пользователь уже существует
+                $ref: '#/components/schemas/AuthResponse'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
   /auth/login:
     post:
       summary: Авторизация пользователя
-      description: Вход в систему с выдачей JWT-токена
-      operationId: loginUser
+      tags:
+        - Аутентификация и регистрация
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
+              $ref: '#/components/schemas/UserLoginRequest'
       responses:
         "200":
-          description: Успешный вход
+          description: Успешная авторизация
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-                  token_type:
-                    type: string
-        "401":
-          description: Неверные учетные данные
+                $ref: '#/components/schemas/AuthResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
-  /supplies/:
-    post:
-      summary: Создать новую поставку
-      description: Создает новую поставку и привязывает ее к поставщику и компании
-      operationId: createSupply
-      security:
-        - BearerAuth: []
+  /user/{user_id}:
+    get:
+      summary: Получение пользователя
+      tags:
+        - Пользователи
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Информация о пользователе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+    put:
+      summary: Изменение данных пользователя
+      tags:
+        - Пользователи
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SupplyCreate"
+              $ref: '#/components/schemas/UserSchema'
       responses:
-        "201":
-          description: Поставка создана
+        "200":
+          description: Обновленные данные пользователя
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  message:
-                    type: string
-        "400":
-          description: Ошибка валидации
+                $ref: '#/components/schemas/UserSchema'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /organizer/register:
+    post:
+      summary: Регистрация организации и администратора
+      tags:
+        - Организации
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizerRegisterRequest'
+      responses:
+        "200":
+          description: Организация успешно зарегистрирована
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /organizers:
+    get:
+      summary: Получение организаций, с которыми компания заключила контракт
+      tags:
+        - Организации
+      responses:
+        "200":
+          description: Список организаций
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizersResponse'
+
+  /products:
+    post:
+      summary: Добавить новый товар
+      tags:
+        - Товары
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+      responses:
+        "200":
+          description: Товар успешно добавлен
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
     get:
-      summary: Получить список всех поставок
-      description: Возвращает список поставок с возможностью фильтрации
-      operationId: getSupplies
-      security:
-        - BearerAuth: []
+      summary: Получить список товаров
+      tags:
+        - Товары
+      responses:
+        "200":
+          description: Список товаров
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsResponse'
+
+  /products/{product_id}:
+    get:
+      summary: Получить информацию о товаре
+      tags:
+        - Товары
       parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [в обработке, собран, в доставке, доставлен]
-        - name: supplier_id
-          in: query
+        - name: product_id
+          in: path
+          required: true
           schema:
             type: integer
-        - name: company_id
-          in: query
+      responses:
+        "200":
+          description: Информация о товаре
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    put:
+      summary: Обновить информацию о товаре
+      tags:
+        - Товары
+      parameters:
+        - name: product_id
+          in: path
+          required: true
           schema:
             type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+      responses:
+        "200":
+          description: Товар успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /supply:
+    post:
+      summary: Создать новую поставку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplyRequest'
+      responses:
+        "200":
+          description: Поставка успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplyResponse'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /supplies:
+    get:
+      summary: Получить список всех поставок
       responses:
         "200":
           description: Список поставок
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Supply"
-
-  /supplies/{supply_id}:
-    get:
-      summary: Получить детали поставки
-      description: Возвращает информацию о конкретной поставке
-      operationId: getSupplyById
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: supply_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Информация о поставке
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Supply"
+                $ref: '#/components/schemas/SuppliesResponse'
 
   /supplies/{supply_id}/status:
     put:
       summary: Изменить статус поставки
-      description: Обновляет статус поставки (в обработке, собран, в доставке, доставлен)
-      operationId: updateSupplyStatus
-      security:
-        - BearerAuth: []
       parameters:
         - name: supply_id
           in: path
@@ -164,90 +254,209 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                status:
-                  type: string
-                  enum: [в обработке, собран, в доставке, доставлен]
+              $ref: '#/components/schemas/SupplyStatusUpdate'
       responses:
         "200":
-          description: Статус обновлен
+          description: Статус поставки успешно изменен
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /suppliers:
+    get:
+      summary: Получить список поставщиков (фильтр - название)
+      responses:
+        "200":
+          description: Список поставщиков
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  new_status:
-                    type: string
-                  message:
-                    type: string
+                $ref: '#/components/schemas/SuppliersResponse'
+
+  /supplier/{supplier_id}:
+    post:
+      summary: Добавить нового поставщика в контакт
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Поставщик успешно добавлен
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      summary: Удалить поставщика из контактов
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Поставщик успешно удалён
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+
+  /supplier/products/{supplier_id}:
+    get:
+      summary: Получить список продуктов поставщика
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Список продуктов поставщика
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierProductsResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
+  responses:
+    NotFound:
+      description: not found resource response
+      content:
+        application/JSON:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnprocessableEntity:
+      description: payload value is invalid
+      content:
+        application/JSON:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
-    UserCreate:
+    Error:
+      type: object
+      properties:
+        details:
+          oneOf:
+            - type: string
+            - type: array
+      required:
+        - details
+    UserRegisterRequest:
       type: object
       properties:
         role:
           type: string
-          enum: [company, supplier, employee]
         name:
           type: string
         email:
           type: string
-          format: email
         phone:
+          type: string
+
+    UserLoginRequest:
+      type: object
+      properties:
+        email:
           type: string
         password:
           type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        type_token:
+          type: string
+
+    UserSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+
+    OrganizerRegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum: [ company, supplier ]
         address:
           type: string
         inn:
           type: string
         bank_details:
           type: string
+        name_admin:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
 
-    SupplyCreate:
+    OrganizersResponse:
       type: object
       properties:
-        supplier_id:
-          type: integer
-        company_id:
-          type: integer
-        products:
+        organizers:
           type: array
           items:
             type: object
             properties:
-              product_id:
+              id:
+                type: integer
+              name:
+                type: string
+              role:
+                type: string
+              address:
+                type: string
+              inn:
+                type: string
+              bank_details:
+                type: string
+    SupplyRequest:
+      type: object
+      properties:
+        supplier_id:
+          type: integer
+        delivery_address:
+          type: string
+        total_price:
+          type: number
+          format: float
+        supply_products:
+          type: array
+          items:
+            type: object
+            properties:
+              products_id:
                 type: integer
               quantity:
                 type: integer
-                minimum: 1
-              price_per_unit:
-                type: number
-                format: float
-        delivery_address:
-          type: string
-        order_date:
-          type: string
-          format: date-time
-        status:
-          type: string
-          enum: [в обработке, собран, в доставке, доставлен]
 
-    Supply:
+    SupplyResponse:
       type: object
       properties:
-        id:
-          type: integer
         supplier:
           type: object
           properties:
@@ -255,13 +464,65 @@ components:
               type: integer
             name:
               type: string
-        company:
-          type: object
-          properties:
-            id:
-              type: integer
-            name:
-              type: string
+        supply_products:
+          type: array
+          items:
+            type: object
+            properties:
+              product:
+                $ref: "#/components/schemas/ProductResponseSupply"
+              quantity:
+                type: integer
+        couriers_phone:
+          type: string
+        article:
+          type: integer
+        delivery_address:
+          type: string
+        total_price:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [in_processing, assembled, in_delivery, adopted]
+
+    SuppliesResponse:
+      type: object
+      properties:
+        supplies:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplyResponse'
+
+    SupplyStatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [in_processing, assembled, in_delivery, adopted]
+
+    SuppliersResponse:
+      type: object
+      properties:
+        organizers:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              address:
+                type: string
+              inn:
+                type: string
+              bank_details:
+                type: string
+
+    SupplierProductsResponse:
+      type: object
+      properties:
         products:
           type: array
           items:
@@ -271,17 +532,53 @@ components:
                 type: integer
               name:
                 type: string
-              quantity:
-                type: integer
-              price_per_unit:
+              category:
+                type: string
+              price:
                 type: number
-        status:
+                format: float
+              img_file:
+                type: string
+                format: binary
+    ProductRequest:
+      type: object
+      properties:
+        name:
           type: string
-          enum: [в обработке, собран, в доставке, доставлен]
-        total_price:
+        category:
+          type: string
+          enum: [ hair_coloring, hair_care, hair_styling, consumables, perming, eyebrows, manicure_and_pedicure, tools_and_equipment ]
+        description:
+          type: string
+        price:
           type: number
-        order_date:
+          format: float
+        img_file:
           type: string
-          format: date-time
-        delivery_address:
+          format: binary
+
+    ProductResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
           type: string
+        category:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        img_file:
+          type: string
+          format: binary
+
+    ProductsResponse:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductResponse'

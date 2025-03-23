@@ -1,19 +1,30 @@
-from pydantic import BaseModel, ConfigDict
+from enum import Enum
+from typing import Optional
+from pydantic import BaseModel, ConfigDict, EmailStr
+
+
+class UserRole(str, Enum):
+    company = "company"
+    supplier = "supplier"
 
 
 class UserBase(BaseModel):
-    username: str
+    """Базовая модель валидации пользователя"""
+    name: str
+    email: str
 
 
-class UserCreate(UserBase):
-    pass
+class UserRegisterRequest(UserBase):
+    role: UserRole
+    phone: str
 
 
-class UserRead(UserBase):
+class UserSchema(UserBase):
+    id: int
+    role: UserRole
+    phone: str
 
-    # По умолчанию уже есть, используется для совместимости с объектом БД
-    # model_config = ConfigDict(
-    #     from_attributes=True
-    # )
 
-    id: int 
+class UserLoginRequest(BaseModel):
+    email: str
+    password: str
