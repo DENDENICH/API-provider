@@ -43,6 +43,10 @@ class ProductRepository(BaseRepository[ProductModel]):
     def __init__(self, session: AsyncSession):
         super().__init__(ProductModel, session=session)
 
+    async def get_available_products_for_company(company_id: int):
+        """Получить все доступные товары для компании по её ID"""
+        pass
+
 
 class OrganizerRepository(BaseRepository[OrganizerModel]):
     """Репозиторий для работы с моделями Organizer"""

@@ -3,6 +3,8 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 
+# TODO: Добавить фильтры получения всех сущностей во всех схемах
+
 class UserRole(str, Enum):
     company = "company"
     supplier = "supplier"

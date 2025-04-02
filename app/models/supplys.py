@@ -5,7 +5,8 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     Text,
-    Numeric
+    Numeric,
+    Boolean
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,6 +26,7 @@ class SuppliesDict(TypedDict):
 class Supply(Base):
     """Поставки"""
 
+    # Уникальный артикул поставки
     article: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
@@ -53,6 +55,14 @@ class Supply(Base):
         ),
         nullable=False,
     )
+    is_assembled: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=True
+    )
+    is_cancelled: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=True
+    )
     delivery_address: Mapped[str] = mapped_column(
         Text,
         nullable=False
@@ -67,7 +77,7 @@ class Supply(Base):
     company = relationship("Organizer", back_populates="supplies_as_company", foreign_keys=[company_id])
     supply_products = relationship("SupplyProduct", back_populates="supply")
 
-
+    @property
     def dict(self):
         return SuppliesDict(
             id=self.id,

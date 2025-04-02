@@ -25,6 +25,12 @@ class SupplyResponse(SupplyBase):
     couriers_phone: str
     article: int
     status: str
+    create_datetime: str
+    delivery_datetime: Optional[str]
+
+
+class SuppliesResponse(BaseModel):
+    supplies: List[SupplyResponse]
 
 
 class SupplyStatusUpdate(BaseModel):

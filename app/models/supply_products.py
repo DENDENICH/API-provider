@@ -22,8 +22,8 @@ class SupplyProduct(Base):
         ForeignKey("supplys.id", ondelete="CASCADE"),
         nullable=False
     )
-    product_id: Mapped[int] = mapped_column(
-        ForeignKey("products.id", ondelete="CASCADE"),
+    product_version_id: Mapped[int] = mapped_column(
+        ForeignKey("product_versions.id", ondelete="CASCADE"),
         nullable=False
     )
     quantity: Mapped[int] = mapped_column(
@@ -32,8 +32,9 @@ class SupplyProduct(Base):
     )
 
     supply = relationship("Supply", back_populates="supply_products")
-    product = relationship("Product", back_populates="supply_products")
+    product_version = relationship("ProductVersion", back_populates="supply_products")
 
+    @property
     def dict(self):
         return SuppliesProductDict(
             id=self.id,

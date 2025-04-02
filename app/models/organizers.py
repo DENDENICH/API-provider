@@ -56,6 +56,7 @@ class Organizer(Base):
     contract_as_company = relationship("Contract", back_populates="company")
     contract_as_supplier = relationship("Contract", back_populates="supplier")
 
+    @property
     def dict(self):
         return OrganizersDict(
             id=self.id,

@@ -17,12 +17,31 @@ class ApiProductsPrefix(BaseModel):
     prefix: str = "/products"
     tags: list[str] = ["Products"]
 
+class ApiAuthPrefix(BaseModel):
+    prefix: str = "/auth"
+    tags: list[str] = ["Auth"]
+
+class ApiOrganizerPrefix(BaseModel):
+    prefix: str = "/organizers"
+    tags: list[str] = ["Organizers"]
+
+class ApiExpensePrefix(BaseModel):
+    prefix: str = "/expenses"
+    tags: list[str] = ["Expenses"]
+
+class ApiSupplierPrefix(BaseModel):
+    prefix: str = "/suppliers"
+    tags: list[str] = ["Suppliers"]
 
 class ApiSetting(BaseModel):
     prefix: str = "/rosso"
     users: ApiUsersPrefix = ApiUsersPrefix()
+    organizers: ApiOrganizerPrefix = ApiOrganizerPrefix()
+    expenses: ApiExpensePrefix = ApiExpensePrefix()
     supplies: ApiSuppliesPrefix = ApiSuppliesPrefix()
     products: ApiProductsPrefix = ApiProductsPrefix()
+    auth: ApiAuthPrefix = ApiAuthPrefix()
+    suppliers: ApiSupplierPrefix = ApiSupplierPrefix()
 
 
 class RunConfig(BaseModel):

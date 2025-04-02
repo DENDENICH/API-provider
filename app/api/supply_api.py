@@ -21,3 +21,5 @@ async def get_supplies(session: AsyncSession = Depends(db_core.session_getter)):
 async def create_supply(session: AsyncSession = Depends(db_core.session_getter)):
     """Создать новую поставку"""
     pass
+
+
