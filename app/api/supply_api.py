@@ -12,14 +12,25 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_supplies(session: AsyncSession = Depends(db_core.session_getter)):
+async def get_supplies(
+    session: AsyncSession = Depends(db_core.session_getter)
+):
     """Получить список всех поставок"""
     pass
 
 
 @router.post("")
-async def create_supply(session: AsyncSession = Depends(db_core.session_getter)):
+async def create_supply(
+    session: AsyncSession = Depends(db_core.session_getter)
+):
     """Создать новую поставку"""
     pass
 
 
+@router.put("/{supply_id}/status")
+async def create_supply(
+    supply_id: int,
+    session: AsyncSession = Depends(db_core.session_getter)
+):
+    """Изменить статус поставки"""
+    pass

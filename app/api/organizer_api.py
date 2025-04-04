@@ -21,9 +21,11 @@ async def register_organizer(
     data: OrganizerRegisterRequest, 
     session: AsyncSession = Depends(db_core.session_getter)
 ):
+    """Регистрация организации"""
     await session.commit()
 
 
 @router.get("", response_model=OrganizersResponse)
 async def get_organizers(session: AsyncSession = Depends(db_core.session_getter)):
+    """Получение организации"""
     pass

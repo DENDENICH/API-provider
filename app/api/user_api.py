@@ -34,6 +34,7 @@ async def get_user_company(
     add_to_company_id: int, 
     session: AsyncSession = Depends(db_core.session_getter)
 ):
+    """Получить пользователя по пригласительному коду"""
     pass
 
 
@@ -43,6 +44,7 @@ async def add_user_to_company(
     role: str, 
     session: AsyncSession = Depends(db_core.session_getter)
 ):
+    """Создать учетную запись пользователя в компании"""
     pass
 
 
@@ -51,4 +53,5 @@ async def remove_user_from_company(
     id: int, 
     session: AsyncSession = Depends(db_core.session_getter)
 ):
+    """Удалить учетную запись пользователя из компании"""
     pass

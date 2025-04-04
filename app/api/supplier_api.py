@@ -16,14 +16,16 @@ router = APIRouter(
 async def get_suppliers(
     session: AsyncSession = Depends(db_core.session_getter)
 ):
+    """Получить всех поставщиков компании"""
     pass
 
 
-@router.post("", status_code=201)
+@router.post("/{supplier_id}", status_code=201)
 async def add_supplier(
 #    supplier_data: SupplierRequest, 
     session: AsyncSession = Depends(db_core.session_getter)
 ):
+    """Создать нового поставщика для компании"""
     pass
 
 
@@ -32,11 +34,5 @@ async def delete_supplier(
     supplier_id: int, 
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    pass
-
-@router.patch("/products/{supplier_id}")
-async def get_all_products_supplier(
-    supplier_id: int,
-    session: AsyncSession = Depends(db_core.session_getter)
-):
+    """Удаление поставщика из контактов"""
     pass

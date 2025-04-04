@@ -67,7 +67,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserSchema'
+                $ref: '#/components/schemas/UserSchemaResponse'
         "404":
           $ref: '#/components/responses/NotFound'
         "422":
@@ -87,14 +87,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserSchema'
+              $ref: '#/components/schemas/UserSchemaResponse'
       responses:
         "200":
           description: ОК
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserSchema'
+                $ref: '#/components/schemas/UserSchemaResponse'
         "404":
           $ref: '#/components/responses/NotFound'
         "422":
@@ -525,7 +525,21 @@ components:
       required:
         - details
 
-    # Пользовательские схемы
+    # Модель пользователя
+    UserSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+
     UserRegisterRequest:
       type: object
       properties:
@@ -554,20 +568,28 @@ components:
         type_token:
           type: string
 
-    UserSchema:
+
+    # Моделя ответа объекта пользователя
+    UserSchemaResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserSchema"
+        user_company:
+          $ref: "#/components/schemas/UserCompanySchema"
+
+
+    # Схема уч. записи пользователя в компании
+    UserCompanySchema:
       type: object
       properties:
         id:
           type: integer
         role:
           type: string
-        name:
-          type: string
-        email:
-          type: string
-        phone:
-          type: string
-
+        organizer_id:
+          type: integer
+          
     # Схемы организаций
     OrganizerRegisterRequest:
       type: object
