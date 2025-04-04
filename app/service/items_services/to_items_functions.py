@@ -36,3 +36,16 @@ def expense_supplier_to_item(model: ExpenseSupplier) -> ExpenseSupplierItem:
     return ExpenseSupplierItem(**model.dict(), model_=model)
 
 
+__all__ = [
+    "organizer_to_item",
+    "contract_to_item",
+    "user_to_item",
+    "user_company_to_item",
+    "link_code_to_item",
+    "product_to_item",
+    "product_version_to_item",
+    "supply_to_item",
+    "supply_product_to_item",
+    "expense_company_to_item",
+    "expense_supplier_to_item"
+]
