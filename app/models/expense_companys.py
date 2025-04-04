@@ -8,7 +8,6 @@ from core.db import Base
 class ExpenseDict(TypedDict):
     id: int
     company_id: int
-    article: int
     product_version_id: int
     quantity: int
 
@@ -20,11 +19,6 @@ class ExpenseCompanys(Base):
         ForeignKey("organizers.id"),
         nullable=False
     )
-    # артикул купленного товара
-    article: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False
-    ) 
     product_version_id: Mapped[int] = mapped_column(
         ForeignKey("product_versions.id"), 
         nullable=False
@@ -41,7 +35,6 @@ class ExpenseCompanys(Base):
         return ExpenseDict(
             id=self.id,
             company_id=self.company_id,
-            article=self.article,
             product_version_id=self.product_version_id,
             quantity=self.quantity,
         )
