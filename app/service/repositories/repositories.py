@@ -13,7 +13,7 @@ from app.models import(
     Supply as SupplyModel,
     Product as ProductModel,
     ProductVersion as ProductVersionModel,
-    ExpenseCompanys as ExpenseCompanyModel,
+    ExpenseCompany as ExpenseCompanyModel,
     ExpenseSupplier as ExpenseSupplierModel,
 )
 from app.service.repositories.base_repository import(

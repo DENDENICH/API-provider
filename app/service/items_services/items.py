@@ -3,7 +3,7 @@ from typing import Optional, Type
 from .base import Model, BaseItem
 
 
-class OrganizerService(BaseItem):
+class OrganizerItem(BaseItem):
     """Объект организации"""
     def __init__(self,
                  role: str,
@@ -23,7 +23,7 @@ class OrganizerService(BaseItem):
         self.bank_details = bank_details
 
 
-class Contract(BaseItem):
+class ContractItem(BaseItem):
     """Объект сущности контракта"""
     def __init__(
         self,
@@ -169,7 +169,7 @@ class SupplyProductItem(BaseItem):
         self.quantity = quantity
 
 
-class ExpenseCompany(BaseItem):
+class ExpenseCompanyItem(BaseItem):
     """Объект сущности отчета и склада компании"""
     def __init__(
         self,
@@ -186,7 +186,7 @@ class ExpenseCompany(BaseItem):
         self.quantity = quantity
 
 
-class ExpenseSupplier(BaseItem):
+class ExpenseSupplierItem(BaseItem):
     """Объект сущности отчета и склада поставщика"""
     def __init__(
         self,
@@ -205,3 +205,16 @@ class ExpenseSupplier(BaseItem):
         self.reserved = reserved
 
 
+__all__ = [
+    "OrganizerItem",
+    "ContractItem",
+    "UserItem",
+    "UserCompanyItem",
+    "LinkCodeItem",
+    "ProductItem",
+    "ProductVersionItem",
+    "SupplyItem",
+    "SupplyProductItem",
+    "ExpenseCompanyItem",
+    "ExpenseSupplierItem"
+]
