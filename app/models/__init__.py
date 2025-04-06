@@ -8,5 +8,5 @@ from .supplys import Supply
 from .products import Product
 from .product_versions import ProductVersion
 from .supply_products import SupplyProduct
-from .expense_companys import ExpenseCompanys
+from .expense_companys import ExpenseCompany
 from .expense_supplier import ExpenseSupplier

@@ -1,5 +1,5 @@
 from typing import Type, TypeVar, Optional
-from app.core.db import Base
+from core.db import Base
 
 Model = TypeVar("Model", bound=Base)
 

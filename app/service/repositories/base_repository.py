@@ -11,8 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update, delete
 
-from app.core.db import Base 
-from app.service.items_services.base import BaseItem
+from core.db import Base 
+from service.items_services.base import BaseItem
 
 
 Model = TypeVar("Model", bound=Base)  # Тип данных для моделей

@@ -12,7 +12,7 @@ class ExpenseDict(TypedDict):
     quantity: int
 
 
-class ExpenseCompanys(Base):
+class ExpenseCompany(Base):
     """Товары на складе компании"""
 
     company_id: Mapped[int] = mapped_column(
