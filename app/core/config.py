@@ -1,40 +1,40 @@
 from pathlib import Path
-from pydantic import BaseModel, PostgresDsn, ValidationError
+from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+CORE_DIR = Path(__file__).resolve().parent
 
 
-class ApiUsersPrefix(BaseModel):
+class ApiUsersPrefix:
     prefix: str = "/users"
     tags: list[str] = ["Users"]
 
-class ApiSuppliesPrefix(BaseModel):
+class ApiSuppliesPrefix:
     prefix: str = "/supplies"
     tags: list[str] = ["Supplies"]
 
-class ApiProductsPrefix(BaseModel):
+class ApiProductsPrefix:
     prefix: str = "/products"
     tags: list[str] = ["Products"]
 
-class ApiAuthPrefix(BaseModel):
+class ApiAuthPrefix:
     prefix: str = "/auth"
     tags: list[str] = ["Auth"]
 
-class ApiOrganizerPrefix(BaseModel):
+class ApiOrganizerPrefix:
     prefix: str = "/organizers"
     tags: list[str] = ["Organizers"]
 
-class ApiExpensePrefix(BaseModel):
+class ApiExpensePrefix:
     prefix: str = "/expenses"
     tags: list[str] = ["Expenses"]
 
-class ApiSupplierPrefix(BaseModel):
+class ApiSupplierPrefix:
     prefix: str = "/suppliers"
     tags: list[str] = ["Suppliers"]
 
-class ApiSetting(BaseModel):
-    prefix: str = "/rosso"
+class ApiSetting:
     users: ApiUsersPrefix = ApiUsersPrefix()
     organizers: ApiOrganizerPrefix = ApiOrganizerPrefix()
     expenses: ApiExpensePrefix = ApiExpensePrefix()
@@ -44,12 +44,21 @@ class ApiSetting(BaseModel):
     suppliers: ApiSupplierPrefix = ApiSupplierPrefix()
 
 
-class RunConfig(BaseModel):
+class AuthSettings(BaseSettings):
+    private_key: Path = CORE_DIR / 'certs' / 'private.pem'
+    public_key: Path = CORE_DIR / 'certs' / 'public.pem'
+    algorithm: str = 'RS256'
+    access_token_expire_hours: int = 12
+
+
+class RunConfig:
+    """Класс настроек сервера"""
     host: str = "localhost"
     port: int = 7654
 
 
 class DataBaseConfig(BaseModel):
+    """Класс настроек БД"""
     url: PostgresDsn
     echo: bool
     echo_pool: bool
@@ -79,6 +88,7 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     api: ApiSetting = ApiSetting()
     database: DataBaseConfig
+    auth: AuthSettings = AuthSettings()
 
 
 settings = Settings()

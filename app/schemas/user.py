@@ -1,32 +1,49 @@
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, EmailStr
 
 
 # TODO: Добавить фильтры получения всех сущностей во всех схемах
 
 class UserRole(str, Enum):
-    company = "company"
-    supplier = "supplier"
+    company = "admin"
+    supplier = "manager"
+    employee = "employee"
 
 
 class UserBase(BaseModel):
-    """Базовая модель валидации пользователя"""
     name: str
-    email: str
+    email: EmailStr
+
+class UserSchema(UserBase):
+    """Модель пользователя"""
+    id: int
+    phone: str
+
+class UserCompanySchema(BaseModel):
+    """Модель уч. записи пользователя в компании"""
+    id: int
+    role: UserRole
+    organizer_id: int
 
 
 class UserRegisterRequest(UserBase):
-    role: UserRole
+    """Модель запроса на регистрацию"""
     phone: str
-
-
-class UserSchema(UserBase):
-    id: int
-    role: UserRole
-    phone: str
-
+    password: str
 
 class UserLoginRequest(BaseModel):
-    email: str
+    """Модель запроса на вход"""
+    email: EmailStr
     password: str
+
+class UserResponse(BaseModel):
+    """Модель пользователя - ответ"""
+    user: UserSchema
+    user_company: Optional[UserCompanySchema]
+
+
+class AuthTokenSchema(BaseModel):
+    """Аутентификационый токен"""
+    access_token: str
+    type_token: str
