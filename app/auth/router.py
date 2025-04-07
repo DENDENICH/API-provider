@@ -1,39 +1,59 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import settings
 from core.db import db_core
 
-from schemas.user import UserRead
+from schemas.user import (
+    UserRegisterRequest,
+    UserLoginRequest,
+    AuthTokenSchema
+)
 
-from utils.jwt_process import jwt_processes
+from auth.utils.jwt_processes import jwt_processes as jwt
+
+from auth.service.user_auth import UserAuthService
 
 
-# создание роутера для api пользователя, импорт настроек префикса и тегов
 router = APIRouter(
     prefix=settings.api.auth.prefix,
     tags=settings.api.auth.tags
 )
 
 
-@router.post(
-        "/registry", 
-        status_code=status.HTTP_201_CREATED
-)
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthTokenSchema)
 async def registry(
+    user: UserRegisterRequest,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Restry user"""
-    pass
+    """Регистрация пользователя"""
+    user_service = UserAuthService(session=session)
+
+    user_item = await user_service.register_user(
+        name=user.name,
+        email=user.email,
+        phone=user.phone,
+        password=user.password
+    )
+
+    token = user_service.get_jwt(user=user_item)
+    await session.commit()
+    return AuthTokenSchema(**token)
 
 
-@router.post(
-        "/login",
-        status_code=status.HTTP_200_OK
-)
+@router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchema)
 async def login(
+    user: UserLoginRequest,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Login user"""
-    pass
+    """Вход пользователя"""
+    user_service = UserAuthService(session=session)
+
+    user_item = await user_service.check_login_user(
+        email=user.email,
+        password=user.password
+    )
+
+    token = user_service.get_jwt(user=user_item)
+    return AuthTokenSchema(**token)

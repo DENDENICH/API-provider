@@ -543,13 +543,13 @@ components:
     UserRegisterRequest:
       type: object
       properties:
-        role:
-          type: string
         name:
           type: string
         email:
           type: string
         phone:
+          type: string
+        password:
           type: string
 
     UserLoginRequest:

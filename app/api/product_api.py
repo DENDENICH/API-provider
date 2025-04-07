@@ -2,10 +2,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import APIRouter, Depends
 
-from app.core import settings
-from app.core.db import db_core
+from core import settings
+from core.db import db_core
 
-from app.schemas.product import (
+from schemas.product import (
     ProductRequest,
     ProductResponse,
     ProductResponseSupply,
