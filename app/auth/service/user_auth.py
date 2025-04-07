@@ -29,7 +29,7 @@ class UserAuthService:
         # проверка на существование пользователя в БД
         if await self.user_repo.get_by_email(email=email):
             raise already_exists_user
-        hashed_password = hashing_password(password)
+        hashed_password = hashing_password.create_hash(password)
         user = UserItem(
             name=name, 
             email=email, 
@@ -42,7 +42,7 @@ class UserAuthService:
         Literal["access_token"] | Literal["type_token"], str  
     ]:
         """Формирование и получение jwt токена для аутентификации"""
-        token = jwt.encode_jwt(payload={'sub': user.id})
+        token = jwt.encode_jwt(payload={'sub': str(user.id)})
         return {
             "access_token": token,
             "type_token": type_token

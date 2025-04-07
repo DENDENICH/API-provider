@@ -2,7 +2,6 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
 import yaml
 
 from core import settings
@@ -101,6 +100,11 @@ class AuthorizeRequestMiddleware(BaseHTTPMiddleware):
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"detail": str(error), "body": str(error)},
+            )
+        except Exception as error:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "Invalid token", "body": "Invalid token"},
             )
         else:
             request.state.user_id = token_payload["sub"]
