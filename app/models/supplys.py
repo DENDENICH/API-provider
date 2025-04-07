@@ -73,9 +73,21 @@ class Supply(Base):
     )
 
     #relationship
-    supplier = relationship("Organizer", back_populates="supplies_as_supplier", foreign_keys=[supplier_id])
-    company = relationship("Organizer", back_populates="supplies_as_company", foreign_keys=[company_id])
-    supply_products = relationship("SupplyProduct", back_populates="supply")
+    supplier = relationship(
+        "Organizer", 
+        back_populates="supplies_as_supplier", 
+        foreign_keys=[supplier_id]
+    )
+    company = relationship(
+        "Organizer", 
+        back_populates="supplies_as_company", 
+        foreign_keys=[company_id]
+    )
+    supply_products = relationship(
+        "SupplyProduct", 
+        back_populates="supply",
+        foreign_keys="[SupplyProduct.supply_id]"
+    )
 
     @property
     def dict(self):

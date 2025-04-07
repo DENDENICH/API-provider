@@ -12,9 +12,9 @@ class OrganizerItem(BaseItem):
                  inn: str,
                  bank_details: str,
                  id: Optional[int] = None, 
-                 model_: Optional[Type[Model]] = None
+                 model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
         
         self.role = role
         self.address = address
@@ -30,9 +30,9 @@ class ContractItem(BaseItem):
         company_id: int,
         supplier_id: int,
         id: Optional[int] = None, 
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
         
         self.company_id = company_id
         self.supplier_id = supplier_id
@@ -47,9 +47,9 @@ class UserItem(BaseItem):
         phone: str,
         password: str,
         id: Optional[int] = None, 
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
         
         self.name = name
         self.email = email
@@ -65,9 +65,9 @@ class UserCompanyItem(BaseItem):
         user_id: int,
         role: str,
         id: Optional[int] = None, 
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
 
         self.organizer_id = organizer_id
         self.user_id = user_id
@@ -81,9 +81,9 @@ class LinkCodeItem(BaseItem):
         code: int,
         user_id: int,
         id: Optional[int] = None, 
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
 
         self.user_id = user_id
         self.code = code
@@ -97,9 +97,9 @@ class ProductItem(BaseItem):
         product_version_id: int,
         supplier_id: int,
         id: int,
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
 
         self.article = article
         self.product_version_id = product_version_id
@@ -117,9 +117,9 @@ class ProductVersionItem(BaseItem):
         price: float,
         img_path: str,
         id: int,
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
 
         self.img_path = img_path
         self.product_id = product_id
@@ -140,9 +140,9 @@ class SupplyItem(BaseItem):
         delivery_address: str,
         total_price: float = 0.0,
         id: Optional[int] = None,
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
         
         self.article = article
         self.supplier_id = supplier_id
@@ -150,7 +150,7 @@ class SupplyItem(BaseItem):
         self.status = status
         self.delivery_address = delivery_address
         self.total_price = total_price
-
+        # свойство - список supply products
 
 class SupplyProductItem(BaseItem):
     """Объект записи продукта в поставке"""
@@ -160,9 +160,9 @@ class SupplyProductItem(BaseItem):
         product_version_id: int,
         quantity: int,
         id: Optional[int] = None,
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
         
         self.supply_id = supply_id
         self.product_id = product_version_id
@@ -177,9 +177,9 @@ class ExpenseCompanyItem(BaseItem):
         product_version_id: int,
         quantity: int,
         id: Optional[int] = None,
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
         
         self.product_version_id = product_version_id
         self.company_id = company_id
@@ -195,9 +195,9 @@ class ExpenseSupplierItem(BaseItem):
         quantity: int,
         reserved: int,
         id: Optional[int] = None,
-        model_: Optional[Type[Model]] = None
+        model: Optional[Type[Model]] = None
     ):
-        super().__init__(id=id, model_=model_)
+        super().__init__(id=id, model=model)
         
         self.supplier_id = supplier_id
         self.product_id = product_id

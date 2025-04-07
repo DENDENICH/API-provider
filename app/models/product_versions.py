@@ -53,8 +53,21 @@ class ProductVersion(Base):
         nullable=True
     )
 
-    product = relationship("Product", back_populates="versions")
-    supply_products = relationship("SupplyProduct", back_populates="product_version")
+    product = relationship(
+        "Product", 
+        back_populates="product_version",
+        foreign_keys="[Product.product_version_id]"    
+    )
+    supply_products = relationship(
+        "SupplyProduct", 
+        back_populates="product_version",
+        foreign_keys="[SupplyProduct.product_version_id]"
+    )
+    expense_company = relationship(
+        "ExpenseCompany",
+        back_populates="product_version",
+        foreign_keys="[ExpenseCompany.product_version_id]"
+    )
 
     @property
     def dict(self):

@@ -44,17 +44,18 @@ class Organizer(Base):
 
     #relationship
     # Связь Product.supplier & Organizer.products если Organizer.role == "supplier"
-    products = relationship("Product", back_populates="supplier", foreign_keys="[Product.supplier_id]")
+    product = relationship("Product", back_populates="supplier", foreign_keys="[Product.supplier_id]")
 
-    expenses = relationship("Expenses", back_populates="organizer")
-    
+    expense_company = relationship("ExpenseCompany", back_populates="company", foreign_keys="[ExpenseCompany.company_id]")
+    expense_supplier = relationship("ExpenseSupplier", back_populates="supplier", foreign_keys="[ExpenseSupplier.supplier_id]")
+
     # Связь поля Organizer.employees с User.organizers для взаимного обновления
-    employees = relationship("User", back_populates="organizer")
+    employee = relationship("UserCompany", back_populates="organizer", foreign_keys="[UserCompany.organizer_id]")
     supplies_as_company = relationship("Supply", back_populates="company", foreign_keys="[Supply.company_id]")
     supplies_as_supplier = relationship("Supply", back_populates="supplier", foreign_keys="[Supply.supplier_id]")
 
-    contract_as_company = relationship("Contract", back_populates="company")
-    contract_as_supplier = relationship("Contract", back_populates="supplier")
+    contract_as_company = relationship("Contract", back_populates="company", foreign_keys="[Contract.company_id]")
+    contract_as_supplier = relationship("Contract", back_populates="supplier", foreign_keys="[Contract.supplier_id]")
 
     @property
     def dict(self):

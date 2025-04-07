@@ -9,12 +9,20 @@ class BaseItem:
     def __init__(
             self, 
             id: Optional[int] = None, 
-            model_: Optional[Type[Model]] = None
+            model: Optional[Type[Model]] = None
     ):
         self._id = id
-        self._model = model_
+        self._model = model
 
     @property
     def id(self):
         return self._id or self._model.id
+    
+    @property
+    def dict(self):
+        """Представление разрешеных свойств объекта ввиде словаря"""
+        return {
+            key: value for key, value in self.__dict__.items()
+            if not key.startswith('_')
+        }
     

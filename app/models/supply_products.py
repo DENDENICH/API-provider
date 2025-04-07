@@ -31,15 +31,23 @@ class SupplyProduct(Base):
         nullable=False
     )
 
-    supply = relationship("Supply", back_populates="supply_products")
-    product_version = relationship("ProductVersion", back_populates="supply_products")
+    supply = relationship(
+        "Supply", 
+        back_populates="supply_products",
+        foreign_keys=[supply_id]
+    )
+    product_version = relationship(
+        "ProductVersion", 
+        back_populates="supply_products",
+        foreign_keys=[product_version_id]   
+    )
 
     @property
     def dict(self):
         return SuppliesProductDict(
             id=self.id,
             supply_id=self.supply_id,
-            product_id=self.product_id,
+            product_version_id=self.product_version_id,
             quantit=self.quantity
         )
     

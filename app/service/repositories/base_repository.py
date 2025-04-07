@@ -47,14 +47,14 @@ class BaseRepository(Generic[Model]):
 
     async def create(self, obj: ItemObj) -> ItemObj:
         """Создать объект """
-        model = self.model(**obj.__dict__)
+        model = self.model(**obj.dict)
         self.session.add(model)
         return self.to_item(model)
 
 
-    async def update(self, obj_id: int, payload: dict) -> Optional[ItemObj]:
+    async def update(self, obj: ItemObj) -> Optional[ItemObj]:
         """ Обновить объект по ID """
-        query = update(self.model).where(self.model.id == obj_id).values(**payload).returning(self.model)
+        query = update(self.model).where(self.model.id == obj.id).values(**obj.dict).returning(self.model)
         result = await self.session.execute(query)
         model = result.scalar_one_or_none()
         return self.to_item(model) if model is not None else None

@@ -31,8 +31,16 @@ class UserCompany(Base):
         nullable=True
     )
 
-    organizer = relationship("Organizer", back_populates="employees")
-    user = relationship("User", back_populates="user_company")
+    organizer = relationship(
+        "Organizer", 
+        back_populates="employee",
+        foreign_keys=[organizer_id]
+    )
+    user = relationship(
+        "User", 
+        back_populates="user_company",
+        foreign_keys=[user_id]
+    )
 
     @property
     def dict(self):

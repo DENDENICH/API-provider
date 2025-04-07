@@ -28,7 +28,16 @@ class ExpenseCompany(Base):
         nullable=False
     )
 
-    product_version = relationship("ProductVersion")
+    product_version = relationship(
+        "ProductVersion",
+        back_populates="expense_company",
+        foreign_keys=[product_version_id]    
+    )
+    company = relationship(
+        "Organizer",
+        back_populates="expense_company",
+        foreign_keys=[company_id]
+    )
 
     @property
     def dict(self):

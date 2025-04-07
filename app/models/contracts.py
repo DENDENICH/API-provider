@@ -25,8 +25,16 @@ class Contract(Base):
         nullable=False
     )
 
-    company = relationship("Organizer", back_populates="contract_as_company")
-    supplier = relationship("Organizer", back_populates="contract_as_supplier")
+    company = relationship(
+        "Organizer", 
+        back_populates="contract_as_company", 
+        foreign_keys=[company_id]    
+    )
+    supplier = relationship(
+        "Organizer", 
+        back_populates="contract_as_supplier",
+        foreign_keys=[supplier_id]    
+    )
 
     @property
     def dict(self):

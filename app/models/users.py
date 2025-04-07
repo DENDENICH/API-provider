@@ -1,5 +1,5 @@
 from typing import TypedDict
-from sqlalchemy import String
+from sqlalchemy import String, LargeBinary
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db import Base
@@ -27,15 +27,22 @@ class User(Base):
         String(255),
     )
     password: Mapped[bytes] = mapped_column(
-        String,
+        LargeBinary,
         nullable=False
     )
 
 
-    user_company = relationship("UserCompany", back_populates="user")
-    link_code = relationship("LinkCode", back_populates="user")
-
-    
+    user_company = relationship(
+        "UserCompany", 
+        back_populates="user", 
+        foreign_keys="[UserCompany.user_id]"
+    )
+    link_code = relationship(
+        "LinkCode", 
+        back_populates="user",
+        foreign_keys="[LinkCode.user_id]"
+    )
+ 
     @property
     def dict(self):
         return UserDict(

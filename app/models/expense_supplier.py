@@ -34,7 +34,16 @@ class ExpenseSupplier(Base):
         nullable=True
     )
 
-    product = relationship("Product")
+    product = relationship(
+        "Product", 
+        back_populates="expense_supplier",
+        foreign_keys=[product_id]
+    )
+    supplier = relationship(
+        "Organizer",
+        back_populates="expense_supplier",
+        foreign_keys=[supplier_id]    
+    )
 
     @property
     def dict(self):

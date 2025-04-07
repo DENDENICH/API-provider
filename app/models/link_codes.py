@@ -23,8 +23,11 @@ class LinkCode(Base):
         primary_key=True
     )
 
-    organizer = relationship("Organizer", back_populates="employees")
-    user = relationship("User", back_populates="link_code")
+    user = relationship(
+        "User", 
+        back_populates="link_code",
+        foreign_keys=[user_id]    
+    )
 
     @property
     def dict(self):
