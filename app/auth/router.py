@@ -38,7 +38,13 @@ async def registry(
     )
 
     token = user_service.get_jwt(user=user_item)
+    # ссылка для перенаправления пользователя
+    next_route = "/organizer/register" if user.user_type == "admin" else "/"
+    token["next_route"] = next_route
+
+    # коммит всех изменений в БД
     await session.commit()
+    
     return AuthTokenSchema(**token)
 
 
