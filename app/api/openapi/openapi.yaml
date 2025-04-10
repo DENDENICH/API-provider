@@ -100,7 +100,7 @@ paths:
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
         
-  /user/company/{link_code}:
+  /users/company/{link_code}:
     get:
       summary: Получение пользователя по пригласительному коду
       tags:
@@ -146,7 +146,7 @@ paths:
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
   
-  /user/company:
+  /users/company:
     post:
       summary: Привязка пользователя к уч. записи компании
       tags:
@@ -573,7 +573,7 @@ components:
           type: string
         next_route:
           type: string
-          enum: [organizer/register, /]
+          enum: [organizers/register, /]
 
 
     # Моделя ответа объекта пользователя
