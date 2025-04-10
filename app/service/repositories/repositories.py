@@ -29,8 +29,8 @@ class OrganizerRepository(BaseRepository[OrganizerModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[LinkCodeModel], ItemObj]):
-        super().__init__(LinkCodeModel, session=session, to_item=to_item)
+            to_item: Callable[[OrganizerModel], ItemObj]):
+        super().__init__(OrganizerModel, session=session, to_item=to_item)
 
 
 class ContactRepository(BaseRepository[ContractModel]):
@@ -85,6 +85,13 @@ class UserCompanyRepository(BaseRepository[UserCompanyModel]):
             session: AsyncSession,
             to_item: Callable[[UserCompanyModel], ItemObj]):
         super().__init__(UserCompanyModel, session=session, to_item=to_item)
+
+    async def get_by_user_id(self, user_id: int) -> Optional[UserCompanyItem]:
+        result = await self.session.execute(
+            select(UserCompanyModel).filter(UserCompanyModel.user_id == user_id)
+        )
+        model = result.scalar_one_or_none()
+        return self.to_item(model) if model is not None else None
 
 
 class LinkCodeRepository(BaseRepository[LinkCodeModel]):

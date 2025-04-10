@@ -39,13 +39,12 @@ async def registry(
 
     token = user_service.get_jwt(user=user_item)
     # ссылка для перенаправления пользователя
-    next_route = "/organizer/register" if user.user_type == "admin" else "/"
-    token["next_route"] = next_route
+    next_route = "/organizers/register" if user.user_type == "admin" else "/"
 
     # коммит всех изменений в БД
     await session.commit()
     
-    return AuthTokenSchema(**token)
+    return AuthTokenSchema(next_route=next_route, **token)
 
 
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchema)
@@ -62,4 +61,4 @@ async def login(
     )
 
     token = user_service.get_jwt(user=user_item)
-    return AuthTokenSchema(**token)
+    return AuthTokenSchema(next_route=None, **token)

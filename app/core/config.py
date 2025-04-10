@@ -22,26 +22,26 @@ class ApiAuthPrefix:
     prefix: str = "/auth"
     tags: list[str] = ["Auth"]
 
-class ApiOrganizerPrefix:
+class ApiOrganizersPrefix:
     prefix: str = "/organizers"
     tags: list[str] = ["Organizers"]
 
-class ApiExpensePrefix:
+class ApiExpensesPrefix:
     prefix: str = "/expenses"
     tags: list[str] = ["Expenses"]
 
-class ApiSupplierPrefix:
+class ApiSuppliersPrefix:
     prefix: str = "/suppliers"
     tags: list[str] = ["Suppliers"]
 
 class ApiSetting:
     users: ApiUsersPrefix = ApiUsersPrefix()
-    organizers: ApiOrganizerPrefix = ApiOrganizerPrefix()
-    expenses: ApiExpensePrefix = ApiExpensePrefix()
+    organizers: ApiOrganizersPrefix = ApiOrganizersPrefix()
+    expenses: ApiExpensesPrefix = ApiExpensesPrefix()
     supplies: ApiSuppliesPrefix = ApiSuppliesPrefix()
     products: ApiProductsPrefix = ApiProductsPrefix()
     auth: ApiAuthPrefix = ApiAuthPrefix()
-    suppliers: ApiSupplierPrefix = ApiSupplierPrefix()
+    suppliers: ApiSuppliersPrefix = ApiSuppliersPrefix()
 
 
 class AuthSettings(BaseSettings):

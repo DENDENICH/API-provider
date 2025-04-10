@@ -1,9 +1,11 @@
 from typing import Optional, Dict, Literal
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.service.repositories import *
-from app.service.items_services.items import *
-from app.service.items_services.to_items_functions import *
+from service.repositories import *
+from service.items_services.items import *
+from service.items_services.to_items_functions import *
+
+from exceptions import forbiden_error, not_found_error, bad_request_error
 
 
 class UserService:
@@ -28,7 +30,7 @@ class UserService:
     async def get_user_response(self, user_id: int) -> Dict[
         Literal["user"]: UserItem, Literal["user_company"]: UserCompanyItem
     ]:
-        """Получить представление пользователя (User + UserCompany)"""
+        """Получить представление пользователя"""
         if (user_response := self.user_repo.get_user_with_company(user_id=user_id)) is None:
             pass
             # TODO: исключение, если такой пользователь не найден
@@ -48,3 +50,41 @@ class UserService:
         if user_company:
             await self.user_company_repo.delete(user_company.id) 
 
+
+class OrganizerService:
+    """Класс бизнес-логики для работы с организацией"""
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        self.organizer_repo = OrganizerRepository(session, to_item=organizer_to_item)
+        self.user_company_repo = UserCompanyRepository(session, to_item=user_company_to_item)
+    
+    async def register_company_with_admin(
+        self,
+        name: str,
+        address: str,
+        inn: str,
+        bank_details: str,
+        user_id: int
+    ) -> OrganizerItem:
+        """Регистрация компании и создание администратора организации"""
+        existing = await self.user_company_repo.get_by_user_id(user_id=user_id)
+        if existing:
+            raise bad_request_error(detail="User existing in company")
+        organizer = OrganizerItem(
+            name=name,
+            role="company",
+            address=address,
+            inn=inn,
+            bank_details=bank_details
+        )
+        organizer = await self.organizer_repo.create(organizer)
+
+        admin_user = UserCompanyItem(
+            user_id=user_id,
+            organizer_id=organizer.id,
+            role="admin"
+        )
+        await self.user_company_repo.create(admin_user)
+
+        return organizer
+    
