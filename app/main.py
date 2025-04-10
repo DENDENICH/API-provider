@@ -107,7 +107,7 @@ class AuthorizeRequestMiddleware(BaseHTTPMiddleware):
                 content={"detail": "Invalid token", "body": "Invalid token"},
             )
         else:
-            request.state.user_id = token_payload["sub"]
+            request.state.user_id = int(token_payload["sub"])
         return await call_next(request)
     
 

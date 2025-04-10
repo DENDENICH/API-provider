@@ -551,6 +551,10 @@ components:
           type: string
         password:
           type: string
+        user_type:
+          type: string
+          enum: [admin, user]
+
 
     UserLoginRequest:
       type: object
@@ -567,6 +571,9 @@ components:
           type: string
         type_token:
           type: string
+        next_route:
+          type: string
+          enum: [organizer/register, /]
 
 
     # Моделя ответа объекта пользователя
