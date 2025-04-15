@@ -1,6 +1,6 @@
 from typing import Callable, Tuple, Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -56,13 +56,11 @@ class UserRepository(BaseRepository[UserModel]):
         model = result.scalar_one_or_none()
         return self.to_item(model) if model is not None else None
     
-    async def get_user_with_company(self, user_id: int) -> Tuple[
-        Optional[UserItem], Optional[UserCompanyItem]
-    ]:
-        """Получить пользователя и его связь с уч. записи в компании по user_id"""
+    async def get_user_with_company(self, user_id: int) -> Tuple[Optional[UserItem], Optional[UserCompanyItem]]:
+        """Получить пользователя и его связь с компанией по user_id"""
         stmt = (
             select(UserModel)
-            .options(joinedload(UserCompanyModel.user_id))
+            .options(joinedload(UserModel.user_company))
             .filter(UserModel.id == user_id)
         )
         result = await self.session.execute(stmt)
@@ -77,7 +75,22 @@ class UserRepository(BaseRepository[UserModel]):
 
         return user_item, user_company_item
 
+    async def get_user_by_link_code(self, link_code: int) -> Optional[UserItem]:
+        """Получение пользователя по link code"""
+        stmt = (
+            select(LinkCodeModel)
+            .options(joinedload(LinkCodeModel.user))
+            .where(LinkCodeModel.code == link_code)
+        )
+        result = await self.session.execute(stmt)
+        link_code_model = result.scalar_one_or_none()
 
+        if link_code_model is None:
+            return None
+        
+        user_item = self.to_item(link_code_model.user) if link_code_model.user else None
+        return user_item
+    
 class UserCompanyRepository(BaseRepository[UserCompanyModel]):
     """Репозиторий бизнес логики работы с уч. записью пользователя в организации"""
     def __init__(
@@ -92,7 +105,20 @@ class UserCompanyRepository(BaseRepository[UserCompanyModel]):
         )
         model = result.scalar_one_or_none()
         return self.to_item(model) if model is not None else None
-
+    
+    async def delete_by_user_and_organizer_id(
+            self, 
+            user_id: int,
+            organizer_id: int
+        ) -> bool:
+        query = delete(UserCompanyModel).where(
+            UserCompanyModel.user_id == user_id,
+            UserCompanyModel.organizer_id == organizer_id
+        )
+        result = await self.session.execute(query)
+        # Возвращаем False, если результат изменения = 0
+        return False if result.rowcount == 0 else True
+            
 
 class LinkCodeRepository(BaseRepository[LinkCodeModel]):
     """Репозиторий бизнес логики работы с складом компании"""

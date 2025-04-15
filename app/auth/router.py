@@ -8,12 +8,14 @@ from core.db import db_core
 from schemas.user import (
     UserRegisterRequest,
     UserLoginRequest,
-    AuthTokenSchema
+    AuthTokenSchema,
+    UserTypeForNextRoute
 )
 
 from auth.utils.jwt_processes import jwt_processes as jwt
 
 from auth.service.user_auth import UserAuthService
+from service.busines_service import LinkCodeService
 
 
 router = APIRouter(
@@ -28,20 +30,36 @@ async def registry(
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Регистрация пользователя"""
-    user_service = UserAuthService(session=session)
+    try:
+        user_service = UserAuthService(session=session)
 
-    user_item = await user_service.register_user(
-        name=user.name,
-        email=user.email,
-        phone=user.phone,
-        password=user.password
-    )
+        # регистрация пользователя
+        user_item = await user_service.register_user(
+            name=user.name,
+            email=user.email,
+            phone=user.phone,
+            password=user.password
+        )
+        # отправляем транзакцию, но не фиксируем
+        await session.flush()
 
-    token = user_service.get_jwt(user=user_item)
-    # ссылка для перенаправления пользователя
-    next_route = "/organizers/register" if user.user_type == "admin" else "/"
+        # создание пригласительного кода если запрос на регистрацию от сотрудника
+        if user.user_type == UserTypeForNextRoute.organizer:
+            next_route = "/organizers/register"
+        else:
+            next_route = "/"
+            link_code_service = LinkCodeService(session=session)
+            await link_code_service.create_link_code(user_id=user_item.id)
 
-    # коммит всех изменений в БД
+        token = user_service.get_jwt(user=user_item)
+        # ссылка для перенаправления пользователя
+
+        # коммит всех изменений в БД
+        
+    except Exception as e:
+        await session.rollback()
+        print(e)
+
     await session.commit()
     
     return AuthTokenSchema(next_route=next_route, **token)

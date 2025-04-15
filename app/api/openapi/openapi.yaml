@@ -67,7 +67,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserSchemaResponse'
+                $ref: '#/components/schemas/UserSchema'
         "404":
           $ref: '#/components/responses/NotFound'
         "422":
@@ -87,20 +87,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserSchemaResponse'
+              $ref: '#/components/schemas/UserSchema'
       responses:
         "200":
           description: ОК
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserSchemaResponse'
+                $ref: '#/components/schemas/UserSchema'
         "404":
           $ref: '#/components/responses/NotFound'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-        
-  /users/company/{link_code}:
+  
+  
+  /users/company:
+    post:
+      summary: Привязка пользователя к уч. записи компании
+      tags:
+        - Пользователи
+      operationId: postUserByLinkCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                role:
+                  type: string
+                  enum: ["manager", "employee"]
+      responses:
+        '201':
+          description: ОК
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
     get:
       summary: Получение пользователя по пригласительному коду
       tags:
@@ -108,8 +131,8 @@ paths:
       operationId: getUserByLinkCode
       parameters:
         - name: link_code
-          in: path
-          required: true
+          in: query
+          required: false
           schema:
             type: integer
       responses:
@@ -135,39 +158,13 @@ paths:
         - Пользователи
       operationId: deleteUserByLinkCode
       parameters:
-        - name: link_code
-          in: path
-          required: true
+        - name: user_id
+          in: query
+          required: false
           schema:
             type: integer
       responses:
         '204':
-          description: ОК
-        "422":
-          $ref: '#/components/responses/UnprocessableEntity'
-  
-  /users/company:
-    post:
-      summary: Привязка пользователя к уч. записи компании
-      tags:
-        - Пользователи
-      operationId: postUserByLinkCode
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                id:
-                  type: integer
-                id_company:
-                  type: integer
-                role:
-                  type: string
-                  enum: ["manager", "employee"]
-      responses:
-        '201':
           description: ОК
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
@@ -190,6 +187,7 @@ paths:
           description: Организация успешно зарегистрирована
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
+          
 
 
   /organizers:
@@ -531,8 +529,6 @@ components:
       properties:
         id:
           type: integer
-        role:
-          type: string
         name:
           type: string
         email:
@@ -553,7 +549,7 @@ components:
           type: string
         user_type:
           type: string
-          enum: [admin, user]
+          enum: [organizer, employee]
 
 
     UserLoginRequest:
@@ -574,28 +570,6 @@ components:
         next_route:
           type: string
           enum: [organizers/register, /]
-
-
-    # Моделя ответа объекта пользователя
-    UserSchemaResponse:
-      type: object
-      properties:
-        user:
-          $ref: "#/components/schemas/UserSchema"
-        user_company:
-          $ref: "#/components/schemas/UserCompanySchema"
-
-
-    # Схема уч. записи пользователя в компании
-    UserCompanySchema:
-      type: object
-      properties:
-        id:
-          type: integer
-        role:
-          type: string
-        organizer_id:
-          type: integer
           
     # Схемы организаций
     OrganizerRegisterRequest:

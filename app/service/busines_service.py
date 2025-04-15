@@ -7,6 +7,8 @@ from service.items_services.to_items_functions import *
 
 from exceptions import forbiden_error, not_found_error, bad_request_error
 
+from utils import generate_unique_code
+
 
 class UserService:
     """Класс бизнес-логики работы с пользователем"""
@@ -18,8 +20,7 @@ class UserService:
     async def get_user_by_id(self, user_id: int) -> Optional[UserItem]:
         """Получить пользователя по ID"""
         if (user := await self.user_repo.get_by_id(user_id)) is None:
-            pass
-            # TODO: exception
+            raise not_found_error
         return user
 
     async def get_user_company_by_user_id(self, user_id: int) -> Optional[UserCompanyItem]:
@@ -27,28 +28,72 @@ class UserService:
         return await self.user_company_repo.get_by_id(user_id)
         #TODO: доделать
 
-    async def get_user_response(self, user_id: int) -> Dict[
-        Literal["user"]: UserItem, Literal["user_company"]: UserCompanyItem
-    ]:
-        """Получить представление пользователя"""
-        if (user_response := self.user_repo.get_user_with_company(user_id=user_id)) is None:
-            pass
-            # TODO: исключение, если такой пользователь не найден
-        return {
-            "user": user_response[0],
-            "user_company": user_response[1]
-        }
+    async def get_user_by_link_code(self, id: int, link_code: int) -> Optional[UserItem]:
+        """Получение пользователя по пригласительному коду LinkCodeModel"""
+        if (user := await self.user_company_repo.get_by_user_id(user_id=id)) is None:
+            raise bad_request_error("user is not in company")
+        if user.role != "admin": 
+            raise forbiden_error 
+        
+        if (user_item := await self.user_repo.get_user_by_link_code(link_code)) is None:
+            raise not_found_error
+        return user_item
 
-    async def assign_user_to_company(self, user_id: int, role: str) -> UserCompanyItem:
+    async def assign_user_to_company(
+            self,
+            id: int,
+            user_id: int, 
+            role: str,
+    ) -> UserCompanyItem:
         """Назначить пользователя в компанию с ролью"""
-        user_company = UserCompanyItem(organizer_id=0, user_id=user_id, role=role)  # organizer_id позже будет указан
-        return await self.user_company_repo.create(user_company)
 
-    async def remove_user_from_company(self, user_id: int) -> None:
+        if (user := await self.user_company_repo.get_by_user_id(user_id=id)) is None:
+            raise bad_request_error("user is not in company")
+        if user.role != "admin": # регистрация только лицом администратора
+            raise forbiden_error 
+
+        user_company = UserCompanyItem(
+            organizer_id=user.organizer_id, 
+            user_id=user_id, 
+            role=role
+        ) 
+        return await self.user_company_repo.create(user_company)
+    
+    async def assign_admin_to_company(
+        self,
+        user_id: int,
+        organizer_id: int,
+        role: str = "admin"
+    ) -> UserCompanyItem:
+        """Назначить администратора в организацию"""
+        user_company = UserCompanyItem(
+            organizer_id=organizer_id, 
+            user_id=user_id, 
+            role=role
+        ) 
+
+        admin = await self.user_company_repo.create(user_company)
+        return admin
+
+    async def update_user(self, content: UserItem) -> UserItem:
+        """Обновление данных пользователя"""
+        if (user_item := await self.user_repo.update(obj=content)) is None:
+            raise not_found_error
+        return user_item
+
+    async def remove_user_from_company(self, id: int, user_id: int) -> None:
         """Удалить пользователя из компании"""
-        user_company = await self.user_company_repo.get_by_user_id(user_id)
-        if user_company:
-            await self.user_company_repo.delete(user_company.id) 
+        if (user := await self.user_company_repo.get_by_user_id(user_id=id)) is None:
+            raise bad_request_error("user is not in company")
+        if user.role != "admin": 
+            raise forbiden_error 
+        
+        result = await self.user_company_repo.delete_by_user_and_organizer_id(
+            user_id=user_id,
+            organizer_id=user.organizer_id
+        )
+        if not result:
+            raise not_found_error
 
 
 class OrganizerService:
@@ -64,27 +109,38 @@ class OrganizerService:
         address: str,
         inn: str,
         bank_details: str,
-        user_id: int
+        role: str,
+        id: int
     ) -> OrganizerItem:
         """Регистрация компании и создание администратора организации"""
-        existing = await self.user_company_repo.get_by_user_id(user_id=user_id)
+        existing = await self.user_company_repo.get_by_user_id(user_id=id)
         if existing:
             raise bad_request_error(detail="User existing in company")
         organizer = OrganizerItem(
             name=name,
-            role="company",
+            role=role,
             address=address,
             inn=inn,
             bank_details=bank_details
         )
         organizer = await self.organizer_repo.create(organizer)
 
-        admin_user = UserCompanyItem(
-            user_id=user_id,
-            organizer_id=organizer.id,
-            role="admin"
-        )
-        await self.user_company_repo.create(admin_user)
-
         return organizer
     
+
+class LinkCodeService:
+    """Класс бизнес-логики работы с пригласительным кодом"""
+    def __init__(self, session: AsyncSession):
+        self.link_code_repo = LinkCodeRepository(
+            session=session, 
+            to_item=link_code_to_item
+        )
+
+    async def create_link_code(self, user_id: int) -> None:
+        """Метод для создания пригласительного кода"""
+        code = generate_unique_code()
+        link_code = LinkCodeItem(
+            code=code,
+            user_id=user_id
+        )
+        await self.link_code_repo.create(link_code)

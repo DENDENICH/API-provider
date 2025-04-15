@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Literal
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
@@ -12,8 +12,8 @@ class UserRole(str, Enum):
 
 class UserTypeForNextRoute(str, Enum):
     """Тип перенаправления пользователя после регистрации"""
-    user = "user"
-    admin = "admin"
+    employee = "employee"
+    organizer = "orgaizer"
 
 
 class UserBase(BaseModel):
@@ -29,7 +29,6 @@ class UserCompanySchema(BaseModel):
     """Модель уч. записи пользователя в компании"""
     id: int
     role: UserRole
-    organizer_id: int
 
 class UserRegisterRequest(UserBase):
     """Модель запроса на регистрацию"""
@@ -42,11 +41,6 @@ class UserLoginRequest(BaseModel):
     """Модель запроса на вход"""
     email: EmailStr
     password: str
-
-class UserResponse(BaseModel):
-    """Модель пользователя - ответ"""
-    user: UserSchema
-    user_company: Optional[UserCompanySchema]
 
 
 class AuthTokenSchema(BaseModel):

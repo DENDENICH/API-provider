@@ -14,7 +14,7 @@ from auth.exception import not_found_user_register_login, already_exists_user
 class UserAuthService:
     """Класс бизнес-логики работы с пользователем"""
     def __init__(self, session: AsyncSession):
-        self.user_repo = UserRepository(session, to_item=user_to_item)
+        self.user_repo = UserRepository(session=session, to_item=user_to_item)
 
     async def check_login_user(self, email: str, password: str) -> Optional[UserItem]:
         """Получить пользователя по email"""
