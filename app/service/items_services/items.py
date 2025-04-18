@@ -90,13 +90,18 @@ class LinkCodeItem(BaseItem):
 
 
 class ProductItem(BaseItem):
-    """Объект продукта"""
+    """Объект продукта с полями версии продукта"""
     def __init__(
         self,
         article: int,
-        product_version_id: int,
-        supplier_id: int,
-        id: int,
+        product_version_id: Optional[int] = None,
+        supplier_id: Optional[int] = None,
+        name: Optional[str] = None,
+        category: Optional[str] = None,
+        description: Optional[str] = None,
+        price: Optional[float] = None,
+        img_path: Optional[str] = None,
+        id: Optional[int] = None,
         model: Optional[Type[Model]] = None
     ):
         super().__init__(id=id, model=model)
@@ -104,13 +109,17 @@ class ProductItem(BaseItem):
         self.article = article
         self.product_version_id = product_version_id
         self.supplier_id = supplier_id
+        self.name = name
+        self.category = category
+        self.description = description
+        self.price = price
+        self.img_path = img_path
 
 
-class ProductVersionItem(BaseItem):
-    """Объект версии продукта"""
+class ProductFullItem(BaseItem):
+    """Объект продукта с полями данных о версии продукта"""
     def __init__(
         self,
-        product_id: int,
         name: str,
         category: str,
         description: str,
@@ -122,7 +131,6 @@ class ProductVersionItem(BaseItem):
         super().__init__(id=id, model=model)
 
         self.img_path = img_path
-        self.product_id = product_id
         self.name = name
         self.category = category
         self.description = description

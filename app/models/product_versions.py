@@ -3,7 +3,7 @@ from sqlalchemy import (
     String,
     Float,
     Enum,
-    ForeignKey
+    Text
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,7 +12,6 @@ from core.db import Base
 
 class ProductVersionDict(TypedDict):
     id: int
-    product_id: int
     name: str
     category: str
     price: float
@@ -22,10 +21,6 @@ class ProductVersionDict(TypedDict):
 class ProductVersion(Base):
     """Версия товара"""
 
-    product_id: Mapped[int] = mapped_column(
-        ForeignKey("products.id"), 
-        nullable=False
-    )
     name: Mapped[str] = mapped_column(
         String(255), 
         nullable=False
@@ -52,6 +47,10 @@ class ProductVersion(Base):
         String, 
         nullable=True
     )
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=True
+    )
 
     product = relationship(
         "Product", 
@@ -73,7 +72,6 @@ class ProductVersion(Base):
     def dict(self):
         return ProductVersionDict(
             id=self.id,
-            product_id=self.product_id,
             name=self.name,
             category=self.category,
             price=self.price,

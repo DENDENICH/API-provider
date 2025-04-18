@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, status
 
 from core import settings
 from core.db import db_core
@@ -8,10 +8,11 @@ from core.db import db_core
 from schemas.product import (
     ProductRequest,
     ProductResponse,
-    ProductResponseSupply,
     ProductsResponse
 )
 
+from service.busines_service import ProductService
+from service.items_services.items import ProductItem
 
 router = APIRouter(
     tags=settings.api.products.tags,
@@ -19,43 +20,53 @@ router = APIRouter(
 )
 
 
-@router.post("/products", status_code=201)
-async def add_product(
-    product_data: ProductRequest, 
+@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+async def create_product(
+    request: Request,
+    product_in: ProductRequest,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Добавление нового товара"""
-    pass
+    service = ProductService(session=session)
+    product = await service.create_product(**product_in.model_dump())
+    return ProductResponse(id=product.id, **product.dict)
 
-@router.get("/products", response_model=ProductsResponse)
+
+@router.get("/", response_model=ProductsResponse)
 async def get_all_products(
+    request: Request,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Получение списка товаров"""
-    pass
+    service = ProductService(session=session)
+    # TODO: redis хранение
+    supplier_id = None
+    products = await service.get_all_products(supplier_id)
+    return ProductsResponse(products=products)
+    
 
-@router.get("/products/{product_id}", response_model=ProductResponse)
-async def get_product(
-    product_id: int, 
+
+@router.get("/{product_id}", response_model=ProductResponse)
+async def get_product_by_id(
+    request: Request,
+    product_id: int,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Получение информации о товаре"""
-    pass
+    service = ProductService(session)
+    product = await service.get_product_by_id(product_id)
+    return ProductResponse(**product.dict)
 
-@router.put("/products/{product_id}", response_model=ProductResponse)
+
+@router.put("/{product_id}", response_model=ProductResponse)
 async def update_product(
-    product_id: int, 
-    product_data: ProductResponse, 
+    request: Request,
+    product_id: int,
+    product_in: ProductResponse,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Обновление товара"""
-    pass
-
-
-@router.get("/products/{supplier_id}")
-async def get_all_products_from_supplier(
-    supplier_id: int,
-    session: AsyncSession = Depends(db_core.session_getter)
-):
-    """Получение всех продуктов конкретного поставщика"""
-    pass
+    service = ProductService(session)
+    product = await service.update_product(
+        product_id, 
+        ProductItem(product_in.model_dump()
+        )
+    )
+    return ProductResponse(**product.dict)
+    

@@ -29,8 +29,8 @@ class OrganizerRepository(BaseRepository[OrganizerModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[OrganizerModel], ItemObj]):
-        super().__init__(OrganizerModel, session=session, to_item=to_item)
+    ):
+        super().__init__(OrganizerModel, session=session, item=OrganizerItem)
 
 
 class ContactRepository(BaseRepository[ContractModel]):
@@ -47,14 +47,14 @@ class UserRepository(BaseRepository[UserModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[UserModel], UserItem]):
-        super().__init__(UserModel, session=session, to_item=to_item)
+    ):
+        super().__init__(UserModel, session=session, item=UserItem)
 
     async def get_by_email(self, email: str) -> Optional[UserItem]:
         """Получить пользователя по email"""
         result = await self.session.execute(select(UserModel).filter(UserModel.email == email))
         model = result.scalar_one_or_none()
-        return self.to_item(model) if model is not None else None
+        return self.item(**model.dict, model=model) if model is not None else None
     
     async def get_user_with_company(self, user_id: int) -> Tuple[Optional[UserItem], Optional[UserCompanyItem]]:
         """Получить пользователя и его связь с компанией по user_id"""
@@ -69,9 +69,13 @@ class UserRepository(BaseRepository[UserModel]):
         if user_model is None:
             return None, None
 
-        user_item = self.to_item(user_model)
-        user_company_model = user_model.user_company[0] if user_model.user_company else None
-        user_company_item = self.to_item(user_company_model) if user_company_model else None
+        # TODO:
+        user_item = self.item(**user_model.dict, model=user_model)
+        user_company_model: UserCompanyModel = user_model.user_company[0] if user_model.user_company else None
+        user_company_item = self.item(
+            **user_company_model.dict, 
+            model=user_company_model
+        ) if user_company_model else None
 
         return user_item, user_company_item
 
@@ -88,7 +92,9 @@ class UserRepository(BaseRepository[UserModel]):
         if link_code_model is None:
             return None
         
-        user_item = self.to_item(link_code_model.user) if link_code_model.user else None
+        #TODO:
+        user_model: UserModel = link_code_model.user
+        user_item = self.item(**user_model.dict, model=user_model) if link_code_model.user else None
         return user_item
     
 class UserCompanyRepository(BaseRepository[UserCompanyModel]):
@@ -97,14 +103,14 @@ class UserCompanyRepository(BaseRepository[UserCompanyModel]):
             self, 
             session: AsyncSession,
             to_item: Callable[[UserCompanyModel], ItemObj]):
-        super().__init__(UserCompanyModel, session=session, to_item=to_item)
+        super().__init__(UserCompanyModel, session=session, item=UserCompanyItem)
 
     async def get_by_user_id(self, user_id: int) -> Optional[UserCompanyItem]:
         result = await self.session.execute(
             select(UserCompanyModel).filter(UserCompanyModel.user_id == user_id)
         )
         model = result.scalar_one_or_none()
-        return self.to_item(model) if model is not None else None
+        return self.item(**model.dict, model=model) if model is not None else None
     
     async def delete_by_user_and_organizer_id(
             self, 
@@ -124,16 +130,16 @@ class LinkCodeRepository(BaseRepository[LinkCodeModel]):
     """Репозиторий бизнес логики работы с складом компании"""
     def __init__(
             self, 
-            session: AsyncSession,
-            to_item: Callable[[LinkCodeModel], ItemObj]):
-        super().__init__(LinkCodeModel, session=session, to_item=to_item)
+            session: AsyncSession
+    ):
+        super().__init__(LinkCodeModel, session=session, item=LinkCodeItem)
 
-    async def get_code_by_user_id(self, user_id: int) -> ItemObj:
+    async def get_code_by_user_id(self, user_id: int) -> Optional[LinkCodeItem]:
         result = await self.session.execute(
             select(LinkCodeModel).filter(LinkCodeModel.user_id == user_id)
             )
         model = result.scalar_one_or_none()
-        return self.to_item(model) if model is not None else None
+        return self.item(**model.dict, model=model) if model is not None else None
 
 
 class ProductRepository(BaseRepository[ProductModel]):
@@ -141,12 +147,36 @@ class ProductRepository(BaseRepository[ProductModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[LinkCodeModel], ItemObj]):
-        super().__init__(LinkCodeModel, session=session, to_item=to_item)
+    ):
+        super().__init__(LinkCodeModel, session=session, item=ProductItem)
 
     async def get_available_products_for_company(company_id: int):
         """Получить все доступные товары для компании по её ID"""
         pass
+
+    async def get_all_products(self, supplier_id: int, limit: int = 20):
+        """Получение всех продуктов"""
+        stmt = (
+            select(
+                ProductModel.id,
+                ProductVersionModel.name,
+                ProductVersionModel.category,
+                ProductVersionModel.description,
+                ProductVersionModel.price
+            )
+            .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
+            .where(ProductModel.supplier_id == supplier_id)
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        product_model_list = result.scalars()
+
+        if product_model_list is None:
+            return None
+        
+        products = [self.item(**model.dict) for model in product_model_list]
+
+        return products
 
 
 class ProductVersionRepository(BaseRepository[ProductVersionModel]):
@@ -154,8 +184,8 @@ class ProductVersionRepository(BaseRepository[ProductVersionModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[ProductVersionModel], ItemObj]):
-        super().__init__(ProductVersionModel, session=session, to_item=to_item)
+    ):
+        super().__init__(ProductVersionModel, session=session, item=ProductItem)
 
 
 class SupplyRepository(BaseRepository[SupplyModel]):

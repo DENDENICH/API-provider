@@ -743,6 +743,8 @@ components:
         price:
           type: number
           format: float
+        description:
+          type: string
 
     ProductResponse:
       type: object

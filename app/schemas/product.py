@@ -21,7 +21,7 @@ class ProductBase(BaseModel):
 
 
 class ProductRequest(ProductBase):
-    pass
+    description: str
 
 
 class ProductResponse(ProductBase):
