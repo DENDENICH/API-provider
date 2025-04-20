@@ -1,5 +1,5 @@
 from typing import TypedDict
-from sqlalchemy import String, Enum, ForeignKey, Integer
+from sqlalchemy import ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db import Base
@@ -19,7 +19,7 @@ class LinkCode(Base):
         nullable=True
     )
     code: Mapped[int] = mapped_column(
-        Integer,
+        BigInteger,
         primary_key=True
     )
 

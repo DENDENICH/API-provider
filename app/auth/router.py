@@ -13,10 +13,11 @@ from schemas.user import (
 )
 
 from auth.utils.jwt_processes import jwt_processes as jwt
-
 from auth.service.user_auth import UserAuthService
+
 from service.bussines_services.link_code import LinkCodeService
 from service.bussines_services.user import UserService
+from logger import logger
 
 
 router = APIRouter(
@@ -27,7 +28,7 @@ router = APIRouter(
 
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthTokenSchema)
 async def registry(
-    user: UserRegisterRequest,
+    data: UserRegisterRequest,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Регистрация пользователя"""
@@ -36,16 +37,16 @@ async def registry(
 
         # регистрация пользователя
         user = await user_service.register_user(
-            name=user.name,
-            email=user.email,
-            phone=user.phone,
-            password=user.password
+            name=data.name,
+            email=data.email,
+            phone=data.phone,
+            password=data.password
         )
         # отправляем транзакцию, но не фиксируем
         await session.flush()
 
         # создание пригласительного кода если запрос на регистрацию от сотрудника
-        if user.user_type == UserTypeForNextRoute.organizer:
+        if data.user_type == UserTypeForNextRoute.organizer:
             next_route = "/organizers/register"
         else:
             next_route = "/"
@@ -59,7 +60,9 @@ async def registry(
         
     except Exception as e:
         await session.rollback()
-        print(e)
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
 
     await session.commit()
     
@@ -68,15 +71,15 @@ async def registry(
 
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchema)
 async def login(
-    user: UserLoginRequest,
+    data: UserLoginRequest,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Вход пользователя"""
     user_auth_service = UserAuthService(session=session)
 
     user = await user_auth_service.check_login_user(
-        email=user.email,
-        password=user.password
+        email=data.email,
+        password=data.password
     )
     token = user_auth_service.get_jwt(user=user)
 

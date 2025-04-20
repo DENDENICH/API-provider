@@ -13,7 +13,7 @@ class UserRole(str, Enum):
 class UserTypeForNextRoute(str, Enum):
     """Тип перенаправления пользователя после регистрации"""
     employee = "employee"
-    organizer = "orgaizer"
+    organizer = "organizer"
 
 
 class UserBase(BaseModel):
