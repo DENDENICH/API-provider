@@ -11,7 +11,7 @@ from schemas.product import (
     ProductsResponse
 )
 
-from service.busines_service import ProductService
+from service.bussines_services.product import ProductService
 from service.items_services.items import ProductItem
 
 router = APIRouter(

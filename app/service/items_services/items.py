@@ -116,27 +116,6 @@ class ProductItem(BaseItem):
         self.img_path = img_path
 
 
-class ProductFullItem(BaseItem):
-    """Объект продукта с полями данных о версии продукта"""
-    def __init__(
-        self,
-        name: str,
-        category: str,
-        description: str,
-        price: float,
-        img_path: str,
-        id: int,
-        model: Optional[Type[Model]] = None
-    ):
-        super().__init__(id=id, model=model)
-
-        self.img_path = img_path
-        self.name = name
-        self.category = category
-        self.description = description
-        self.price = price
-
-
 class SupplyItem(BaseItem):
     """Объект сущности поставки"""
     def __init__(
@@ -220,7 +199,6 @@ __all__ = [
     "UserCompanyItem",
     "LinkCodeItem",
     "ProductItem",
-    "ProductVersionItem",
     "SupplyItem",
     "SupplyProductItem",
     "ExpenseCompanyItem",

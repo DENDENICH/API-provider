@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Optional
+from typing import Callable, Tuple, Optional, Dict, TypedDict
 
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,6 +22,7 @@ from service.repositories.base_repository import(
      ItemObj
 )
 from service.items_services.items import *
+from service.redis_service import UserContext
 
 
 class OrganizerRepository(BaseRepository[OrganizerModel]):
@@ -69,7 +70,6 @@ class UserRepository(BaseRepository[UserModel]):
         if user_model is None:
             return None, None
 
-        # TODO:
         user_item = self.item(**user_model.dict, model=user_model)
         user_company_model: UserCompanyModel = user_model.user_company[0] if user_model.user_company else None
         user_company_item = self.item(
@@ -97,12 +97,29 @@ class UserRepository(BaseRepository[UserModel]):
         user_item = self.item(**user_model.dict, model=user_model) if link_code_model.user else None
         return user_item
     
+    async def get_user_context_by_user_id(self, user_id: int) -> Optional[UserContext]:
+        """Получить контекст пользователя по user_id"""
+        stmt = (
+            select(
+                UserCompanyModel.id.label("user_company_id"),
+                UserCompanyModel.role.label("user_company_role"),
+                OrganizerModel.id.label("organizer_id"),
+                OrganizerModel.role.label("organizer_role")
+            )
+            .join(OrganizerModel, OrganizerModel.id == UserCompanyModel.organizer_id)
+            .where(UserCompanyModel.user_id == user_id)
+        )
+        result = await self.session.execute(stmt)
+        row = result.mappings().first()
+        return UserContext(**dict(row)) if row else None
+
+
 class UserCompanyRepository(BaseRepository[UserCompanyModel]):
     """Репозиторий бизнес логики работы с уч. записью пользователя в организации"""
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[UserCompanyModel], ItemObj]):
+        ):
         super().__init__(UserCompanyModel, session=session, item=UserCompanyItem)
 
     async def get_by_user_id(self, user_id: int) -> Optional[UserCompanyItem]:

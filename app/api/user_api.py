@@ -7,19 +7,19 @@ from fastapi import (
     Depends, 
     status,
     Query,
-    Request
+    Request,
+    HTTPException
 )
 from core.db import db_core
 
 from core import settings
-from service.busines_service import UserService
+from service.bussines_services.user import UserService
 from schemas.user import (
     UserCompanySchema,
     UserSchema
 )
-from service.items_services.items import UserItem
-
-from exceptions import forbiden_error
+from service.redis_service import UserContext, redis
+from logger import logger
 
 router = APIRouter(
     prefix=settings.api.users.prefix,
@@ -60,11 +60,11 @@ async def get_user_company(
 ):
     """Получить пользователя по пригласительному коду"""
     user_service = UserService(session=session)
-    user_item = await user_service.get_user_by_link_code(
+    user = await user_service.get_user_by_link_code(
         link_code=link_code,
         id=request.state.user_id
     )
-    return UserSchema(id=user_item.id, **user_item.dict)
+    return UserSchema(id=user.id, **user.dict)
 
 
 @router.post("/company", status_code=status.HTTP_201_CREATED)
@@ -75,17 +75,43 @@ async def add_user_to_company(
 ):
     """Создать учетную запись пользователя в компании"""
     try:
+        id = request.state.user_id
         user_service = UserService(session=session)
-        user_item = await user_service.assign_user_to_company(
-            id=request.state.user_id,
+        user_company = await user_service.assign_user_to_company(
+            id=id,
             user_id=data.id,
             role=data.role
         )
     except Exception as e:
         await session.rollback()
-        print(e)
+        logger.error(
+            msg="Error creating user company\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     await session.commit()
+    # установка пользовательских данных в redis
+    try:
+        admin_data = await redis.get_user_data(user_id=id)
+        await user_service.set_data_user_to_redis(
+            user_id=user_company.id,
+            user_context=UserContext(
+                user_company_id=user_company.id,
+                user_company_role=user_company.role,
+                organizer_id=user_company.organizer_id,
+                organizer_role=admin_data["user_company_role"]
+            )
+        )
+    except Exception as e:
+        pass
+        logger.error(
+            msg="Error set user data in Redis\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     return {"detail": "OK"}
 
 
@@ -104,7 +130,35 @@ async def remove_user_from_company(
         )
     except Exception as e:
         await session.rollback()
-        print(e)
+        logger.error(
+            msg="Error removing user company\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     await session.commit()
+    
+    # удаление свойств о уч. записи в компании, обновление данных
+    try:
+        user_context = await redis.get_user_data(user_id=user_id)
+        if user_context:
+            await redis.set_user_data(
+                user_id=user_id,
+                data=UserContext(
+                    user_company_id=None,
+                    user_company_role=None,
+                    organizer_id=user_context["organizer_id"],
+                    organizer_role=user_context["organizer_role"]
+                )
+            )
+    except Exception as e:
+        pass
+        logger.error(
+            msg="Error set user data in Redis\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
     return {"detail": "OK"}

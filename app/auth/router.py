@@ -15,7 +15,8 @@ from schemas.user import (
 from auth.utils.jwt_processes import jwt_processes as jwt
 
 from auth.service.user_auth import UserAuthService
-from service.busines_service import LinkCodeService
+from service.bussines_services.link_code import LinkCodeService
+from service.bussines_services.user import UserService
 
 
 router = APIRouter(
@@ -34,7 +35,7 @@ async def registry(
         user_service = UserAuthService(session=session)
 
         # регистрация пользователя
-        user_item = await user_service.register_user(
+        user = await user_service.register_user(
             name=user.name,
             email=user.email,
             phone=user.phone,
@@ -49,9 +50,9 @@ async def registry(
         else:
             next_route = "/"
             link_code_service = LinkCodeService(session=session)
-            await link_code_service.create_link_code(user_id=user_item.id)
+            await link_code_service.create_link_code(user_id=user.id)
 
-        token = user_service.get_jwt(user=user_item)
+        token = user_service.get_jwt(user=user)
         # ссылка для перенаправления пользователя
 
         # коммит всех изменений в БД
@@ -71,12 +72,16 @@ async def login(
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Вход пользователя"""
-    user_service = UserAuthService(session=session)
+    user_auth_service = UserAuthService(session=session)
 
-    user_item = await user_service.check_login_user(
+    user = await user_auth_service.check_login_user(
         email=user.email,
         password=user.password
     )
+    token = user_auth_service.get_jwt(user=user)
 
-    token = user_service.get_jwt(user=user_item)
+    # установка пользовательских данных в redis
+    user_service = UserService(session=session)
+    await user_service.set_data_user_to_redis(user.id)
+
     return AuthTokenSchema(next_route=None, **token)

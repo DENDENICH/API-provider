@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.repositories import UserRepository
 from service.items_services.items import UserItem
-from service.items_services.to_items_functions import user_to_item
+
 
 from auth.utils.hashing_password import hashing_password
 from auth.utils.jwt_processes import jwt_processes as jwt
@@ -14,7 +14,7 @@ from auth.exception import not_found_user_register_login, already_exists_user
 class UserAuthService:
     """Класс бизнес-логики работы с пользователем"""
     def __init__(self, session: AsyncSession):
-        self.user_repo = UserRepository(session=session, to_item=user_to_item)
+        self.user_repo = UserRepository(session=session)
 
     async def check_login_user(self, email: str, password: str) -> Optional[UserItem]:
         """Получить пользователя по email"""

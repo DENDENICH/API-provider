@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status, HTTPException
 from core.db import db_core
 
 from core import settings
@@ -10,7 +10,10 @@ from schemas.organizer import (
     OrganizersResponse,
 )
 
-from service.busines_service import OrganizerService, UserService
+from service.bussines_services.user import UserService
+from service.bussines_services.organizer import OrganizerService
+from service.redis_service import redis, UserContext
+from logger import logger
 
 router = APIRouter(
     prefix=settings.api.organizers.prefix,
@@ -49,6 +52,26 @@ async def register_organizer(
     except Exception as e:
         await session.rollback()
         print(f"ORGANIZER\n{e}")
+
+    # установка пользовательских данных в redis
+    try:
+        await user_service.set_data_user_to_redis(
+            user_id=id,
+            user_context=UserContext(
+                user_company_id=admin.id,
+                user_company_role=admin.role,
+                organizer_id=organizer.id,
+                organizer_role=organizer.role
+            )
+        )
+    except Exception as e:
+        pass
+        logger.error(
+            msg="Error set user data in Redis\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     
     await session.commit()
 
