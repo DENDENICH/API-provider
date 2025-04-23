@@ -7,12 +7,12 @@ from core import settings
 
 from schemas.organizer import (
     OrganizerRegisterRequest,
-    OrganizersResponse,
 )
 
 from service.bussines_services.user import UserService
 from service.bussines_services.organizer import OrganizerService
-from service.redis_service import redis, UserContext
+from service.redis_service import UserDataRedis
+
 from logger import logger
 
 router = APIRouter(
@@ -57,7 +57,7 @@ async def register_organizer(
     try:
         await user_service.set_data_user_to_redis(
             user_id=id,
-            user_context=UserContext(
+            user_context=UserDataRedis(
                 user_company_id=admin.id,
                 user_company_role=admin.role,
                 organizer_id=organizer.id,

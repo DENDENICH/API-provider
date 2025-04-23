@@ -1,17 +1,22 @@
+from abc import ABC, abstractmethod
+from typing import Optional, Any
+from dataclasses import dataclass
+
 import redis.asyncio as aioredis
 import json
-from typing import Optional, TypedDict
+
 from logger import logger
 
-
-class UserContext(TypedDict):
+@dataclass()
+class UserDataRedis:
+    user_id: Optional[int]
     user_company_id: Optional[int]
     user_company_role: Optional[str]
     organizer_id: Optional[int]
     organizer_role: Optional[str]
 
 
-class RedisStorage:
+class RedisBase(ABC):
     __instance: dict = {}
 
     def __new__(cls, *args, **kwargs):
@@ -25,32 +30,66 @@ class RedisStorage:
             port=port
         )
 
-    async def set_user_data(
+    @abstractmethod
+    async def set_data(
             self, 
-            user_id: int, 
-            user_context: UserContext, 
-            expire: int = 86_400
+            key: Any, 
+            data: Any,
+            expire_seconds: int
     ) -> None:
-        """Установка значений пользователя"""
-        await self.redis.set(str(user_id), json.dumps(user_context), ex=expire)
+        pass
+
+    @abstractmethod
+    async def get_data(self, key: Any) -> Optional[dict]:
+        pass
+
+    @abstractmethod
+    async def delete_data(self, key: Any) -> None:
+        pass
+
+
+class RedisUser(RedisBase):
+    """Класс для работы с данными пользователя в хранилище Redis"""
+
+    async def set_data(
+            self, 
+            key: int, 
+            data: UserDataRedis, 
+            expire_seconds: int = 86_400
+    ) -> None:
+        await self.redis.set(str(key), json.dumps(data), ex=expire_seconds)
         logger.info(
-            msg=f"Set data user from redis\nid - {user_id}\ncontext - {user_context}"
+            msg=f"Set data user from redis\nid - {key}\ncontext - {data}"
         )
 
-    async def get_user_data(self, user_id: int) -> Optional[UserContext]:
-        """Получение пользователя по id"""
-        user_context = await self.redis.get(str(user_id))
-        if user_context:
+    async def get_data(self, key: int) -> Optional[UserDataRedis]:
+        data = await self.redis.get(str(key))
+        if data:
             logger.info(
-                msg=f"Get data user from redis\nid - {user_id}\ncontext - {user_context}"
+                msg=f"Get data user from redis\nid - {key}\ncontext - {data}"
             )
-            return UserContext(**json.loads(user_context))
+            return UserDataRedis(**json.loads(data))
         return None
 
-    async def delete_user_data(self, user_id: int) -> None:
-        """Удаление пользователя по id"""
-        await self.redis.delete(str(user_id))
+    async def delete_data(self, key: int) -> None:
+        await self.redis.delete(str(key))
+
+    # async def get_organizer_id_by_user_id(self, user_id: int) -> int:
+    #     user = await self.get_data(user_id)
+    #     return user.organizer_id
+    
+    # async def get_organizer_role_by_user_id(self, user_id: int) -> str:
+    #     user = await self.get_data(user_id)
+    #     return user["organizer_role"]
+    
+    # async def get_user_company_id_by_user_id(self, user_id: int) -> int:
+    #     user = await self.get_data(user_id)
+    #     return user["user_company_id"]
+
+    # async def get_user_company_role_by_user_id(self, user_id: int) -> str:
+    #     user = await self.get_data(user_id)
+    #     return user["user_company_role"]
+    
 
 
-
-redis = RedisStorage()
+redis_user = RedisUser()

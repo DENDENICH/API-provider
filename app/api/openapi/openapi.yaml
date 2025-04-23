@@ -231,6 +231,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductsResponse'
+              
 
   /products/{product_id}:
     get:

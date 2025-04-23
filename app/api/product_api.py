@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, Request, status
 from core import settings
 from core.db import db_core
 
+from api.dependencies import check_is_company, check_is_supplier
+
 from schemas.product import (
     ProductRequest,
     ProductResponse,
@@ -13,6 +15,7 @@ from schemas.product import (
 
 from service.bussines_services.product import ProductService
 from service.items_services.items import ProductItem
+from service.redis_service import UserDataRedis
 
 router = APIRouter(
     tags=settings.api.products.tags,
@@ -22,8 +25,8 @@ router = APIRouter(
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def create_product(
-    request: Request,
     product_in: ProductRequest,
+    user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     service = ProductService(session=session)
@@ -32,22 +35,20 @@ async def create_product(
 
 
 @router.get("/", response_model=ProductsResponse)
-async def get_all_products(
-    request: Request,
-    session: AsyncSession = Depends(db_core.session_getter)
+async def get_products(
+    user_data: UserDataRedis = Depends(check_is_company),
+    session: AsyncSession = Depends(db_core.session_getter),
 ):
     service = ProductService(session=session)
-    # TODO: redis хранение
-    supplier_id = None
-    products = await service.get_all_products(supplier_id)
+    #TODO: 
+    products = await service.get_available_products_for_company(user_data.organizer_id)
     return ProductsResponse(products=products)
     
 
-
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product_by_id(
-    request: Request,
     product_id: int,
+    user_data: UserDataRedis = Depends(check_is_company),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     service = ProductService(session)
@@ -57,16 +58,15 @@ async def get_product_by_id(
 
 @router.put("/{product_id}", response_model=ProductResponse)
 async def update_product(
-    request: Request,
     product_id: int,
     product_in: ProductResponse,
+    user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     service = ProductService(session)
     product = await service.update_product(
         product_id, 
-        ProductItem(product_in.model_dump()
-        )
+        **ProductItem(product_in.model_dump())
     )
     return ProductResponse(**product.dict)
     
