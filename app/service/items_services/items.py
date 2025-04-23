@@ -89,32 +89,6 @@ class LinkCodeItem(BaseItem):
         self.code = code
 
 
-class ProductItem(BaseItem):
-    """Объект продукта с полями версии продукта"""
-    def __init__(
-        self,
-        article: int,
-        product_version_id: Optional[int] = None,
-        supplier_id: Optional[int] = None,
-        name: Optional[str] = None,
-        category: Optional[str] = None,
-        description: Optional[str] = None,
-        price: Optional[float] = None,
-        img_path: Optional[str] = None,
-        id: Optional[int] = None,
-        model: Optional[Type[Model]] = None
-    ):
-        super().__init__(id=id, model=model)
-
-        self.article = article
-        self.product_version_id = product_version_id
-        self.supplier_id = supplier_id
-        self.name = name
-        self.category = category
-        self.description = description
-        self.price = price
-        self.img_path = img_path
-
 
 class SupplyItem(BaseItem):
     """Объект сущности поставки"""
@@ -198,7 +172,6 @@ __all__ = [
     "UserItem",
     "UserCompanyItem",
     "LinkCodeItem",
-    "ProductItem",
     "SupplyItem",
     "SupplyProductItem",
     "ExpenseCompanyItem",

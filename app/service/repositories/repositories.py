@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Optional, Dict, TypedDict
+from typing import Callable, Tuple, Optional, List
 
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,13 @@ from service.repositories.base_repository import(
      ItemObj
 )
 from service.items_services.items import *
-from service.redis_service import UserContext
+from service.items_services.product import (
+    ProductVersion,
+    ProductItem,
+    ProductFullItem,
+    AvailableProductForCompany
+)
+from service.redis_service import UserDataRedis
 
 
 class OrganizerRepository(BaseRepository[OrganizerModel]):
@@ -53,16 +59,18 @@ class UserRepository(BaseRepository[UserModel]):
 
     async def get_by_email(self, email: str) -> Optional[UserItem]:
         """Получить пользователя по email"""
-        result = await self.session.execute(select(UserModel).filter(UserModel.email == email))
+        result = await self.session.execute(
+            select(self.model).filter(self.model.email == email)
+        )
         model = result.scalar_one_or_none()
         return self.item(**model.dict, model=model) if model is not None else None
     
     async def get_user_with_company(self, user_id: int) -> Tuple[Optional[UserItem], Optional[UserCompanyItem]]:
         """Получить пользователя и его связь с компанией по user_id"""
         stmt = (
-            select(UserModel)
-            .options(joinedload(UserModel.user_company))
-            .filter(UserModel.id == user_id)
+            select(self.model)
+            .options(joinedload(self.model.user_company))
+            .filter(self.model.id == user_id)
         )
         result = await self.session.execute(stmt)
         user_model = result.scalar_one_or_none()
@@ -97,7 +105,7 @@ class UserRepository(BaseRepository[UserModel]):
         user_item = self.item(**user_model.dict, model=user_model) if link_code_model.user else None
         return user_item
     
-    async def get_user_context_by_user_id(self, user_id: int) -> Optional[UserContext]:
+    async def get_user_context_by_user_id(self, user_id: int) -> Optional[UserDataRedis]:
         """Получить контекст пользователя по user_id"""
         stmt = (
             select(
@@ -111,7 +119,7 @@ class UserRepository(BaseRepository[UserModel]):
         )
         result = await self.session.execute(stmt)
         row = result.mappings().first()
-        return UserContext(**dict(row)) if row else None
+        return UserDataRedis(**dict(row)) if row else None
 
 
 class UserCompanyRepository(BaseRepository[UserCompanyModel]):
@@ -124,7 +132,7 @@ class UserCompanyRepository(BaseRepository[UserCompanyModel]):
 
     async def get_by_user_id(self, user_id: int) -> Optional[UserCompanyItem]:
         result = await self.session.execute(
-            select(UserCompanyModel).filter(UserCompanyModel.user_id == user_id)
+            select(self.model).filter(self.model.user_id == user_id)
         )
         model = result.scalar_one_or_none()
         return self.item(**model.dict, model=model) if model is not None else None
@@ -153,7 +161,7 @@ class LinkCodeRepository(BaseRepository[LinkCodeModel]):
 
     async def get_code_by_user_id(self, user_id: int) -> Optional[LinkCodeItem]:
         result = await self.session.execute(
-            select(LinkCodeModel).filter(LinkCodeModel.user_id == user_id)
+            select(self.model).filter(self.model.user_id == user_id)
             )
         model = result.scalar_one_or_none()
         return self.item(**model.dict, model=model) if model is not None else None
@@ -165,33 +173,87 @@ class ProductRepository(BaseRepository[ProductModel]):
             self, 
             session: AsyncSession,
     ):
-        super().__init__(LinkCodeModel, session=session, item=ProductItem)
+        super().__init__(ProductModel, session=session, item=ProductItem)
 
-    async def get_available_products_for_company(company_id: int):
-        """Получить все доступные товары для компании по её ID"""
-        pass
+    async def get_by_id_full_product(self, id: int) -> ProductFullItem:
+        """Получить объект по ID"""
+        result = await self.session.execute(
+            select(
+                self.model.id,
+                self.model.article,
+                ProductVersionModel.name,
+                ProductVersionModel.category,
+                ProductVersionModel.price,
+                ProductVersionModel.description,
+                ProductVersionModel.img_path
+            )
+            .join(
+                ProductVersionModel, 
+                self.model.product_version_id == ProductVersionModel.id
+            )
+            .where(self.model.id == id)
+        )
+        product = result.mappings().first()
+        return self.item(**dict(product)) if product is not None else None
 
-    async def get_all_products(self, supplier_id: int, limit: int = 20):
+    async def get_all_products(
+            self, 
+            supplier_id: int, 
+            limit: int = 20
+    ) -> List[ProductFullItem]:
         """Получение всех продуктов"""
         stmt = (
             select(
-                ProductModel.id,
+                self.model.id,
+                self.model.article,
                 ProductVersionModel.name,
                 ProductVersionModel.category,
-                ProductVersionModel.description,
-                ProductVersionModel.price
+                ProductVersionModel.price,
+                ProductVersionModel.img_path
             )
-            .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
-            .where(ProductModel.supplier_id == supplier_id)
+            .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
+            .where(self.model.supplier_id == supplier_id)
             .limit(limit)
         )
         result = await self.session.execute(stmt)
-        product_model_list = result.scalars()
+        products = result.mappings().all()
 
-        if product_model_list is None:
+        if products is None:
             return None
         
-        products = [self.item(**model.dict) for model in product_model_list]
+        products = [ProductFullItem(**dict(p)) for p in products]
+
+        return products
+    
+    async def get_available_products_for_company(
+            self, 
+            company_id: int,
+            limit: int = 100        
+    ) -> List[AvailableProductForCompany]:
+        """Получить все доступные товары для компании по её ID"""
+        stmt = (
+            select(
+                self.model.id,
+                self.model.article,
+                ProductVersionModel.name,
+                ProductVersionModel.category,
+                ProductVersionModel.price,
+                ProductVersionModel.img_path,
+                OrganizerModel.name.label("organizer_name")
+            )
+            .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
+            .join(OrganizerModel, OrganizerModel.id == self.model.supplier_id)
+            .join(ContractModel, ContractModel.supplier_id == self.model.supplier_id)
+            .where(ContractModel.company_id == company_id)
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        products = result.mappings().all()
+
+        if products is None:
+            return None
+        
+        products = [AvailableProductForCompany(**dict(p)) for p in products]
 
         return products
 
@@ -202,7 +264,7 @@ class ProductVersionRepository(BaseRepository[ProductVersionModel]):
             self, 
             session: AsyncSession,
     ):
-        super().__init__(ProductVersionModel, session=session, item=ProductItem)
+        super().__init__(ProductVersionModel, session=session, item=ProductVersion)
 
 
 class SupplyRepository(BaseRepository[SupplyModel]):

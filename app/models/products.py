@@ -1,10 +1,6 @@
 from typing import TypedDict
 from sqlalchemy import (
-    String,
-    Integer,
-    Enum,
-    Text,
-    Numeric,
+    BigInteger,
     ForeignKey
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -23,7 +19,7 @@ class Product(Base):
     """Таблица товаров"""
 
     article: Mapped[int] = mapped_column(
-        Integer,
+        BigInteger,
         nullable=False,
         unique=True
     )

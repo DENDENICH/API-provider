@@ -51,7 +51,6 @@ async def lifespan(app: FastAPI):
     await db_core.dispose()
 
 
-
 class AuthorizeRequestMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint

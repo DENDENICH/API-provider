@@ -15,7 +15,8 @@ class ProductVersionDict(TypedDict):
     name: str
     category: str
     price: float
-    img_path: str 
+    img_path: str
+    description: str 
 
 
 class ProductVersion(Base):
@@ -75,6 +76,7 @@ class ProductVersion(Base):
             name=self.name,
             category=self.category,
             price=self.price,
-            img_path=self.img_path
+            img_path=self.img_path,
+            description=self.description
         )
     

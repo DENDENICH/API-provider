@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import Optional, List
-from pydantic import BaseModel, ConfigDict
+from typing import List, Optional
+from pydantic import BaseModel
 
 
 class ProductCategory(str, Enum):
@@ -27,7 +27,7 @@ class ProductRequest(ProductBase):
 class ProductResponse(ProductBase):
     id: int
     article: int
-    description: str
+    description: Optional[str]
 
 
 class ProductResponseSupply(ProductBase):
