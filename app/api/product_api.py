@@ -30,7 +30,10 @@ async def create_product(
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     service = ProductService(session=session)
-    product = await service.create_product(**product_in.model_dump())
+    product = await service.create_product(
+        user_data=user_data,
+        **product_in.model_dump()
+    )
     return ProductResponse(id=product.id, **product.dict)
 
 
@@ -40,7 +43,6 @@ async def get_products(
     session: AsyncSession = Depends(db_core.session_getter),
 ):
     service = ProductService(session=session)
-    #TODO: 
     products = await service.get_available_products_for_company(user_data.organizer_id)
     return ProductsResponse(products=products)
     

@@ -1,19 +1,30 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Any
-from dataclasses import dataclass
 
 import redis.asyncio as aioredis
 import json
 
 from logger import logger
 
-@dataclass()
+
 class UserDataRedis:
-    user_id: Optional[int]
-    user_company_id: Optional[int]
-    user_company_role: Optional[str]
-    organizer_id: Optional[int]
-    organizer_role: Optional[str]
+    def __init__(
+            self,
+            user_id: int = None,
+            user_company_id: int = None,
+            user_company_role: str = None,
+            organizer_id: int = None,
+            organizer_role: str = None
+        ):
+        self.user_id = user_id
+        self.user_company_id = user_company_id
+        self.user_company_role = user_company_role
+        self.organizer_id = organizer_id
+        self.organizer_role = organizer_role 
+        
+    @property
+    def to_dict(self):
+        return self.__dict__
 
 
 class RedisBase(ABC):
@@ -57,7 +68,7 @@ class RedisUser(RedisBase):
             data: UserDataRedis, 
             expire_seconds: int = 86_400
     ) -> None:
-        await self.redis.set(str(key), json.dumps(data), ex=expire_seconds)
+        await self.redis.set(str(key), json.dumps(data.to_dict), ex=expire_seconds)
         logger.info(
             msg=f"Set data user from redis\nid - {key}\ncontext - {data}"
         )

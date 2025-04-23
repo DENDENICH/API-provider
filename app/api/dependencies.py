@@ -20,7 +20,7 @@ async def check_is_admin(request: Request) -> UserDataRedis:
     user_id = request.state.user_id
     if (user_data := await redis_user.get_data(user_id)) is None:
         raise not_found_error
-    if user_data.user_company_role != UserRoleType.admin:
+    if user_data.organizer_role != UserRoleType.admin:
         raise forbiden_error
     return user_data
 
@@ -28,7 +28,7 @@ async def check_is_supplier(request: Request) -> UserDataRedis:
     user_id = request.state.user_id
     if (user_data := await redis_user.get_data(user_id)) is None:
         raise not_found_error
-    if user_data.user_company_role != OrganizerRole.supplier:
+    if user_data.organizer_role != OrganizerRole.supplier:
         raise forbiden_error
     return user_data
 
@@ -36,6 +36,6 @@ async def check_is_company(request: Request) -> UserDataRedis:
     user_id = request.state.user_id
     if (user_data := await redis_user.get_data(user_id)) is None:
         raise not_found_error
-    if user_data.user_company_role != OrganizerRole.company:
+    if user_data.organizer_role != OrganizerRole.company:
         raise forbiden_error
     return user_data
