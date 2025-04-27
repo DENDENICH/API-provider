@@ -318,8 +318,28 @@ paths:
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
 
+    patch:
+      summary: Принять/отклонить поставку
+      tags:
+        - Поставки
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplyAssembleCancelled'
+      responses:
+        "204":
+          description: No content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplyResponse'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
   /supplies/{supply_id}/status:
-    put:
+    patch:
       summary: Изменить статус поставки
       tags:
         - Поставки
@@ -649,11 +669,29 @@ components:
               quantity:
                 type: integer
 
+    SupplyAssembleCancelled:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [
+            cancelled,
+            assembled
+          ]
 
     SupplyResponse:
       type: object
       properties:
         supplier:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        company:
           type: object
           properties:
             id:
@@ -673,8 +711,6 @@ components:
           type: string
         article:
           type: integer
-        supplier_id:
-          type: integer
         delivery_address:
           type: string
         total_price:
@@ -682,7 +718,13 @@ components:
           format: float
         status:
           type: string
-          enum: [in_processing, assembled, in_delivery, adopted]
+          enum: [
+            assembled, 
+            in_delivery, 
+            adopted,
+            delivered,
+            cancelled
+          ]
         create_datetime: 
           type: string
         delivery_datetime:
@@ -701,7 +743,12 @@ components:
       properties:
         status:
           type: string
-          enum: [in_processing, assembled, in_delivery, adopted]
+          enum:  [
+            assembled, 
+            in_delivery, 
+            adopted,
+            delivered,
+          ]
 
     # Схемы товаров в поставках
     SuppliersResponse:
