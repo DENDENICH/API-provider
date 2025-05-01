@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Iterable
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.repositories import (
@@ -100,6 +100,15 @@ class ProductService:
         if (product := await self.product_repo.get_by_id_full_product(product_id)) is None:
             raise not_found_error
         return product
+    
+    async def get_products_version_by_product_ids(
+            self, 
+            product_ids: Iterable[int]
+    ) -> Iterable[ProductVersion]:
+        """Получить все версии продуктов по id"""
+        if (products_version := await self.version_repo.get_products_version_by_products_ids(product_ids)) is None:
+            raise not_found_error
+        return products_version
     
     async def update_product(
             self, 

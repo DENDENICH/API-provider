@@ -1,33 +1,6 @@
-from typing import Optional, Type
+from typing import Optional, Type, Iterable
 
 from .base import Model, BaseItem
-
-
-# class ProductItem(BaseItem):
-#     """Объект продукта с полями версии продукта"""
-#     def __init__(
-#         self,
-#         article: Optional[int] = None,
-#         product_version_id: Optional[int] = None,
-#         supplier_id: Optional[int] = None,
-#         name: Optional[str] = None,
-#         category: Optional[str] = None,
-#         description: Optional[str] = None,
-#         price: Optional[float] = None,
-#         img_path: Optional[str] = None,
-#         id: Optional[int] = None,
-#         model: Optional[Type[Model]] = None
-#     ):
-#         super().__init__(id=id, model=model)
-
-#         self.article = article
-#         self.product_version_id = product_version_id
-#         self.supplier_id = supplier_id
-#         self.name = name
-#         self.category = category
-#         self.description = description
-#         self.price = price
-#         self.img_path = img_path
 
 
 class ProductVersion(BaseItem):
@@ -111,3 +84,10 @@ class ProductFullItem(BaseItem):
         self.description = description
         self.price = price
         self.img_path = img_path
+
+
+def get_ids_from_products_version(
+        products: Iterable[ProductVersion]
+) -> Iterable[int]:
+    """Получить список id продуктов из списка версий продуктов"""
+    return [product.id for product in products]
