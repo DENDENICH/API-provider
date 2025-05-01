@@ -684,6 +684,8 @@ components:
     SupplyResponse:
       type: object
       properties:
+        id:
+          type: integer
         supplier:
           type: object
           properties:

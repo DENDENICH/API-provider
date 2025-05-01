@@ -1,8 +1,21 @@
 from typing import Optional, List
+from enum import Enum
 from pydantic import BaseModel, ConfigDict
 
 from organizer import OrganizerSupplyObject
 from product import ProductResponseSupply
+
+
+class CancelledAssembleStatus(str, Enum):
+    cancelled = "cancelled"
+    assemble = "assemble"
+
+class StatusForUpdate:
+    assemble = "assemble"
+    in_delivery = "in_delivery"
+    adopted = "adopted"
+    delivery = "delivery"
+
 
 class SupplyBase(BaseModel):
     supplier_id: int
@@ -11,27 +24,37 @@ class SupplyBase(BaseModel):
 
 
 class SupplyProduct(BaseModel):
+    """Сущность продукта в поставке"""
     product: ProductResponseSupply
     quantity: int
 
 
+class SupplyProductCreate(BaseModel):
+    product_id: int
+    quantity: int
+
+
 class SupplyCreateRequest(SupplyBase):
-    supply_products: List[SupplyProduct]
+    supply_products: List[SupplyProductCreate]
 
 
 class SupplyResponse(SupplyBase):
     supplier: OrganizerSupplyObject
-    supply_products: List[ProductResponseSupply]
-    couriers_phone: str
+    supply_products: List[SupplyProduct]
+    # couriers_phone: str
     article: int
     status: str
     create_datetime: str
-    delivery_datetime: Optional[str]
+    # delivery_datetime: Optional[str]
 
 
 class SuppliesResponse(BaseModel):
     supplies: List[SupplyResponse]
 
 
+class SuppliesCancelledAssembleStatus(BaseModel):
+    status: CancelledAssembleStatus
+
+
 class SupplyStatusUpdate(BaseModel):
-    status: str
+    status: StatusForUpdate
