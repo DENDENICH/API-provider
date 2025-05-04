@@ -28,19 +28,6 @@ router = APIRouter(
 )
 
 
-# @router.get("/company", response_model=UserSchema)
-# async def get_user_company(
-#     link_code: Optional[int] = Query(None),
-#     session: AsyncSession = Depends(db_core.session_getter)
-# ):
-#     """Получить пользователя по пригласительному коду"""
-#     user_service = UserService(session=session)
-#     user = await user_service.get_user_by_link_code(
-#         link_code=link_code
-#     )
-#     return UserSchema(id=user.id, **user.dict)
-
-
 @router.post("/company", status_code=status.HTTP_201_CREATED)
 async def add_user_to_company(
     data: UserCompanySchema,
