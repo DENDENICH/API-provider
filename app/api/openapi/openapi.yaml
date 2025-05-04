@@ -114,46 +114,19 @@ paths:
             schema:
               type: object
               properties:
-                user_id:
+                link_code:
                   type: integer
                 role:
                   type: string
                   enum: ["manager", "employee"]
       responses:
-        '201':
-          description: ОК
+        '204':
+          description: No content
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-    get:
-      summary: Получение пользователя по пригласительному коду
-      tags:
-        - Пользователи
-      operationId: getUserByLinkCode
-      parameters:
-        - name: link_code
-          in: query
-          required: false
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: ОК
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  name: 
-                    type: string
-                  email: 
-                    type: string
-        "422":
-          $ref: '#/components/responses/UnprocessableEntity'
-    
+
     delete:
-      summary: Привязка пользователя к уч. записи компании
+      summary: Удаление уч. записи пользователя из компании
       tags:
         - Пользователи
       operationId: deleteUserByLinkCode
@@ -337,6 +310,25 @@ paths:
                 $ref: '#/components/schemas/SupplyResponse'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
+
+  /supplies/{supply_id}:
+    get:
+      summary: Получить информацию о поставке
+      tags:
+        - Поставки
+      parameters:
+      - name: supply_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Список поставок
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplyResponse'
 
   /supplies/{supply_id}/status:
     patch:
