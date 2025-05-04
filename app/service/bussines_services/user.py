@@ -30,22 +30,25 @@ class UserService:
             raise not_found_error
         return user
 
-    async def get_user_by_link_code(self, link_code: int) -> Optional[UserItem]:
+    async def _get_user_by_link_code(self, link_code: int) -> Optional[UserItem]:
         """Получение пользователя по пригласительному коду LinkCodeModel"""
         if (user_item := await self.user_repo.get_user_by_link_code(link_code)) is None:
             raise not_found_error
         return user_item
 
-    async def assign_user_to_company(
+    async def assign_user_to_company_by_link_code(
             self,
             user_data: UserDataRedis,
-            user_to_company_id: int, 
+            link_code: int,
             role: str,
     ) -> UserCompanyItem:
         """Назначить пользователя в компанию с ролью"""
+
+        user = await self._get_user_by_link_code(link_code)
+
         user_company = UserCompanyItem(
             organizer_id=user_data.organizer_id, 
-            user_id=user_to_company_id, 
+            user_id=user.id,
             role=role
         )
         return await self.user_company_repo.create(user_company)
