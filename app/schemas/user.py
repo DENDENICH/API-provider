@@ -27,7 +27,7 @@ class UserSchema(UserBase):
 
 class UserCompanySchema(BaseModel):
     """Модель уч. записи пользователя в компании"""
-    id: int
+    link_code: int
     role: UserRole
 
 class UserRegisterRequest(UserBase):
