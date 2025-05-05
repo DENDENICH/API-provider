@@ -35,6 +35,9 @@ from app.service.items_services.supply import (
     SupplyItem
 )
 
+from service.items_services.organizer import OrganizerItem
+from service.items_services.contract import ContractItem
+
 from service.redis_service import UserDataRedis
 
 
@@ -45,6 +48,17 @@ class OrganizerRepository(BaseRepository[OrganizerModel]):
             session: AsyncSession,
     ):
         super().__init__(OrganizerModel, session=session, item=OrganizerItem)
+    
+    async def get_supplier_by_inn(self, inn: str) -> Optional[OrganizerItem]:
+        """Получить поставщика по его ИНН"""
+        result = await self.session.execute(
+            select(self.model).filter(
+                self.model.inn == inn,
+                self.model.role == "supplier"
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self.item(**model.dict, model=model) if model is not None else None
 
 
 class ContactRepository(BaseRepository[ContractModel]):
@@ -69,6 +83,30 @@ class ContactRepository(BaseRepository[ContractModel]):
         )
         model = result.scalar_one_or_none()
         return self.item(**model.dict, model=model) if model else None
+
+    async def get_supplier_available_company(self, company_id: int) -> List[OrganizerItem]:
+        """Получить поставщиков с которыми заключены контракты"""
+        stmt = (
+            select(OrganizerModel)
+            .join(self.model, self.model.supplier_id == OrganizerModel.id)
+            .where(self.model.company_id == company_id)
+        )
+        result = await self.session.execute(stmt)
+        suppliers = result.scalars().all()
+        return [self.item(**supplier.dict, model=supplier) for supplier in suppliers]
+    
+    async def delete(self, supplier_id: int, company_id: int) -> bool:
+        """Удалить контракт по id поставщика"""
+        stmt = (
+            delete(self.model)
+            .where(
+                self.model.supplier_id == supplier_id,
+                self.model.company_id == company_id
+            )
+        )
+        result = await self.session.execute(stmt)
+        # Возвращаем False, если результат изменения = 0
+        return False if result.rowcount == 0 else True
 
 
 class UserRepository(BaseRepository[UserModel]):

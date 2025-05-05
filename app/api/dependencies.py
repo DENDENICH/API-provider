@@ -42,3 +42,4 @@ async def check_is_company(
     if user_data.organizer_role != OrganizerRole.company:
         raise forbiden_error
     return user_data
+
