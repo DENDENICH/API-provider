@@ -5,14 +5,15 @@ from .base import Model, BaseItem
 
 class OrganizerItem(BaseItem):
     """Объект организации"""
-    def __init__(self,
-                 role: str,
-                 name: str,
-                 address: str,
-                 inn: str,
-                 bank_details: str,
-                 id: Optional[int] = None, 
-                 model: Optional[Type[Model]] = None
+    def __init__(
+            self,
+            role: str,
+            name: str,
+            address: str,
+            inn: str,
+            bank_details: str,
+            id: Optional[int] = None, 
+            model: Optional[Type[Model]] = None
     ):
         super().__init__(id=id, model=model)
         
@@ -98,6 +99,7 @@ class SupplyItem(BaseItem):
         supplier_id: int,
         company_id: int,
         status: str,  # "в обработке", "собран", "в доставке", "доставлен"
+        is_wait_confirm: bool,
         delivery_address: str,
         total_price: float = 0.0,
         id: Optional[int] = None,
@@ -111,6 +113,7 @@ class SupplyItem(BaseItem):
         self.status = status
         self.delivery_address = delivery_address
         self.total_price = total_price
+        self.is_wait_confirm = is_wait_confirm
         # свойство - список supply products
 
 class SupplyProductItem(BaseItem):

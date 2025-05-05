@@ -1,8 +1,8 @@
-from typing import Callable, Tuple, Optional, List
+from typing import Callable, Tuple, Optional, List, Iterable
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, aliased
 
 from models import( 
     Organizer as OrganizerModel,
@@ -28,6 +28,13 @@ from service.items_services.product import (
     ProductFullItem,
     AvailableProductForCompany
 )
+from app.service.items_services.supply import (
+    SupplyCreateItem,
+    SupplyProductItem,
+    SupplyResponseItem,
+    SupplyItem
+)
+
 from service.redis_service import UserDataRedis
 
 
@@ -45,8 +52,23 @@ class ContactRepository(BaseRepository[ContractModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[ContractModel], ItemObj]):
-        super().__init__(ContractModel, session=session, to_item=to_item)
+    ):
+        super().__init__(ContractModel, session=session, item=ContractModel)
+
+    async def get_by_company_and_supplier_id(
+            self, 
+            company_id: int,
+            supplier_id: int
+        ) -> Optional[ContractItem]:
+        """Получить контракт по company_id и supplier_id"""
+        result = await self.session.execute(
+            select(self.model).filter(
+                self.model.company_id == company_id,
+                self.model.supplier_id == supplier_id
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self.item(**model.dict, model=model) if model else None
 
 
 class UserRepository(BaseRepository[UserModel]):
@@ -256,7 +278,7 @@ class ProductRepository(BaseRepository[ProductModel]):
         products = [AvailableProductForCompany(**dict(p)) for p in products]
 
         return products
-
+    
 
 class ProductVersionRepository(BaseRepository[ProductVersionModel]):
     """Репозиторий бизнес логики работы с версией товара"""
@@ -266,6 +288,18 @@ class ProductVersionRepository(BaseRepository[ProductVersionModel]):
     ):
         super().__init__(ProductVersionModel, session=session, item=ProductVersion)
 
+    async def get_products_version_by_products_ids(
+            self,
+            products_ids: Iterable[int]
+    ) -> Iterable[ProductItem]:
+        """Получить id всех версий продуктов по id продуктов"""
+        stmt = (
+            select(ProductModel.product_version)
+            .where(ProductModel.id.in_(products_ids))
+        )
+        result = await self.session.execute(stmt)
+        products_version: Iterable[ProductVersionModel] = result.scalars().all()
+        return [self.item(**p.dict()) for p in products_version]
 
 class SupplyRepository(BaseRepository[SupplyModel]):
     """Репозиторий бизнес логики работы с поставкой"""
@@ -275,6 +309,64 @@ class SupplyRepository(BaseRepository[SupplyModel]):
             to_item: Callable[[LinkCodeModel], ItemObj]):
         super().__init__(LinkCodeModel, session=session, to_item=to_item)
 
+    async def update(
+            self,
+            obj: SupplyItem,
+            supplier_id: int
+    ) -> Optional[SupplyItem]:
+        """Обновить объект поставки"""
+        query = update(self.model).where(
+            self.model.id == obj.id, self.model.supplier_id == supplier_id
+        ).values(**obj.dict).returning(self.model)
+        
+        result = await self.session.execute(query)
+        model = result.scalar_one_or_none()
+        return self.item(**model.dict, model=model) if model is not None else None
+
+    async def get_all_by_organizer_id(
+            self, 
+            supplier_id: Optional[int] = None,
+            company_id: Optional[int] = None        
+    ) -> Optional[List[SupplyResponseItem]]:
+        """Получить все поставки по id поставщика"""
+        supplier = aliased(OrganizerModel)
+        company = aliased(OrganizerModel)
+
+        stmt = (
+            select(
+                self.model.id,
+                self.model.article,
+                self.model.delivery_address,
+                self.model.total_price,
+                self.model.status,
+                self.model.created_at,
+
+                supplier.id.label("supplier_id"),
+                supplier.name.label("supplier_name"),
+
+                company.id.label("company_id"),
+                company.name.label("company_name"),
+
+                SupplyProductModel.quantity,
+                
+                ProductModel.id.label("product_id"),
+                ProductModel.article.label("product_article"),
+                ProductVersionModel.name.label("product_name"),
+                ProductVersionModel.category.label("product_category"),
+                ProductVersionModel.price.label("product_price")
+            )
+            .join(supplier, SupplyModel.supplier_id == supplier_id or supplier.id)
+            .join(company, SupplyModel.company_id == company_id or company.id)
+            .join(SupplyProductModel, SupplyModel.id == SupplyProductModel.supply_id)
+            .join(ProductModel, ProductVersionModel.product)
+            .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
+            .where(SupplyModel.supplier_id == supplier_id)
+        )
+        result = await self.session.execute(stmt)
+        if (supplies := result.mappings().all()) is None:
+            return None
+        return [SupplyResponseItem.get_from_dict(dict(supply)) for supply in supplies]
+    
 
 class SupplyProductRepository(BaseRepository[SupplyProductModel]):
     """Репозиторий бизнес логики работы c продуктом в поставке"""
@@ -283,6 +375,14 @@ class SupplyProductRepository(BaseRepository[SupplyProductModel]):
             session: AsyncSession,
             to_item: Callable[[LinkCodeModel], ItemObj]):
         super().__init__(LinkCodeModel, session=session, to_item=to_item)
+
+    async def create_all(
+            self, 
+            products: Iterable[SupplyProductItem]
+    ) -> None:
+        """Создать объекты"""
+        models = [self.model(**product.dict) for product in products]
+        self.session.add_all(models)
 
 
 class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):

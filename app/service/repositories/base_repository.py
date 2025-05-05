@@ -63,9 +63,16 @@ class BaseRepository(Generic[Model]):
         return self.item(**model.dict, model=model)
 
 
-    async def update(self, obj_id: int, obj: Type[ItemObj]) -> Optional[Type[ItemObj]]:
+    async def update(
+            self, 
+            obj: Type[ItemObj],
+            obj_id: Optional[int] = None, 
+    ) -> Optional[Type[ItemObj]]:
         """ Обновить объект по ID """
-        query = update(self.model).where(self.model.id == obj_id).values(**obj.dict).returning(self.model)
+        query = update(self.model).where(
+            self.model.id == obj_id or self.model.id == obj.id
+        ).values(**obj.dict).returning(self.model)
+        
         result = await self.session.execute(query)
         model = result.scalar_one_or_none()
         return self.item(**model.dict, model=model) if model is not None else None

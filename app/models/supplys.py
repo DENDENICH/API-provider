@@ -13,12 +13,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.db import Base
 
 
-class SuppliesDict(TypedDict):
+class SupplyDict(TypedDict):
     id: int
     article: int
     supplier_id: int
     company_id: int
     status: str
+    is_wait_confirm: bool
     delivery_address: str
     total_price: float
 
@@ -55,13 +56,9 @@ class Supply(Base):
         ),
         nullable=False,
     )
-    is_assembled: Mapped[bool] = mapped_column(
+    is_wait_confirm: Mapped[bool] = mapped_column(
         Boolean,
-        nullable=True
-    )
-    is_cancelled: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=True
+        nullable=False
     )
     delivery_address: Mapped[str] = mapped_column(
         Text,
@@ -91,12 +88,13 @@ class Supply(Base):
 
     @property
     def dict(self):
-        return SuppliesDict(
+        return SupplyDict(
             id=self.id,
             article=self.article,
             supplier_id=self.supplier_id,
             company_id=self.company_id,
             status=self.status,
+            is_wait_confirm=self.is_wait_confirm,
             delivery_address=self.delivery_address,
             total_price=self.total_price
         )

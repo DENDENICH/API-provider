@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.repositories import *
-from service.items_services.items import *
+from service.repositories import LinkCodeRepository
+from service.items_services.items import LinkCodeItem
 
 from utils import generate_unique_code
 
