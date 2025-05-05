@@ -34,8 +34,6 @@ from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
 
 from auth.utils.jwt_processes import jwt_processes as jwt
-
-
 # системные параметры
 
 # Включение/выключение аутентификации. Используется False при дебаге

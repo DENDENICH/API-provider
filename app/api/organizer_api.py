@@ -58,6 +58,7 @@ async def register_organizer(
         await user_service.set_data_user_to_redis(
             user_id=id,
             user_context=UserDataRedis(
+                user_id=admin.id,
                 user_company_id=admin.id,
                 user_company_role=admin.role,
                 organizer_id=organizer.id,
