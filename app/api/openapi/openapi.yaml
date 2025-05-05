@@ -361,9 +361,22 @@ paths:
 
   /suppliers:
     get:
-      summary: Получить список поставщиков (фильтр - название)
+      summary: Получить список поставщиков
       tags:
         - Поставщики
+      # parameters:
+      #   - name: is_company_contracts
+      #     in: query
+      #     required: true
+      #     description: Только поставщики, заключившие контракт с компанией
+      #     schema:
+      #       type: boolean
+      #   - name: inn
+      #     in: query
+      #     required: false
+      #     description: ИНН компании
+      #     schema:
+      #       type: integer
       responses:
         "200":
           description: Список поставщиков
@@ -371,6 +384,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuppliersResponse'
+                
+  /suppliers/{supplier_inn}:
+    get:
+      summary: Получить поставщика по ИНН
+      tags:
+        - Поставщики
+      parameters:
+        - name: supplier_inn
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Список поставщиков
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
   /suppliers/{supplier_id}:
     post:
@@ -722,26 +758,29 @@ components:
             adopted,
             delivered,
           ]
+    
+    SupplierResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+        inn:
+          type: string
+        bank_details:
+          type: string
+    
 
-    # Схемы товаров в поставках
     SuppliersResponse:
       type: object
       properties:
         organizers:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              address:
-                type: string
-              inn:
-                type: string
-              bank_details:
-                type: string
+            $ref: '#/components/schemas/SupplierResponse'
 
 
     # Схемы товаров
