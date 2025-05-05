@@ -412,27 +412,6 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 
-  /suppliers/products/{supplier_id}:
-    get:
-      summary: Получить список продуктов поставщика
-      tags:
-        - Поставщики
-      parameters:
-        - name: supplier_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Список продуктов поставщика
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductsResponse'
-        "404":
-          $ref: '#/components/responses/NotFound'
-
   /expenses/:
     get:
       summary: Получить все расходы
@@ -676,6 +655,8 @@ components:
     SupplyResponse:
       type: object
       properties:
+        id:
+          type: integer
         supplier:
           type: object
           properties:
