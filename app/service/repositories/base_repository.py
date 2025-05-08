@@ -84,14 +84,3 @@ class BaseRepository(Generic[Model]):
         result = await self.session.execute(query)
         model = result.scalar_one_or_none()
         return self.item(**model.dict, model=model) if model is not None else None
-
-
-# def payload_to_item(
-#         payload: dict, 
-#         obj_item: Type[ItemObj], 
-#         model: Optional[Type[Model]] = None
-# ) -> ItemObj:
-#     """
-#     Универсальная функция для создания бизнес-объекта из словаря
-#     """
-#     return obj_item(**payload, model_=model)

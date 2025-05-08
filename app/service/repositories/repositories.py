@@ -34,10 +34,13 @@ from app.service.items_services.supply import (
     SupplyResponseItem,
     SupplyItem
 )
-
 from service.items_services.organizer import OrganizerItem
 from service.items_services.contract import ContractItem
-
+from service.items_services.expense import (
+    ExpenseWithInfoProductItem,
+    ExpenseSupplierItem,
+    ExpenseCompanyItem
+)
 from service.redis_service import UserDataRedis
 
 
@@ -428,8 +431,83 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[LinkCodeModel], ItemObj]):
-        super().__init__(LinkCodeModel, session=session, to_item=to_item)
+    ):
+        super().__init__(LinkCodeModel, session=session, item=ExpenseCompanyModel)
+
+    async def get_all_expense_response_items(
+            self, 
+            company_id: int
+    ) -> Optional[List[ExpenseWithInfoProductItem]]:
+        """Получить все расходы по company_id"""
+        stmt = (
+            select(
+                self.model.id,
+                self.model.product_version_id.label("product_id"),
+                self.model.quantity,
+                ProductModel.article,
+                ProductVersionModel.name.label("product_name"),
+                ProductVersionModel.category,
+                OrganizerModel.name.label("supplier_name")
+            )
+            .join(OrganizerModel, OrganizerModel.id == ProductModel.supplier_id)
+            .join(ProductModel, ProductModel.product_version_id == ProductVersionModel.id)
+            .join(ProductVersionModel, self.model.product_version)    
+            .where(self.model.company_id == company_id)
+        )
+        result = await self.session.execute(stmt)
+        expenses = result.mappings().all()
+        if expenses is None:
+            return None
+        expenses_items = [
+            ExpenseWithInfoProductItem(**dict(expense)) for expense in expenses
+            ]
+        return expenses_items
+    
+    async def get_expense_response_items(
+            self, 
+            company_id: int,
+            product_version_id: int
+    ) -> Optional[ExpenseWithInfoProductItem]:
+        """Получить расход по company_id и product_version_id"""
+        stmt = (
+            select(
+                self.model.id,
+                self.model.product_version_id.label("product_id"),
+                self.model.quantity,
+                ProductModel.article,
+                ProductVersionModel.name.label("product_name"),
+                ProductVersionModel.category,
+                ProductVersionModel.description,
+                OrganizerModel.name.label("supplier_name")
+            )
+            .join(OrganizerModel, OrganizerModel.id == ProductModel.supplier_id)
+            .join(ProductModel, ProductModel.product_version_id == ProductVersionModel.id)
+            .join(ProductVersionModel, self.model.product_version)    
+            .where(
+                self.model.company_id == company_id,
+                self.model.product_version_id == product_version_id
+            )
+        )
+        result = await self.session.execute(stmt)
+        expense = result.mappings().first()
+        return ExpenseWithInfoProductItem(**dict(expense)) if expense is not None else None
+    
+    async def get_by_expense_and_company_id(
+            self,
+            expense_id: int,
+            company_id: int
+    ) -> ExpenseCompanyItem:
+        """Получение сущности расхода по id компании и расхода"""
+        stmt = (
+            select(self.model)
+            .where(
+                self.model.id == expense_id,
+                self.model.company_id == company_id
+            )
+        )
+        result = await self.session.execute(stmt)
+        expense = result.scalar_one_or_none()
+        return ExpenseCompanyItem(**expense.dict) if expense is not None else None
 
 
 class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
@@ -437,5 +515,99 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[LinkCodeModel], ItemObj]):
-        super().__init__(LinkCodeModel, session=session, to_item=to_item)
+    ):
+        super().__init__(LinkCodeModel, session=session, item=ExpenseSupplierModel)
+
+    async def get_all_expense_response_items(
+            self, 
+            supplier_id: int
+    ) -> Optional[List[ExpenseWithInfoProductItem]]:
+        """Получить все расходы по supplier_id"""
+        stmt = (
+            select(
+                self.model.id,
+                self.model.product_id,
+                self.model.quantity,
+                ProductModel.article,
+                ProductVersionModel.name.label("product_name"),
+                ProductVersionModel.category,
+                OrganizerModel.name.label("supplier_name")
+            )
+            .join(OrganizerModel, self.model.supplier)
+            .join(ProductVersionModel, ProductVersionModel.id == ProductModel.product_version_id)
+            .join(ProductModel, self.model.product)    
+            .where(self.model.supplier_id == supplier_id)
+        )
+        result = await self.session.execute(stmt)
+        expenses = result.mappings().all()
+        if expenses is None:
+            return None
+        expenses_items = [
+            ExpenseWithInfoProductItem(**dict(expense)) for expense in expenses
+            ]
+        return expenses_items
+    
+    async def get_expense_response_items(
+            self, 
+            supplier_id: int,
+            product_id: int
+    ) -> Optional[ExpenseWithInfoProductItem]:
+        """Получить расход по supplier_id и product_id"""
+        stmt = (
+            select(
+                self.model.id,
+                self.model.product_id,
+                self.model.quantity,
+                ProductModel.article,
+                ProductVersionModel.name.label("product_name"),
+                ProductVersionModel.category,
+                ProductVersionModel.description,
+                OrganizerModel.name.label("supplier_name")
+            )
+            .join(OrganizerModel, self.model.supplier)
+            .join(ProductVersionModel, ProductVersionModel.id == ProductModel.product_version_id)
+            .join(ProductModel, self.model.product)    
+            .where(
+                self.model.supplier_id == supplier_id,
+                self.model.product_id == product_id    
+            )
+        
+        )
+        result = await self.session.execute(stmt)
+        expense = result.mappings().first()
+        return ExpenseWithInfoProductItem(**dict(expense)) if expense is not None else None
+    
+    async def get_by_expense_and_supplier_id(
+            self, 
+            supplier_id: int,
+            expense_id: int,
+    ) -> Optional[ExpenseSupplierItem]:
+        """Получить товар по id поставщика и id расхода"""
+        stmt = (
+            select(self.model)
+            .where(
+                self.model.supplier_id == supplier_id,
+                self.model.id == expense_id
+            )
+        )
+        result = await self.session.execute(stmt)
+        expense = result.scalar_one_or_none()
+        return ExpenseSupplierItem(**expense.dict) if expense is not None else None
+    
+    async def get_by_product_and_supplier_id(
+            self, 
+            product_id: int,
+            supplier_id: int,
+    ) -> Optional[ExpenseSupplierItem]:
+        """Получить по id продукта и поставщика"""
+        stmt = (
+            select(self.model)
+            .where(
+                self.model.product_id == product_id,
+                self.model.supplier_id == supplier_id
+            )
+        )
+        result = await self.session.execute(stmt)
+        expense = result.scalar_one_or_none()
+        return ExpenseSupplierItem(**expense.dict) if expense is not None else None
+    

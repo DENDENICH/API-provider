@@ -31,7 +31,8 @@ class ExpenseSupplier(Base):
     )
     reversed: Mapped[int] = mapped_column(
         Integer, 
-        nullable=True
+        default=0,
+        nullable=False
     )
 
     product = relationship(
