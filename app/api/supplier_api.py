@@ -9,7 +9,7 @@ from schemas.organizer import OrganizerResponse
 from core import settings
 from core.db import db_core
 
-from api.dependencies import check_is_company
+from api.dependencies import check_is_admin
 
 from service.items_services.organizer import OrganizerItem
 from service.items_services.contract import ContractItem
@@ -30,7 +30,7 @@ router = APIRouter(
 
 @router.get("", response_model=SuppliersResponse)
 async def get_suppliers(
-    user_data: UserDataRedis = Depends(check_is_company), #TODO + проверка на админа
+    user_data: UserDataRedis = Depends(check_is_admin),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Получить поставщиков компании"""
@@ -50,7 +50,7 @@ async def get_suppliers(
 @router.get("/{supplier_inn}", response_model=OrganizerResponse)
 async def get_suppliers(
     supplier_inn: int,
-    user_data: UserDataRedis = Depends(check_is_company), #TODO + проверка на админа
+    user_data: UserDataRedis = Depends(check_is_admin), #TODO + проверка на админа
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Получить поставщика по ИНН"""
@@ -70,7 +70,7 @@ async def get_suppliers(
 @router.post("/{supplier_id}", status_code=201)
 async def add_supplier(
     supplier_id: int, 
-    user_data: UserDataRedis = Depends(check_is_company), #TODO + проверка на админа
+    user_data: UserDataRedis = Depends(check_is_admin), #TODO + проверка на админа
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Создать нового поставщика для компании"""
@@ -91,7 +91,7 @@ async def add_supplier(
 @router.delete("/{supplier_id}", status_code=204)
 async def delete_supplier(
     supplier_id: int,
-    user_data: UserDataRedis = Depends(check_is_company), #TODO + проверка на админа 
+    user_data: UserDataRedis = Depends(check_is_admin),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Удаление поставщика из контактов"""
