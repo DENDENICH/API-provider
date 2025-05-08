@@ -361,9 +361,22 @@ paths:
 
   /suppliers:
     get:
-      summary: Получить список поставщиков (фильтр - название)
+      summary: Получить список поставщиков
       tags:
         - Поставщики
+      # parameters:
+      #   - name: is_company_contracts
+      #     in: query
+      #     required: true
+      #     description: Только поставщики, заключившие контракт с компанией
+      #     schema:
+      #       type: boolean
+      #   - name: inn
+      #     in: query
+      #     required: false
+      #     description: ИНН компании
+      #     schema:
+      #       type: integer
       responses:
         "200":
           description: Список поставщиков
@@ -371,6 +384,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuppliersResponse'
+                
+  /suppliers/{supplier_inn}:
+    get:
+      summary: Получить поставщика по ИНН
+      tags:
+        - Поставщики
+      parameters:
+        - name: supplier_inn
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Список поставщиков
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
   /suppliers/{supplier_id}:
     post:
@@ -427,24 +463,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Expenses'
-    post:
-      summary: Добавить новый расход
-      tags:
-        - Расходы склада
-      operationId: createExpense
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExpenseCreate'
-      responses:
-        '201':
-          description: Расход добавлен
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Expense'
 
   /expenses/{expense_id}/:
     patch:
@@ -722,26 +740,29 @@ components:
             adopted,
             delivered,
           ]
+    
+    SupplierResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+        inn:
+          type: string
+        bank_details:
+          type: string
+    
 
-    # Схемы товаров в поставках
     SuppliersResponse:
       type: object
       properties:
         organizers:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              address:
-                type: string
-              inn:
-                type: string
-              bank_details:
-                type: string
+            $ref: '#/components/schemas/SupplierResponse'
 
 
     # Схемы товаров
@@ -833,34 +854,19 @@ components:
         - category
         - quantity
       properties:
-        company_id:
+        product_id:
           type: integer
+        organizer_name:
+          type: string
         article:
           type: integer
-        name:
+        product_name:
           type: string
         category:
           type: string
           enum: [hair_coloring, hair_care, hair_styling, consumables, perming, eyebrows_and_eyelashes, manicure_and_pedicure, tools_and_equipment]
+        description:
+          type: string
         quantity:
           type: integer
     
-    ExpenseCreate:
-      type: object
-      required:
-        - company_id
-        - article
-        - name
-        - category
-        - quantity
-      properties:
-        company_id:
-          type: integer
-        article:
-          type: integer
-        name:
-          type: string
-        category:
-          type: string
-        quantity:
-          type: integer
