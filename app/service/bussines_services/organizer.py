@@ -1,8 +1,7 @@
-from typing import Optional, Dict, Literal
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.repositories import *
-from service.items_services.items import *
+from service.repositories import OrganizerRepository, UserCompanyRepository
+from service.items_services.organizer import OrganizerItem
 
 from exceptions import bad_request_error
 
@@ -37,3 +36,11 @@ class OrganizerService:
         organizer = await self.organizer_repo.create(organizer)
 
         return organizer
+    
+    async def get_supplier_by_inn(self, supplier_inn: int) -> OrganizerItem:
+        """Получить поставщика по его ИНН"""
+        supplier: OrganizerItem = await self.organizer_repo.get_supplier_by_inn(supplier_inn=supplier_inn)
+        if not supplier:
+            raise bad_request_error(detail="Supplier not found")
+        return supplier
+    
