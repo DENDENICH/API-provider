@@ -5,7 +5,14 @@ from fastapi import APIRouter, Depends
 from core import settings
 from core.db import db_core
 
-#from app.schema.expenses
+from schemas.expense import (
+    ExpenseQuantity, 
+    ExpenseResponse,
+    ExpensesResponse
+)
+
+from service.bussines_services.expense.expense_factory import ExpenseFactory
+# from api.dependencies import 
 
 
 router = APIRouter(
@@ -14,26 +21,21 @@ router = APIRouter(
 )
 
 
-@router.get("/expenses")
+@router.get("/expenses", response_model=ExpensesResponse)
 async def get_expenses(
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    pass
-
-@router.post("/expenses", status_code=201)
-async def add_expense(
-#    expense_data: ExpenseRequest, 
-    session: AsyncSession = Depends(db_core.session_getter)
-):
+    """Получить все расходы"""
     pass
 
 
-@router.patch("/expenses/{expense_id}", status_code=204)
-async def delete_expense(
+@router.patch("/expenses/{expense_id}", status_code=204, response_model=ExpenseResponse)
+async def update_quantity_expense(
     expense_id: int,
-#   expense_quantity: ExpenseQuantity
+    expense_quantity: ExpenseQuantity,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
+    """Изменить количество расхода"""
     pass
 
 
@@ -42,4 +44,5 @@ async def delete_expense(
     expense_id: int, 
     session: AsyncSession = Depends(db_core.session_getter)
 ):
+    """Удалить расход"""
     pass

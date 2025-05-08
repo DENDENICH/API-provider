@@ -78,18 +78,9 @@ class BaseRepository(Generic[Model]):
         return self.item(**model.dict, model=model) if model is not None else None
 
 
-    async def delete(self, obj_id: int) -> None:
+    async def delete(self, obj_id: int) -> Optional[Type[ItemObj]]:
         """ Удалить объект по ID """
-        query = delete(self.model).where(self.model.id == obj_id)
+        query = delete(self.model).where(self.model.id == obj_id).returning(self.model)
         result = await self.session.execute(query)
-
-
-# def payload_to_item(
-#         payload: dict, 
-#         obj_item: Type[ItemObj], 
-#         model: Optional[Type[Model]] = None
-# ) -> ItemObj:
-#     """
-#     Универсальная функция для создания бизнес-объекта из словаря
-#     """
-#     return obj_item(**payload, model_=model)
+        model = result.scalar_one_or_none()
+        return self.item(**model.dict, model=model) if model is not None else None
