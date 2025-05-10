@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from schemas.supplier import SuppliersResponse
 from schemas.organizer import OrganizerResponse
@@ -41,6 +41,10 @@ async def get_suppliers(
         )
     except Exception as e:
         logger.error(f"Error getting suppliers: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
 
     return SuppliersResponse(
         suppliers=[supplier.dict for supplier in suppliers]
@@ -61,6 +65,10 @@ async def get_suppliers(
         )
     except Exception as e:
         logger.error(f"Error getting supplier by INN: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
 
     return OrganizerResponse(
         supplier=supplier.dict
@@ -84,6 +92,10 @@ async def add_supplier(
         )
     except Exception as e:
         logger.error(f"Error creating supplier: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
 
     return {"detail": "No content"}
     
@@ -103,4 +115,9 @@ async def delete_supplier(
         )
     except Exception as e:
         logger.error(f"Error deleting supplier: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
+
     return {"detail": "No content"}

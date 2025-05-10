@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from core.db import db_core
 
 from core import settings
@@ -25,6 +25,8 @@ from schemas.supply import (
 
 from logger import logger
 
+from exceptions import ReverseAmountError
+
 
 router = APIRouter(
     prefix=settings.api.supplies.prefix,
@@ -44,13 +46,16 @@ async def get_supplies(
             user_data=user_data
         )
             
-        return SuppliesResponse(supplies=[supply.dict for supply in supplies])
+        return SuppliesResponse(
+            supplies=[supply.dict for supply in supplies]
+        )
     except Exception as e:
         logger.error(
             msg="Error getting supplies\n{}".format(e)
         )
-        return SuppliesResponse(
-            supplies=[]
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
         )
 
 
@@ -73,10 +78,24 @@ async def create_supply(
                 company_id=user_data.organizer_id
             )
         )
+    except ReverseAmountError as e:
+        session.rollback()
+        logger.error(
+            msg="Error creating supply\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Oversupply of reserves"
+        )
+    
     except Exception as e:
         session.rollback()
         logger.error(
             msg="Error creating supply\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
         )
 
     return {"details": "No content"}
@@ -116,7 +135,10 @@ async def assemble_or_cancel_supply(
         logger.error(
             msg="Error assembling or cancelling supply\n{}".format(e)
         )
-        return {"details": "Error occurred while processing the request"}
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
 
 
 @router.patch("/{supply_id}/status", status_code=status.HTTP_201_CREATED)
@@ -142,4 +164,7 @@ async def update_status(
         logger.error(
             msg="Error updating supply status\n{}".format(e)
         )
-        return {"details": "Error occurred while processing the request"}
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
