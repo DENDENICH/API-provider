@@ -28,18 +28,18 @@ from service.items_services.product import (
     ProductFullItem,
     AvailableProductForCompany
 )
+from service.items_services.expense import (
+    ExpenseWithInfoProductItem,
+    ExpenseSupplierItem,
+    ExpenseCompanyItem
+)
+from service.items_services.organizer import OrganizerItem
+from service.items_services.contract import ContractItem
 from app.service.items_services.supply import (
     SupplyCreateItem,
     SupplyProductItem,
     SupplyResponseItem,
     SupplyItem
-)
-from service.items_services.organizer import OrganizerItem
-from service.items_services.contract import ContractItem
-from service.items_services.expense import (
-    ExpenseWithInfoProductItem,
-    ExpenseSupplierItem,
-    ExpenseCompanyItem
 )
 from service.redis_service import UserDataRedis
 
@@ -69,47 +69,8 @@ class ContactRepository(BaseRepository[ContractModel]):
     def __init__(
             self, 
             session: AsyncSession,
-    ):
-        super().__init__(ContractModel, session=session, item=ContractModel)
-
-    async def get_by_company_and_supplier_id(
-            self, 
-            company_id: int,
-            supplier_id: int
-        ) -> Optional[ContractItem]:
-        """Получить контракт по company_id и supplier_id"""
-        result = await self.session.execute(
-            select(self.model).filter(
-                self.model.company_id == company_id,
-                self.model.supplier_id == supplier_id
-            )
-        )
-        model = result.scalar_one_or_none()
-        return self.item(**model.dict, model=model) if model else None
-
-    async def get_supplier_available_company(self, company_id: int) -> List[OrganizerItem]:
-        """Получить поставщиков с которыми заключены контракты"""
-        stmt = (
-            select(OrganizerModel)
-            .join(self.model, self.model.supplier_id == OrganizerModel.id)
-            .where(self.model.company_id == company_id)
-        )
-        result = await self.session.execute(stmt)
-        suppliers = result.scalars().all()
-        return [self.item(**supplier.dict, model=supplier) for supplier in suppliers]
-    
-    async def delete(self, supplier_id: int, company_id: int) -> bool:
-        """Удалить контракт по id поставщика"""
-        stmt = (
-            delete(self.model)
-            .where(
-                self.model.supplier_id == supplier_id,
-                self.model.company_id == company_id
-            )
-        )
-        result = await self.session.execute(stmt)
-        # Возвращаем False, если результат изменения = 0
-        return False if result.rowcount == 0 else True
+            to_item: Callable[[ContractModel], ItemObj]):
+        super().__init__(ContractModel, session=session, to_item=to_item)
 
 
 class UserRepository(BaseRepository[UserModel]):

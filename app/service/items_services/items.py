@@ -4,6 +4,8 @@ from .base import Model, BaseItem
 
 
 
+
+
 class UserItem(BaseItem):
     """Объект сущности пользователя"""
     def __init__(

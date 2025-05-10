@@ -1,7 +1,11 @@
-from typing import Optional, Type
+from typing import Optional, Type, Iterable
 from dataclasses import dataclass
 
 from .base import Model, BaseItem
+
+from service.items_services.supply import SupplyProductItem
+
+from exceptions import ReverseAmountError
 
 
 class ExpenseWithInfoProductItem(BaseItem):
@@ -67,8 +71,7 @@ class ExpenseSupplierItem(BaseItem):
     def __setattr__(self, name, value):
         if name == "reserved":
             if value > self.quantity:
-                #TODO: добавить кастомное исключение
-                raise ValueError("Резерв не может превышать количество")
+                raise ReverseAmountError("Oversupply of reserves")
 
     @property
     def get_quantity_subtract_reserve(self) -> int:
@@ -83,9 +86,11 @@ class ExpenseAddReservedItem(BaseItem):
     product_id: int
     reserved: int
 
+
 @dataclass
 class ExpenseUpdateQuantityItem(BaseItem):
     """Объект обновления количества"""
     organizer_id: int
     expense_id: int
     quantity: int
+
