@@ -20,6 +20,7 @@ class ExpenseSupplierService(ExpenseInterface):
         super().__init__(session=session)
         self.expense_repo = ExpenseSupplierRepository(session=session)
 
+
     async def get_expenses_by_organizer(self, organizer_id: int) -> List[ExpenseWithInfoProductItem]:
         """Получить все расходы"""
         expenses = await self.expense_repo.get_all_expense_response_items(organizer_id)
@@ -27,6 +28,7 @@ class ExpenseSupplierService(ExpenseInterface):
             raise not_found_error
         return expenses
     
+
     async def get_expense(
         self, 
         expense_id: int,
@@ -46,6 +48,7 @@ class ExpenseSupplierService(ExpenseInterface):
         """Добавить новый расход"""
         return await self.expense_repo.create(expense)
     
+
     async def update_quantity_expense(
         self, 
         expense_update_quantity: ExpenseUpdateQuantityItem
@@ -53,7 +56,8 @@ class ExpenseSupplierService(ExpenseInterface):
         """Обновить количество расхода"""
         pass
 
-    async def _get_expense_item_by_id_supplier_and_product(
+
+    async def get_expense_by_id_supplier_and_product(
             self, 
             supplier_id: int, 
             product_id: int
@@ -67,12 +71,13 @@ class ExpenseSupplierService(ExpenseInterface):
             raise not_found_error
         return expense
 
+
     async def add_reserved_expense(
         self, 
         add_reverved_expense: ExpenseAddReservedItem
     ) -> ExpenseSupplierItem:
         """Добавить новый резерв расхода"""
-        expense: ExpenseSupplierItem = await self._get_expense_item_by_id_supplier_and_product(
+        expense: ExpenseSupplierItem = await self.get_expense_by_id_supplier_and_product(
             supplier_id=add_reverved_expense.supplier_id,
             product_id=add_reverved_expense.product_id
         )
@@ -80,6 +85,7 @@ class ExpenseSupplierService(ExpenseInterface):
         expense = await self.expense_repo.update(expense)
         return expense
     
+
     async def delete_expense(self, expense_id: int) -> ExpenseSupplierItem:
         """Удалить расход"""
         expense = await self.expense_repo.delete(expense_id)

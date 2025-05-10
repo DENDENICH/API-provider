@@ -51,7 +51,9 @@ class AvailableProductForCompany:
             category: str,
             price: float,
             organizer_name: str,
-            img_path: str = None
+            supplier_id: int,
+            quantity: Optional[int] = None,
+            img_path: Optional[str] = None
     ):
         self.id = id
         self.article = article
@@ -59,7 +61,9 @@ class AvailableProductForCompany:
         self.category = category
         self.price = price
         self.organizer_name = organizer_name
+        self.quantity = quantity
         self.img_path = img_path
+        self.supplier_id = supplier_id
 
 
 class ProductFullItem(BaseItem):

@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
-from fastapi import APIRouter, Depends, Request, status, HTTPException
+from fastapi import APIRouter, Depends, Request, status, HTTPException, Query
 
 from core import settings
 from core.db import db_core
@@ -52,11 +53,17 @@ async def create_product(
 
 @router.get("/", response_model=ProductsResponse)
 async def get_products(
+    supplier_id: Optional[int] = Query(None),
+    add_quantity: Optional[bool] = Query(False),
     user_data: UserDataRedis = Depends(check_is_company),
     session: AsyncSession = Depends(db_core.session_getter),
 ):
     service = ProductService(session=session)
-    products = await service.get_available_products_for_company(user_data.organizer_id)
+    products = await service.get_available_products_for_company(
+        company_id=user_data.organizer_id,
+        supplier_id=supplier_id,
+        add_quantity=add_quantity
+    )
     return ProductsResponse(products=products)
     
 

@@ -252,6 +252,7 @@ class ProductRepository(BaseRepository[ProductModel]):
     async def get_available_products_for_company(
             self, 
             company_id: int,
+            supplier_id: Optional[int] = None,
             limit: int = 100        
     ) -> List[AvailableProductForCompany]:
         """Получить все доступные товары для компании по её ID"""
@@ -259,6 +260,7 @@ class ProductRepository(BaseRepository[ProductModel]):
             select(
                 self.model.id,
                 self.model.article,
+                self.model.supplier_id,
                 ProductVersionModel.name,
                 ProductVersionModel.category,
                 ProductVersionModel.price,
@@ -268,7 +270,10 @@ class ProductRepository(BaseRepository[ProductModel]):
             .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
             .join(OrganizerModel, OrganizerModel.id == self.model.supplier_id)
             .join(ContractModel, ContractModel.supplier_id == self.model.supplier_id)
-            .where(ContractModel.company_id == company_id)
+            .where(
+                ContractModel.company_id == company_id,
+                ContractModel.supplier_id == supplier_id,
+            )
             .limit(limit)
         )
         result = await self.session.execute(stmt)

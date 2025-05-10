@@ -27,6 +27,8 @@ class ProductRequest(ProductBase):
 class ProductResponse(ProductBase):
     id: int
     article: int
+    supplier_id: int
+    quantity: Optional[int]
     description: Optional[str]
 
 
@@ -36,5 +38,5 @@ class ProductResponseSupply(ProductBase):
     article: int
 
 class ProductsResponse(BaseModel):
-    products: List[ProductResponseSupply]
+    products: List[ProductResponse]
 
