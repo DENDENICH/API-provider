@@ -197,6 +197,17 @@ paths:
       summary: Получить список товаров
       tags:
         - Товары
+      parameters:
+        - name: supplier_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: add_quantity
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Список товаров
@@ -804,6 +815,13 @@ components:
         price:
           type: number
           format: float
+        quantity:
+          type: integer
+          default: null
+        organizer_name:
+          type: string
+        
+          
 
     ProductResponseSupply:
       type: object
@@ -829,13 +847,14 @@ components:
           type: number
           format: float
 
+
     ProductsResponse:
       type: object
       properties:
         products:
           type: array
           items:
-            $ref: '#/components/schemas/ProductResponseSupply'
+            $ref: '#/components/schemas/ProductResponse'
 
     Expenses:
       type: object
