@@ -139,11 +139,16 @@ class SupplyService:
         return
     
 
-    async def get_all_supplies_by_user_data(self, user_data: UserDataRedis) -> List[SupplyResponseItem]:
+    async def get_all_supplies_by_user_data(
+            self, 
+            user_data: UserDataRedis,
+            is_wait_confirm: Optional[bool] = None
+    ) -> List[SupplyResponseItem]:
         """Получить все доступные поставки пользователя по его данным"""
         if user_data.organizer_role == OrganizerRole.supplier:
             supplies = await self._get_supplies_by_organizer_id(
-                supplier_id=user_data.organizer_id
+                supplier_id=user_data.organizer_id,
+                is_wait_confirm=is_wait_confirm
             )
         elif user_data.organizer_role == OrganizerRole.company:
             supplies = await self._get_supplies_by_organizer_id(
@@ -154,12 +159,14 @@ class SupplyService:
     async def _get_supplies_by_organizer_id(
             self,
             company_id: Optional[int] = None,
-            supplier_id: Optional[int] = None        
+            supplier_id: Optional[int] = None,
+            is_wait_confirm: Optional[bool] = None   
     ) -> List[SupplyResponseItem]:
         """Получить все поставки"""
         supplies = await self.supply_repo.get_all_by_organizer_id(
             company_id=company_id,
-            supplier_id=supplier_id
+            supplier_id=supplier_id,
+            is_wait_confirm=is_wait_confirm
         )
         if not supplies:
             raise not_found_error("not found supplies")

@@ -274,6 +274,12 @@ paths:
       summary: Получить список всех поставок
       tags:
         - Поставки
+      parameters:
+        - name: is_wait_confirm
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Список поставок

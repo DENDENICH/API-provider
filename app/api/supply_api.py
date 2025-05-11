@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from core.db import db_core
 
 from core import settings
@@ -36,6 +36,7 @@ router = APIRouter(
 
 @router.get("", response_model=SuppliesResponse)
 async def get_supplies(
+    is_wait_confirm: bool = Query(None),
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
