@@ -22,6 +22,7 @@ class ProductBase(BaseModel):
 
 class ProductRequest(ProductBase):
     description: str
+    quantity: int
 
 
 class ProductResponse(ProductBase):

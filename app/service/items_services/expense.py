@@ -57,7 +57,7 @@ class ExpenseSupplierItem(BaseItem):
         supplier_id: int,
         product_id: int,
         quantity: int,
-        reserved: int,
+        reserved: int = 0,
         id: Optional[int] = None,
         model: Optional[Type[Model]] = None
     ):

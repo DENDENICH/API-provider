@@ -7,10 +7,12 @@ from service.repositories import (
 )
 from service.items_services.product import (
     ProductVersion,
+    ProductCreate,
     ProductItem,
     ProductFullItem,
     AvailableProductForCompany
 )
+from service.items_services.expense import ExpenseSupplierItem
 from service.bussines_services.expense.expense_supplier import ExpenseSupplierService
 from service.redis_service import UserDataRedis
 
@@ -30,33 +32,17 @@ class ProductService:
     async def create_product(
             self,
             user_data: UserDataRedis, 
-            name: str,
-            category: str,
-            price: float,
-            description: str,
+            product_new: ProductCreate
     ) -> ProductFullItem:
-        #TODO: реализовать класс для группировки аргументов создания продукта
-        """_summary_
-
-        Args:
-            id (int): Идентификатор пользователя
-            name (str): Название продукта
-            category (str): Категория продукта
-            price (float): Цена продукта
-            description (str): Описание продукта
-            img_file (str): Ссылка на файл
-
-        Returns:
-            ProductItem: _description_
-        """
+        """Создание продукта"""
         product_version = await self._create_version_product_and_flush_session(
-            ProductVersion(
-                name=name,
-                category=category,
-                description=description,
-                price=price,
+            data=ProductVersion(
+                name=product_new.name,
+                category=product_new.category,
+                price=product_new.price,
+                description=product_new.description
             )
-        ) 
+        )
         product = await self._create_product_and_flush_session(
             ProductItem(
                 article=generate_unique_code(),
@@ -64,6 +50,12 @@ class ProductService:
                 supplier_id=user_data.organizer_id,
             )
         )
+        new_expense = await self._create_expense_by_product_and_flush_session(
+            supplier_id=user_data.organizer_id,
+            product_id=product.id,
+            quantity=product_new.quantity
+        )
+
         return ProductFullItem(
             id=product.id,
             article=product.id,
@@ -85,6 +77,23 @@ class ProductService:
         product = await self.product_repo.create(data)
         await self.session.flush()
         return product
+    
+    async def _create_expense_by_product_and_flush_session(
+            self,
+            supplier_id: int,
+            product_id: int,
+            quantity: int
+    ) -> ExpenseSupplierItem:
+        expense_service = ExpenseSupplierService(session=self.session)
+        new_expense = await expense_service.add_expense(
+            expense=ExpenseSupplierItem(
+                supplier_id=supplier_id,
+                product_id=product_id,
+                quantity=quantity
+            )
+        )
+        await self.session.flush()
+        return new_expense
     
     
     async def get_available_products_for_company(

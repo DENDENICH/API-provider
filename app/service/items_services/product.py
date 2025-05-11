@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Optional, Type, Iterable
 
 from .base import Model, BaseItem
@@ -22,6 +23,16 @@ class ProductVersion(BaseItem):
         self.description = description
         self.price = price
         self.img_path = img_path
+
+
+@dataclass
+class ProductCreate:
+    name: str
+    category: str
+    price: float
+    quantity: int
+    description: str = None,
+    img_path: str = None # Пока не участвует
 
 
 class ProductItem(BaseItem):

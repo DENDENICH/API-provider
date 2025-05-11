@@ -804,6 +804,8 @@ components:
           format: float
         description:
           type: string
+        quantity:
+          type: integer
 
     ProductResponse:
       type: object
