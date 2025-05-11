@@ -438,7 +438,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 
-  /expenses/:
+  /expenses:
     get:
       summary: Получить все расходы
       tags:
@@ -454,7 +454,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Expenses'
 
-  /expenses/{expense_id}/:
+  /expenses/{expense_id}:
     patch:
       summary: Обновить количество расхода
       tags:
