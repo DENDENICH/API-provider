@@ -96,7 +96,7 @@ async def add_supplier(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
         )
-
+    await session.commit()
     return {"detail": "No content"}
     
 
@@ -119,5 +119,5 @@ async def delete_supplier(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
         )
-
+    await session.commit()
     return {"detail": "No content"}

@@ -45,10 +45,7 @@ async def get_supplies(
         supplies = await supply_service.get_all_supplies_by_user_data(
             user_data=user_data
         )
-            
-        return SuppliesResponse(
-            supplies=[supply.dict for supply in supplies]
-        )
+
     except Exception as e:
         logger.error(
             msg="Error getting supplies\n{}".format(e)
@@ -57,6 +54,10 @@ async def get_supplies(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
         )
+                
+    return SuppliesResponse(
+        supplies=[supply.dict for supply in supplies]
+    )
 
 
 @router.post("", status_code=status.HTTP_204_NO_CONTENT)
@@ -97,7 +98,7 @@ async def create_supply(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
         )
-
+    await session.commit()
     return {"details": "No content"}
 
 
@@ -118,7 +119,6 @@ async def assemble_or_cancel_supply(
             ),
             supplier_id=user_data.organizer_id
         )
-        return {"details": "No content"}
     except Exception as e:
         session.rollback()
         logger.error(
@@ -128,6 +128,8 @@ async def assemble_or_cancel_supply(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
         )
+    await session.commit()
+    return {"details": "No content"}
 
 
 @router.patch("/{supply_id}/status", status_code=status.HTTP_201_CREATED)
@@ -147,7 +149,6 @@ async def update_status(
             ),
             supplier_id=user_data.organizer_id
         )
-        return {"details": "No content"}
     except Exception as e:
         session.rollback()
         logger.error(
@@ -157,3 +158,5 @@ async def update_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
         )
+    await session.commit()
+    return {"details": "No content"}

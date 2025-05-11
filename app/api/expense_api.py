@@ -45,14 +45,16 @@ async def get_expenses(
         expenses: List[ExpenseWithInfoProductItem] = await expense_service.get_expenses_by_organizer(
             organizer_id=user_data.organizer_id
         )
-        return ExpensesResponse(
-            expenses=[expense.dict for expense in expenses]
-        )
+        
     except Exception as e:
         logger.error(f"Error getting expenses: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
+        )
+    
+    return ExpensesResponse(
+            expenses=[expense.dict for expense in expenses]
         )
 
 
@@ -72,13 +74,13 @@ async def get_expenses(
             expense_id=expenses_id,
             organizer_id=user_data.organizer_id
         )
-        return ExpenseResponse(**expense.dict)
     except Exception as e:
         logger.error(f"Error getting expense by id: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+    return ExpenseResponse(**expense.dict)
 
 
 @router.patch("/expenses/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -100,13 +102,14 @@ async def update_quantity_expense(
                 quantity=expense_quantity.quantity
             )
         )
-        return {"detail": "No content"}
     except Exception as e:
         logger.error(f"Error update quantity expense: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+    await session.commit()
+    return {"detail": "No content"}
 
 
 @router.delete("/expenses/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -124,10 +127,12 @@ async def delete_expense(
         expenses = await expense_service.delete_expense(
             expense_id=expense_id
         )
-        return {"detail": "No content"}
     except Exception as e:
         logger.error(f"Error deleting expense expense: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+    await session.commit()
+    return {"detail": "No content"}
+
