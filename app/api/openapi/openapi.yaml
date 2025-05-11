@@ -162,20 +162,6 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
           
 
-
-  /organizers:
-    get:
-      summary: Получение организаций, с которыми компания заключила контракт
-      tags:
-        - Организации
-      responses:
-        "200":
-          description: Список организаций
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizersResponse'
-
   /products:
     post:
       summary: Добавить новый товар
@@ -381,19 +367,6 @@ paths:
       summary: Получить список поставщиков
       tags:
         - Поставщики
-      # parameters:
-      #   - name: is_company_contracts
-      #     in: query
-      #     required: true
-      #     description: Только поставщики, заключившие контракт с компанией
-      #     schema:
-      #       type: boolean
-      #   - name: inn
-      #     in: query
-      #     required: false
-      #     description: ИНН компании
-      #     schema:
-      #       type: integer
       responses:
         "200":
           description: Список поставщиков
