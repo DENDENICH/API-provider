@@ -54,7 +54,7 @@ async def get_suppliers(
 @router.get("/{supplier_inn}", response_model=OrganizerResponse)
 async def get_suppliers(
     supplier_inn: int,
-    user_data: UserDataRedis = Depends(check_is_admin), #TODO + проверка на админа
+    user_data: UserDataRedis = Depends(check_is_admin), 
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Получить поставщика по ИНН"""
@@ -78,7 +78,7 @@ async def get_suppliers(
 @router.post("/{supplier_id}", status_code=201)
 async def add_supplier(
     supplier_id: int, 
-    user_data: UserDataRedis = Depends(check_is_admin), #TODO + проверка на админа
+    user_data: UserDataRedis = Depends(check_is_admin),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Создать нового поставщика для компании"""
