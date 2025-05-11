@@ -328,7 +328,8 @@ class SupplyRepository(BaseRepository[SupplyModel]):
     async def get_all_by_organizer_id(
             self, 
             supplier_id: Optional[int] = None,
-            company_id: Optional[int] = None        
+            company_id: Optional[int] = None,
+            is_wait_confirm: Optional[bool] = None        
     ) -> Optional[List[SupplyResponseItem]]:
         """Получить все поставки по id поставщика"""
         supplier = aliased(OrganizerModel)
@@ -362,7 +363,10 @@ class SupplyRepository(BaseRepository[SupplyModel]):
             .join(SupplyProductModel, SupplyModel.id == SupplyProductModel.supply_id)
             .join(ProductModel, ProductVersionModel.product)
             .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
-            .where(SupplyModel.supplier_id == supplier_id)
+            .where(
+                self.model.supplier_id == supplier_id,
+                self.model.is_wait_confirm == is_wait_confirm
+            )
         )
         result = await self.session.execute(stmt)
         if (supplies := result.mappings().all()) is None:
