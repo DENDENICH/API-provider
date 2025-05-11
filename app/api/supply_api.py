@@ -99,23 +99,12 @@ async def create_supply(
         )
 
     return {"details": "No content"}
-    
-
-
-@router.get("/{supply_id}")
-async def assemble_or_cancel_supply(
-    supply_id: int,
-    user_data: UserDataRedis = Depends(get_user_from_redis),
-    session: AsyncSession = Depends(db_core.session_getter)
-):
-    """Получить информацию о поставке"""
-    pass
 
 
 @router.patch("/{supply_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def assemble_or_cancel_supply(
     supply_id: int,
-    status: SuppliesCancelledAssembleStatus,
+    status_data: SuppliesCancelledAssembleStatus,
     user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -125,7 +114,7 @@ async def assemble_or_cancel_supply(
         await supply_service.assemble_or_cancel_supply(
             status=SupplyStatus(
                 id=supply_id,
-                status=status.status
+                status=status_data.status
             ),
             supplier_id=user_data.organizer_id
         )
@@ -144,7 +133,7 @@ async def assemble_or_cancel_supply(
 @router.patch("/{supply_id}/status", status_code=status.HTTP_201_CREATED)
 async def update_status(
     supply_id: int,
-    status: SupplyStatusUpdate,
+    status_data: SupplyStatusUpdate,
     user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -154,7 +143,7 @@ async def update_status(
         await supply_service.update_supply_status(
             status=SupplyStatus(
                 id=supply_id,
-                status=status.status
+                status=status_data.status
             ),
             supplier_id=user_data.organizer_id
         )
