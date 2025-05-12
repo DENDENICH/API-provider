@@ -17,7 +17,7 @@ from app.service.items_services.supply import (
     get_supply_item_by_supply_create_item,
     get_supply_product_items
 )
-from service.items_services.product import get_ids_from_products_version
+from service.items_services.product import get_ids_from_products_version, ProductItem
 from service.items_services.expense import ExpenseAddReservedItem, ExpenseSupplierItem
 
 from service.redis_service import UserDataRedis
@@ -35,6 +35,10 @@ from utils import generate_unique_code
 class OrganizerRole(str, Enum):
     company = "company"
     supplier = "supplier"
+
+class CancelledAssembleStatus(str, Enum):
+    cancelled = "cancelled"
+    assemble = "assemble"
 
 
 class SupplyService:
@@ -77,7 +81,7 @@ class SupplyService:
         await self._create_supplies_products_and_flush_session(
             supply=supply_products_item
         )
-        await self._update_reversed_quantity_in_expense_and_flush_session(
+        await self._update_reversed_in_expense_and_flush_session(
             supplier_id=supply_item.supplier_id,
             supply=supply_products_item
         )
@@ -94,23 +98,25 @@ class SupplyService:
         )
         return get_ids_from_products_version(product_versions)
     
-    async def _update_reversed_quantity_in_expense_and_flush_session(
+    async def _update_reversed_in_expense_and_flush_session(
             self, 
             supplier_id: int,
-            supply: Iterable[SupplyProductItem]
+            supply: Iterable[SupplyProductItem],
+            products_ids: Iterable[int]
     ) -> Iterable[ExpenseSupplierItem]:
         """Обновить расход с зарезервированным количеством"""
         expense_service = ExpenseSupplierService(self.session)
         # Инкапсулировать данную логику в ExpenseService или объекте ExpenseSupplierItem
         expense_list = []
-        for s in supply:
+        # TODO: извлечь продукты спомощью сервиса продуктов по объектам SupplyProductItem
+        for supply_product, product_id in zip(supply, products_ids):
             expense = ExpenseAddReservedItem(
                 supplier_id=supplier_id,
-                product_id=s.product_id,
-                reserved=s.quantity
+                product_id=product_id,
+                reserved=supply_product.quantity
             )
             expense_update = await expense_service.add_reserved_expense(
-            add_reverved_expense=expense
+                add_reverved_expense=expense
             )
             expense_list.append(expense_update)
 
@@ -175,19 +181,22 @@ class SupplyService:
 
     async def assemble_or_cancel_supply(self, supplier_id: int, status: SupplyStatus) -> None:
         """Принять или отменить поставку"""
+
         supply: SupplyItem = await self.supply_repo.get_by_id(status.id)
         if not supply:
             raise not_found_error("not found supply")
+        
         supply.is_wait_confirm = False
         supply.status = status.status
-        if (supply_update := await self.supply_repo.update(
-                obj=supply, 
-                supplier_id=supplier_id
-            )
-        ) is None:
-            raise not_found_error("not found supply")
+        self._update_supply_by_supplier_id_and_flush_session(
+            supplier_id=supplier_id,
+            supply=supply
+        )
         return
-
+    
+    async def _get_products_by_supplies(self, supplies):
+        # извлечение продуктов их поставок
+        pass
 
     async def update_supply_status(self, supplier_id: int, status: SupplyStatus) -> SupplyItem:
         """Обновить статус поставки"""
@@ -196,9 +205,64 @@ class SupplyService:
             raise not_found_error("not found supply")
         
         supply.status = status.status
-        supply_update = await self.supply_repo.update(
-                obj=supply, 
-                supplier_id=supplier_id
-            )
         
+        return self._update_supply_by_supplier_id_and_flush_session(
+            supplier_id=supplier_id,
+            supply=supply
+        )
+    
+    async def _update_supply_by_supplier_id_and_flush_session(
+            self, 
+            supplier_id: int, 
+            supply: SupplyItem
+    ) -> SupplyItem:
+        supply_update = await self.supply_repo.update(
+            obj=supply, 
+            supplier_id=supplier_id
+        )
+        if not supply_update:
+            raise not_found_error("not found supply")
+        await self.session.flush()
         return supply_update
+
+    async def _update_quantity_and_reversed_expenses_by_status(
+            self,
+            supplier_id: int,
+            supply: SupplyItem,
+            status: SupplyStatus
+    ) -> Iterable[ExpenseSupplierItem]:
+        """Обновить расходы по сущности поставки взависимости от статуса"""
+        # TODO: реализация работы со складом. 
+        # Если поставка принимается: 
+        #   - списать у резерва кол-во каждого товара в поставке
+        #   - списать у кол-ва товара на складе кол-во товара в поставке
+        # Если поставка отклоняется: 
+        #   - списать у резерва кол-во каждого товара в поставке
+        supply_products = await self.supply_product_repo.get_by_supply_id(
+            supply_id=supply.id
+        )
+        product_service = ProductService(self.session)
+        products: Iterable[ProductItem] = await product_service.get_products_by_supplies_products(
+            supply_products=supply_products
+        )
+        products_ids = [p.id for p in products]
+        expense_service = ExpenseSupplierService(self.session)
+
+        if status.status == CancelledAssembleStatus.assemble:
+            for supply_product, product_id in zip(supply_products, products_ids):
+                expense = await expense_service.get_expense_by_id_supplier_and_product(
+                    supplier_id=supplier_id,
+                    product_id=product_id
+                )
+                expense.quantity -= supply_product.quantity
+                expense.reserved -= supply_product.quantity
+                expense_update = await expense_service.update_expense(expense_update)
+
+        elif status.status == CancelledAssembleStatus.cancelled:
+            for supply_product, product_id in zip(supply_products, products_ids):
+                expense = await expense_service.get_expense_by_id_supplier_and_product(
+                    supplier_id=supplier_id,
+                    product_id=product_id
+                )
+                expense.reserved -= supply_product.quantity
+                expense_update = await expense_service.update_expense(expense_update)

@@ -72,6 +72,9 @@ class ExpenseSupplierItem(BaseItem):
         if name == "reserved":
             if value > self.quantity:
                 raise ReverseAmountError("Oversupply of reserves")
+        if name == "quantity":
+            if value < 0:
+                raise ReverseAmountError("Negative quantity")
 
     @property
     def get_quantity_subtract_reserve(self) -> int:
@@ -93,4 +96,3 @@ class ExpenseUpdateQuantityItem(BaseItem):
     organizer_id: int
     expense_id: int
     quantity: int
-

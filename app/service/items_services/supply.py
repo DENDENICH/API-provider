@@ -225,7 +225,7 @@ class SupplyProductItem(BaseItem):
         super().__init__(id=id, model=model)
         
         self.supply_id = supply_id
-        self.product_id = product_version_id
+        self.product_version_id = product_version_id
         self.quantity = quantity
 
 

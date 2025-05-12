@@ -286,6 +286,21 @@ class ProductRepository(BaseRepository[ProductModel]):
 
         return products
     
+    async def get_products_by_supplies_products(
+            self, 
+            supply_products: Iterable[SupplyProductItem]
+            # TODO: заменить на SupplyProductItem
+    ) -> Iterable[ProductItem]:
+        """Получить все продукты по id продуктов в поставке"""
+        products_version_ids = [supply_product.product_version_id for supply_product in supply_products]
+        stmt = (
+            select(ProductVersionModel.product)
+            .where(ProductVersionModel.id.in_(products_version_ids))
+        )
+        result = await self.session.execute(stmt)
+        products: Iterable[ProductModel] = result.scalars().all()
+        return [self.item(**p.dict()) for p in products]
+    
 
 class ProductVersionRepository(BaseRepository[ProductVersionModel]):
     """Репозиторий бизнес логики работы с версией товара"""
@@ -378,6 +393,28 @@ class SupplyRepository(BaseRepository[SupplyModel]):
             return None
         return [SupplyResponseItem.get_from_dict(dict(supply)) for supply in supplies]
     
+    async def get_supply_products_by_supply_id(self, supply_id: int) -> List[SupplyProductItem]:
+        """Получить все продукты в поставке по id поставки"""
+        stmt = (
+            select(
+                SupplyProductModel.id,
+                SupplyProductModel.supply_id,
+                SupplyProductModel.product_id,
+                SupplyProductModel.quantity,
+                ProductModel.article.label("product_article"),
+                ProductVersionModel.name.label("product_name"),
+                ProductVersionModel.category.label("product_category"),
+                ProductVersionModel.price.label("product_price")
+            )
+            .join(ProductModel, SupplyProductModel.product_id == ProductModel.id)
+            .join(ProductVersionModel, ProductVersionModel.id == ProductModel.product_version_id)
+            .where(SupplyProductModel.supply_id == supply_id)
+        )
+        result = await self.session.execute(stmt)
+        if (products := result.mappings().all()) is None:
+            return None
+        return [SupplyProductItem(**dict(product)) for product in products]    
+    
 
 class SupplyProductRepository(BaseRepository[SupplyProductModel]):
     """Репозиторий бизнес логики работы c продуктом в поставке"""
@@ -394,6 +431,19 @@ class SupplyProductRepository(BaseRepository[SupplyProductModel]):
         """Создать объекты"""
         models = [self.model(**product.dict) for product in products]
         self.session.add_all(models)
+
+    async def get_by_supply_id(
+            self,
+            supply_id: int
+    ) -> Iterable[SupplyProductItem]:
+        """Получить продукты из поставок по id поставки"""
+        stmt = (
+            select(self.model)
+            .where(self.model.supply_id == supply_id)
+        )
+        result = await self.session.execute(stmt)
+        models = result.scalars().all()
+        return [self.item(**model.dict()) for model in models] if models is not None else None
 
 
 class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):

@@ -9,7 +9,7 @@ from app.service.items_services.expense import (
     ExpenseWithInfoProductItem,
     ExpenseSupplierItem,
     ExpenseAddReservedItem,
-    ExpenseUpdateQuantityItem
+    ExpenseUpdateQuantityItem,
 )
 from .expense_base import ExpenseInterface
 from exceptions import not_found_error
@@ -54,8 +54,24 @@ class ExpenseSupplierService(ExpenseInterface):
         expense_update_quantity: ExpenseUpdateQuantityItem
     ) -> ExpenseWithInfoProductItem:
         """Обновить количество расхода"""
-        pass
+        expense = await self.get_expense(
+            expense_id=expense_update_quantity.expense_id,
+            organizer_id=expense_update_quantity.organizer_id
+        )
+        expense.quantity = expense_update_quantity.quantity
+        expense = await self.expense_repo.update(expense)
+        if not expense:
+            raise not_found_error
+        return expense
+    
 
+    async def update_expense(self, expense: ExpenseSupplierItem) -> ExpenseSupplierItem:
+        """Обновление сущности расхода"""
+        expense_update = await self.expense_repo.update(expense)
+        if expense_update is None:
+            raise not_found_error
+        return expense_update
+    
 
     async def get_expense_by_id_supplier_and_product(
             self, 
@@ -83,8 +99,8 @@ class ExpenseSupplierService(ExpenseInterface):
         )
         expense.reserved += add_reverved_expense.reserved
         expense = await self.expense_repo.update(expense)
-        return expense
-    
+        return expense    
+
 
     async def delete_expense(self, expense_id: int) -> ExpenseSupplierItem:
         """Удалить расход"""

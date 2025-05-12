@@ -1,9 +1,11 @@
 from typing import Optional, Iterable, List
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from models import SupplyProduct # Убрать данный импорт в будущем
+
 from service.repositories import (
     ProductRepository,
-    ProductVersionRepository
+    ProductVersionRepository,
 )
 from service.items_services.product import (
     ProductVersion,
@@ -144,6 +146,15 @@ class ProductService:
         if (products_version := await self.version_repo.get_products_version_by_products_ids(product_ids)) is None:
             raise not_found_error
         return products_version
+    
+    async def get_products_by_supplies_products(
+            self,
+            supplies_products: Iterable[SupplyProduct]
+    ) -> Iterable[ProductItem]:
+        """Получить все продукты по продуктам в поставках"""
+        if (products := await self.product_repo.get_products_by_supplies_products(supplies_products)) is None:
+            raise not_found_error
+        return products
     
 
     async def update_product(
