@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Request, status, HTTPException, Query
+from fastapi import APIRouter, Depends, status, HTTPException, Query
 
 from core import settings
 from core.db import db_core

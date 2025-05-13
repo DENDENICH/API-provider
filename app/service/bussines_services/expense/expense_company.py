@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import List, Dict, Any
+from typing import List
 
 from service.repositories import (
     ExpenseCompanyRepository,
@@ -8,7 +8,6 @@ from service.repositories import (
 from app.service.items_services.expense import (
     ExpenseWithInfoProductItem,
     ExpenseCompanyItem,
-    ExpenseAddItem,
     ExpenseUpdateQuantityItem
 )
 from .expense_base import ExpenseInterface
@@ -27,9 +26,12 @@ class ExpenseCompanyService(ExpenseInterface):
             raise not_found_error
         return expenses
     
-    async def get_expense(self, expense_id: int) -> ExpenseWithInfoProductItem:
-        """Получить расход по id"""
-        expense = await self.expense_repo.get_expense_response_items(expense_id=expense_id)
+    async def get_expense(self, expense_id: int, organizer_id: int) -> ExpenseWithInfoProductItem:
+        """Получить расход по id расхода и организатора"""
+        expense = await self.expense_repo.get_by_expense_and_company_id(
+            expense_id=expense_id,
+            company_id=organizer_id
+        )
         if not expense:
             raise not_found_error
         return expense

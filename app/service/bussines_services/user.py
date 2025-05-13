@@ -71,10 +71,8 @@ class UserService:
 
     async def update_user(self, user_id: int, user: UserItem) -> UserItem:
         """Обновление данных пользователя"""
-        if (user_item := await self.user_repo.update(
-            obj_id=user_id, 
-            obj=user
-            )
+        if (
+            user_item := await self.user_repo.update(obj_id=user_id, obj=user)
         ) is None:
             raise not_found_error
         return user_item

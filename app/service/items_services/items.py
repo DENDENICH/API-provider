@@ -137,8 +137,6 @@ class ExpenseSupplierItem(BaseItem):
 
 
 __all__ = [
-    "OrganizerItem",
-    "ContractItem",
     "UserItem",
     "UserCompanyItem",
     "LinkCodeItem",

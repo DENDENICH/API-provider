@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.repositories import ContactRepository
-from service.items_services.items import ContractItem
+from service.items_services.contract import ContractItem
 
 
 class ContractService:

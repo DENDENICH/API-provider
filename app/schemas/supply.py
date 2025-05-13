@@ -10,7 +10,7 @@ class CancelledAssembleStatus(str, Enum):
     cancelled = "cancelled"
     assemble = "assemble"
 
-class StatusForUpdate:
+class StatusForUpdate(str, Enum):
     assemble = "assemble"
     in_delivery = "in_delivery"
     adopted = "adopted"

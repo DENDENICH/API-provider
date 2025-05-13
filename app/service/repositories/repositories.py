@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Optional, List, Iterable
+from typing import Tuple, Optional, List, Iterable
 
 from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +19,6 @@ from models import(
 )
 from service.repositories.base_repository import(
      BaseRepository,
-     ItemObj
 )
 from service.items_services.items import *
 from service.items_services.product import (
@@ -36,7 +35,6 @@ from service.items_services.expense import (
 from service.items_services.organizer import OrganizerItem
 from service.items_services.contract import ContractItem
 from app.service.items_services.supply import (
-    SupplyCreateItem,
     SupplyProductItem,
     SupplyResponseItem,
     SupplyItem
@@ -69,8 +67,19 @@ class ContactRepository(BaseRepository[ContractModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[ContractModel], ItemObj]):
-        super().__init__(ContractModel, session=session, to_item=to_item)
+    ):
+        super().__init__(ContractModel, session=session, item=ContractItem)
+
+    async def get_by_company_and_supplier_id(self, company_id: int, supplier_id: int) -> Optional[ContractItem]:
+        """Получение контракта по id компании и поставщика"""
+        stmt = select(self.model).filter(
+                self.model.company_id == company_id,
+                self.model.supplier_id == supplier_id
+            )
+        result = await self.session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return self.item(**model.dict, model=model) if model is not None else None
+
 
 
 class UserRepository(BaseRepository[UserModel]):
@@ -123,8 +132,7 @@ class UserRepository(BaseRepository[UserModel]):
 
         if link_code_model is None:
             return None
-        
-        #TODO:
+
         user_model: UserModel = link_code_model.user
         user_item = self.item(**user_model.dict, model=user_model) if link_code_model.user else None
         return user_item
@@ -224,7 +232,7 @@ class ProductRepository(BaseRepository[ProductModel]):
             self, 
             supplier_id: int, 
             limit: int = 20
-    ) -> List[ProductFullItem]:
+    ) -> Optional[List[ProductFullItem]]:
         """Получение всех продуктов"""
         stmt = (
             select(
@@ -254,7 +262,7 @@ class ProductRepository(BaseRepository[ProductModel]):
             company_id: int,
             supplier_id: Optional[int] = None,
             limit: int = 100        
-    ) -> List[AvailableProductForCompany]:
+    ) -> Optional[List[AvailableProductForCompany]]:
         """Получить все доступные товары для компании по её ID"""
         stmt = (
             select(
@@ -289,7 +297,6 @@ class ProductRepository(BaseRepository[ProductModel]):
     async def get_products_by_supplies_products(
             self, 
             supply_products: Iterable[SupplyProductItem]
-            # TODO: заменить на SupplyProductItem
     ) -> Iterable[ProductItem]:
         """Получить все продукты по id продуктов в поставке"""
         products_version_ids = [supply_product.product_version_id for supply_product in supply_products]
@@ -328,14 +335,10 @@ class SupplyRepository(BaseRepository[SupplyModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[LinkCodeModel], ItemObj]):
-        super().__init__(LinkCodeModel, session=session, to_item=to_item)
+    ):
+        super().__init__(LinkCodeModel, session=session, item=SupplyItem)
 
-    async def update(
-            self,
-            obj: SupplyItem,
-            supplier_id: int
-    ) -> Optional[SupplyItem]:
+    async def update(self, obj: SupplyItem, supplier_id: int) -> Optional[SupplyItem]:
         """Обновить объект поставки"""
         query = update(self.model).where(
             self.model.id == obj.id, self.model.supplier_id == supplier_id
@@ -399,14 +402,14 @@ class SupplyRepository(BaseRepository[SupplyModel]):
             select(
                 SupplyProductModel.id,
                 SupplyProductModel.supply_id,
-                SupplyProductModel.product_id,
+                SupplyProductModel.product_version_id,
                 SupplyProductModel.quantity,
                 ProductModel.article.label("product_article"),
                 ProductVersionModel.name.label("product_name"),
                 ProductVersionModel.category.label("product_category"),
                 ProductVersionModel.price.label("product_price")
             )
-            .join(ProductModel, SupplyProductModel.product_id == ProductModel.id)
+            .join(ProductModel, ProductVersionModel.product)
             .join(ProductVersionModel, ProductVersionModel.id == ProductModel.product_version_id)
             .where(SupplyProductModel.supply_id == supply_id)
         )
@@ -421,8 +424,8 @@ class SupplyProductRepository(BaseRepository[SupplyProductModel]):
     def __init__(
             self, 
             session: AsyncSession,
-            to_item: Callable[[LinkCodeModel], ItemObj]):
-        super().__init__(LinkCodeModel, session=session, to_item=to_item)
+    ):
+        super().__init__(LinkCodeModel, session=session, item=SupplyProductItem)
 
     async def create_all(
             self, 
@@ -516,18 +519,30 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
             self,
             expense_id: int,
             company_id: int
-    ) -> ExpenseCompanyItem:
+    ) -> Optional[ExpenseWithInfoProductItem]:
         """Получение сущности расхода по id компании и расхода"""
         stmt = (
-            select(self.model)
+            select(
+                self.model.id,
+                self.model.product_version_id.label("product_id"),
+                self.model.quantity,
+                ProductModel.article,
+                ProductVersionModel.name.label("product_name"),
+                ProductVersionModel.category,
+                ProductVersionModel.description,
+                OrganizerModel.name.label("supplier_name")
+            )
+            .join(OrganizerModel, OrganizerModel.id == ProductModel.supplier_id)
+            .join(ProductModel, ProductModel.product_version_id == ProductVersionModel.id)
+            .join(ProductVersionModel, self.model.product_version)
             .where(
-                self.model.id == expense_id,
-                self.model.company_id == company_id
+                self.model.company_id == company_id,
+                self.model.id == expense_id
             )
         )
         result = await self.session.execute(stmt)
         expense = result.scalar_one_or_none()
-        return ExpenseCompanyItem(**expense.dict) if expense is not None else None
+        return ExpenseWithInfoProductItem(**expense.dict) if expense is not None else None
 
 
 class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
@@ -601,10 +616,22 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
             self, 
             supplier_id: int,
             expense_id: int,
-    ) -> Optional[ExpenseSupplierItem]:
+    ) -> Optional[ExpenseWithInfoProductItem]:
         """Получить товар по id поставщика и id расхода"""
         stmt = (
-            select(self.model)
+            select(
+                self.model.id,
+                self.model.product_id,
+                self.model.quantity,
+                ProductModel.article,
+                ProductVersionModel.name.label("product_name"),
+                ProductVersionModel.category,
+                ProductVersionModel.description,
+                OrganizerModel.name.label("supplier_name")
+            )
+            .join(OrganizerModel, self.model.supplier)
+            .join(ProductVersionModel, ProductVersionModel.id == ProductModel.product_version_id)
+            .join(ProductModel, self.model.product)
             .where(
                 self.model.supplier_id == supplier_id,
                 self.model.id == expense_id
@@ -612,7 +639,7 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
         )
         result = await self.session.execute(stmt)
         expense = result.scalar_one_or_none()
-        return ExpenseSupplierItem(**expense.dict) if expense is not None else None
+        return ExpenseWithInfoProductItem(**expense.dict) if expense is not None else None
     
     async def get_by_product_and_supplier_id(
             self, 

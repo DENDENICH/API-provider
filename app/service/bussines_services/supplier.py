@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Literal, List
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.repositories import ContactRepository

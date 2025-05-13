@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 from .base import Model, BaseItem
 
-from service.items_services.supply import SupplyProductItem
-
 from exceptions import ReverseAmountError
 
 

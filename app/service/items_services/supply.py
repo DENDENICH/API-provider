@@ -202,7 +202,7 @@ class SupplyResponseItem(BaseItem):
         for key, value in self.__dict__.items():
             if isinstance(value, OrganizerInfoInSupply):
                 dict_supply_response[key] = value.dict
-            if isinstance(value, Iterable[ProductInSupply]):
+            if isinstance(value, list):
                 dicts_products = [product.dict for product in value]
                 dict_supply_response[key] = dicts_products
             else:

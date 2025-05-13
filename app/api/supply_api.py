@@ -19,8 +19,7 @@ from schemas.supply import (
     SuppliesResponse,
     SupplyCreateRequest,
     SuppliesCancelledAssembleStatus,
-    SupplyStatusUpdate,
-    SupplyProductCreate
+    SupplyStatusUpdate
 )
 
 from logger import logger
@@ -44,7 +43,8 @@ async def get_supplies(
     try:
         supply_service = SupplyService(session=session)
         supplies = await supply_service.get_all_supplies_by_user_data(
-            user_data=user_data
+            user_data=user_data,
+            is_wait_confirm=is_wait_confirm,
         )
 
     except Exception as e:
@@ -81,7 +81,7 @@ async def create_supply(
             )
         )
     except ReverseAmountError as e:
-        session.rollback()
+        await session.rollback()
         logger.error(
             msg="Error creating supply\n{}".format(e)
         )
@@ -91,7 +91,7 @@ async def create_supply(
         )
     
     except Exception as e:
-        session.rollback()
+        await session.rollback()
         logger.error(
             msg="Error creating supply\n{}".format(e)
         )
@@ -121,7 +121,7 @@ async def assemble_or_cancel_supply(
             supplier_id=user_data.organizer_id
         )
     except Exception as e:
-        session.rollback()
+        await session.rollback()
         logger.error(
             msg="Error assembling or cancelling supply\n{}".format(e)
         )
@@ -151,7 +151,7 @@ async def update_status(
             supplier_id=user_data.organizer_id
         )
     except Exception as e:
-        session.rollback()
+        await session.rollback()
         logger.error(
             msg="Error updating supply status\n{}".format(e)
         )

@@ -2,6 +2,7 @@ from typing import Optional, Iterable, List
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import SupplyProduct # Убрать данный импорт в будущем
+from service.items_services.items import SupplyProductItem
 
 from service.repositories import (
     ProductRepository,
@@ -149,7 +150,7 @@ class ProductService:
     
     async def get_products_by_supplies_products(
             self,
-            supplies_products: Iterable[SupplyProduct]
+            supplies_products: Iterable[SupplyProductItem]
     ) -> Iterable[ProductItem]:
         """Получить все продукты по продуктам в поставках"""
         if (products := await self.product_repo.get_products_by_supplies_products(supplies_products)) is None:

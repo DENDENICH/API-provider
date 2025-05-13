@@ -39,7 +39,7 @@ class OrganizerService:
     
     async def get_supplier_by_inn(self, supplier_inn: int) -> OrganizerItem:
         """Получить поставщика по его ИНН"""
-        supplier: OrganizerItem = await self.organizer_repo.get_supplier_by_inn(supplier_inn=supplier_inn)
+        supplier: OrganizerItem = await self.organizer_repo.get_supplier_by_inn(inn=str(supplier_inn))
         if not supplier:
             raise bad_request_error(detail="Supplier not found")
         return supplier

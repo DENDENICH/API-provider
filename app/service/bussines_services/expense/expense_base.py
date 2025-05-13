@@ -1,14 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import List
 
 from service.items_services.expense import (
     ExpenseWithInfoProductItem,
     ExpenseSupplierItem,
     ExpenseCompanyItem,
-    ExpenseAddItem,
-    ExpenseAddReservedItem,
     ExpenseUpdateQuantityItem
 )
 

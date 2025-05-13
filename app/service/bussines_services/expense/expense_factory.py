@@ -18,7 +18,7 @@ class ExpenseFactory:
     def make_expense_service(
         cls, 
         session: AsyncSession, 
-        organizer_role: OrganizerRole
+        organizer_role: str
     ) -> ExpenseInterface:
         """Создать экземпляр класса для работы с расходами"""
         if organizer_role == OrganizerRole.company:

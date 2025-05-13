@@ -12,7 +12,6 @@ from app.service.items_services.supply import (
     SupplyCreateItem,
     SupplyItem, 
     SupplyProductItem,
-    ProductInSupplyCreate,
     SupplyStatus,
     get_supply_item_by_supply_create_item,
     get_supply_product_items
@@ -71,19 +70,21 @@ class SupplyService:
         supply_item = await self._create_supply_and_flush_session(
             supply=get_supply_item_by_supply_create_item(supply)
         )
+        products_ids = await self._get_products_version_ids_by_products_ids(
+            products_ids=supply.get_products_ids
+        )
         supply_products_item = get_supply_product_items(
             supply_id=supply_item.id,
             quantities=supply.get_quantities,
-            products_version_ids=await self._get_products_version_ids_by_products_ids(
-                products_ids=supply.get_products_ids
-            )
+            products_version_ids=products_ids
         )
         await self._create_supplies_products_and_flush_session(
             supply=supply_products_item
         )
         await self._update_reversed_in_expense_and_flush_session(
             supplier_id=supply_item.supplier_id,
-            supply=supply_products_item
+            supply=supply_products_item,
+            products_ids=products_ids
         )
         return
     
@@ -94,7 +95,7 @@ class SupplyService:
         """Получить список версий продуктов"""
         product_service = ProductService(self.session)
         product_versions = await product_service.get_products_version_by_product_ids(
-            products_ids=products_ids
+            product_ids=products_ids
         )
         return get_ids_from_products_version(product_versions)
     
@@ -128,7 +129,7 @@ class SupplyService:
             supply: SupplyItem
     ) -> SupplyItem:
         """Создать поставку и зафиксировать изменения в сессии"""
-        article = await generate_unique_code()
+        article = generate_unique_code()
         supply.article = article
         supply = await self.supply_repo.create(supply)
         await self.session.flush()
@@ -157,9 +158,11 @@ class SupplyService:
                 is_wait_confirm=is_wait_confirm
             )
         elif user_data.organizer_role == OrganizerRole.company:
-            supplies = await self._get_supplies_by_organizer_id(
+            supplies: List[SupplyResponseItem] = await self._get_supplies_by_organizer_id(
                 company_id=user_data.organizer_id
             )
+        else:
+            raise bad_request_error("not found organizer role")
         return supplies
     
     async def _get_supplies_by_organizer_id(
@@ -188,7 +191,7 @@ class SupplyService:
         
         supply.is_wait_confirm = False
         supply.status = status.status
-        self._update_supply_by_supplier_id_and_flush_session(
+        await self._update_supply_by_supplier_id_and_flush_session(
             supplier_id=supplier_id,
             supply=supply
         )
@@ -206,7 +209,7 @@ class SupplyService:
         
         supply.status = status.status
         
-        return self._update_supply_by_supplier_id_and_flush_session(
+        return await self._update_supply_by_supplier_id_and_flush_session(
             supplier_id=supplier_id,
             supply=supply
         )
@@ -238,14 +241,16 @@ class SupplyService:
         #   - списать у кол-ва товара на складе кол-во товара в поставке
         # Если поставка отклоняется: 
         #   - списать у резерва кол-во каждого товара в поставке
-        supply_products = await self.supply_product_repo.get_by_supply_id(
+        supply_products: Iterable[SupplyProductItem] = await self.supply_product_repo.get_by_supply_id(
             supply_id=supply.id
         )
         product_service = ProductService(self.session)
         products: Iterable[ProductItem] = await product_service.get_products_by_supplies_products(
-            supply_products=supply_products
+            supplies_products=supply_products
         )
         products_ids = [p.id for p in products]
+
+        expenses_list = list()
         expense_service = ExpenseSupplierService(self.session)
 
         if status.status == CancelledAssembleStatus.assemble:
@@ -256,7 +261,8 @@ class SupplyService:
                 )
                 expense.quantity -= supply_product.quantity
                 expense.reserved -= supply_product.quantity
-                expense_update = await expense_service.update_expense(expense_update)
+                expense_update = await expense_service.update_expense(expense)
+                expenses_list.append(expense_update)
 
         elif status.status == CancelledAssembleStatus.cancelled:
             for supply_product, product_id in zip(supply_products, products_ids):
@@ -265,4 +271,7 @@ class SupplyService:
                     product_id=product_id
                 )
                 expense.reserved -= supply_product.quantity
-                expense_update = await expense_service.update_expense(expense_update)
+                expense_update = await expense_service.update_expense(expense)
+                expenses_list.append(expense_update)
+
+        return expenses_list

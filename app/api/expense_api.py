@@ -99,6 +99,7 @@ async def update_quantity_expense(
         expenses = await expense_service.update_quantity_expense(
             expense_update_quantity=ExpenseUpdateQuantityItem(
                 expense_id=expense_id,
+                organizer_id=user_data.organizer_id,
                 quantity=expense_quantity.quantity
             )
         )
