@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from service.repositories import OrganizerRepository, UserCompanyRepository
 from service.items_services.organizer import OrganizerItem
 
-from exceptions import bad_request_error
+from exceptions import BadRequestError
 
 
 class OrganizerService:
@@ -25,7 +25,7 @@ class OrganizerService:
         """Регистрация компании и создание администратора организации"""
         existing = await self.user_company_repo.get_by_user_id(user_id=id)
         if existing:
-            raise bad_request_error(detail="User existing in company")
+            raise BadRequestError("User existing in company")
         organizer = OrganizerItem(
             name=name,
             role=role,
@@ -41,6 +41,6 @@ class OrganizerService:
         """Получить поставщика по его ИНН"""
         supplier: OrganizerItem = await self.organizer_repo.get_supplier_by_inn(inn=str(supplier_inn))
         if not supplier:
-            raise bad_request_error(detail="Supplier not found")
+            raise BadRequestError("User existing in company")
         return supplier
     

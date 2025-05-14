@@ -13,6 +13,8 @@ from service.bussines_services.user import UserService
 from service.bussines_services.organizer import OrganizerService
 from service.redis_service import UserDataRedis
 
+from exceptions import NotFoundError, BadRequestError
+
 from logger import logger
 
 router = APIRouter(
@@ -49,9 +51,32 @@ async def register_organizer(
             organizer_id=organizer.id,
         )
         await session.flush()
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating organizer\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating organizer\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
-        print(f"ORGANIZER\n{e}")
+        logger.error(
+            msg="Error creating organizer\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     # установка пользовательских данных в redis
     try:

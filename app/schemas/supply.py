@@ -2,8 +2,8 @@ from typing import Optional, List
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
 
-from organizer import OrganizerSupplyObject
-from product import ProductResponseSupply
+from schemas.organizer import OrganizerSupplyObject
+from schemas.product import ProductResponseSupply
 
 
 class CancelledAssembleStatus(str, Enum):

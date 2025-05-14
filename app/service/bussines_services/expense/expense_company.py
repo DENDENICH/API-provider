@@ -5,13 +5,13 @@ from typing import List
 from service.repositories import (
     ExpenseCompanyRepository,
 )
-from app.service.items_services.expense import (
+from service.items_services.expense import (
     ExpenseWithInfoProductItem,
     ExpenseCompanyItem,
     ExpenseUpdateQuantityItem
 )
 from .expense_base import ExpenseInterface
-from exceptions import not_found_error
+from exceptions import NotFoundError
 
 
 class ExpenseCompanyService(ExpenseInterface):
@@ -23,7 +23,7 @@ class ExpenseCompanyService(ExpenseInterface):
         """Получить все расходы"""
         expenses = await self.expense_repo.get_all_expense_response_items(organizer_id)
         if not expenses:
-            raise not_found_error
+            raise NotFoundError("Expenses not found")
         return expenses
     
     async def get_expense(self, expense_id: int, organizer_id: int) -> ExpenseWithInfoProductItem:
@@ -33,7 +33,7 @@ class ExpenseCompanyService(ExpenseInterface):
             company_id=organizer_id
         )
         if not expense:
-            raise not_found_error
+            raise NotFoundError("Expense not found")
         return expense
 
     async def add_expense(self, expense: ExpenseCompanyItem) -> ExpenseCompanyItem:
@@ -53,7 +53,7 @@ class ExpenseCompanyService(ExpenseInterface):
             company_id=expense_update_quantity.organizer_id
         )
         if not expense:
-            raise not_found_error
+            raise NotFoundError("Expenses not found")
         
         expense.quantity = expense_update_quantity.quantity
         expense_update = await self.expense_repo.update(expense)

@@ -5,7 +5,7 @@ from service.repositories import ContactRepository
 from service.items_services.organizer import OrganizerItem
 from service.items_services.contract import ContractItem
 
-from exceptions import bad_request_error
+from exceptions import BadRequestError
 
 
 class SupplierService:
@@ -29,7 +29,7 @@ class SupplierService:
         """Получение поставщиков"""
         suppliers: List[OrganizerItem] = await self.contract_repo.get_supplier_available_company(company_id=company_id)
         if not suppliers:
-            raise bad_request_error(detail="Suppliers not found")
+            raise BadRequestError("Suppliers not found")
         return suppliers
 
     async def delete_contract(
@@ -44,7 +44,7 @@ class SupplierService:
                 company_id=company_id
             )
             if not result:
-                raise bad_request_error(detail="Contract not found")
+                raise BadRequestError("Suppliers not found")
         except Exception as e:
             pass
         

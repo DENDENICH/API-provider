@@ -22,6 +22,8 @@ from service.items_services.expense import (
 )
 from service.redis_service import UserDataRedis
 
+from exceptions import NotFoundError, BadRequestError
+
 from logger import logger
 
 
@@ -46,11 +48,31 @@ async def get_expenses(
             organizer_id=user_data.organizer_id
         )
         
-    except Exception as e:
-        logger.error(f"Error getting expenses: {e}")
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting expenses\n{}".format(e)
+        )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting expenses\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting expenses\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     
     return ExpensesResponse(
@@ -74,11 +96,31 @@ async def get_expenses(
             expense_id=expenses_id,
             organizer_id=user_data.organizer_id
         )
-    except Exception as e:
-        logger.error(f"Error getting expense by id: {e}")
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting expenses\n{}".format(e)
+        )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting expenses\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting expenses\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     return ExpenseResponse(**expense.dict)
 
@@ -103,11 +145,31 @@ async def update_quantity_expense(
                 quantity=expense_quantity.quantity
             )
         )
-    except Exception as e:
-        logger.error(f"Error update quantity expense: {e}")
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error updating sttaus expenses\n{}".format(e)
+        )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error updating sttaus expenses\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error updating sttaus expenses\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
     return {"detail": "No content"}
@@ -128,11 +190,31 @@ async def delete_expense(
         expenses = await expense_service.delete_expense(
             expense_id=expense_id
         )
-    except Exception as e:
-        logger.error(f"Error deleting expense expense: {e}")
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error deleting expense\n{}".format(e)
+        )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error deleting expense\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error deleting expense\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
     return {"detail": "No content"}

@@ -5,14 +5,14 @@ from typing import List
 from service.repositories import (
     ExpenseSupplierRepository
 )
-from app.service.items_services.expense import (
+from service.items_services.expense import (
     ExpenseWithInfoProductItem,
     ExpenseSupplierItem,
     ExpenseAddReservedItem,
     ExpenseUpdateQuantityItem,
 )
 from .expense_base import ExpenseInterface
-from exceptions import not_found_error
+from exceptions import NotFoundError
 
 
 class ExpenseSupplierService(ExpenseInterface):
@@ -25,7 +25,7 @@ class ExpenseSupplierService(ExpenseInterface):
         """Получить все расходы"""
         expenses = await self.expense_repo.get_all_expense_response_items(organizer_id)
         if not expenses:
-            raise not_found_error
+            raise NotFoundError("Expenses not found")
         return expenses
     
 
@@ -40,7 +40,7 @@ class ExpenseSupplierService(ExpenseInterface):
             supplier_id=organizer_id
         )
         if not expense:
-            raise not_found_error
+            raise NotFoundError("Expenses not found")
         return expense
     
     
@@ -61,7 +61,7 @@ class ExpenseSupplierService(ExpenseInterface):
         expense.quantity = expense_update_quantity.quantity
         expense = await self.expense_repo.update(expense)
         if not expense:
-            raise not_found_error
+            raise NotFoundError("Expenses not found")
         return expense
     
 
@@ -69,7 +69,7 @@ class ExpenseSupplierService(ExpenseInterface):
         """Обновление сущности расхода"""
         expense_update = await self.expense_repo.update(expense)
         if expense_update is None:
-            raise not_found_error
+            raise NotFoundError("Expenses not found")
         return expense_update
     
 
@@ -84,7 +84,7 @@ class ExpenseSupplierService(ExpenseInterface):
             product_id=product_id
         )
         if not expense:
-            raise not_found_error
+            raise NotFoundError("Expenses not found")
         return expense
 
 
@@ -106,5 +106,5 @@ class ExpenseSupplierService(ExpenseInterface):
         """Удалить расход"""
         expense = await self.expense_repo.delete(expense_id)
         if not expense:
-            raise not_found_error
+            raise NotFoundError("Expenses not found")
         return expense

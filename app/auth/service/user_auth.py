@@ -8,7 +8,7 @@ from service.items_services.items import UserItem
 from auth.utils.hashing_password import hashing_password
 from auth.utils.jwt_processes import jwt_processes as jwt
 
-from auth.exception import not_found_user_register_login, already_exists_user
+from exceptions import NotFoundError, BadRequestError
 
 
 class UserAuthService:
@@ -19,16 +19,16 @@ class UserAuthService:
     async def check_login_user(self, email: str, password: str) -> Optional[UserItem]:
         """Получить пользователя по email"""
         if (user := await self.user_repo.get_by_email(email)) is None:
-            raise not_found_user_register_login
+            raise NotFoundError("User not found")
         if not hashing_password.check_password(password=password, hash=user.password):
-            raise not_found_user_register_login
+            raise NotFoundError("User not found")
         return user
     
     async def register_user(self, name: str, email: str, phone: str, password: str) -> UserItem:
         """Зарегистрировать нового пользователя"""
         # проверка на существование пользователя в БД
         if await self.user_repo.get_by_email(email=email):
-            raise already_exists_user
+            raise BadRequestError("User already exists")
         hashed_password = hashing_password.create_hash(password)
         user = UserItem(
             name=name, 

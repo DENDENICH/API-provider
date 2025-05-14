@@ -49,59 +49,24 @@ paths:
           $ref: '#/components/responses/NotFound'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-
-  /users/{user_id}:
-    get:
-      summary: Получение пользователя
-      tags:
-        - Пользователи
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Информация о пользователе
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserSchema'
-        "404":
-          $ref: '#/components/responses/NotFound'
-        "422":
-          $ref: '#/components/responses/UnprocessableEntity'
-    put:
-      summary: Изменение данных пользователя
-      tags:
-        - Пользователи
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserSchema'
-      responses:
-        "200":
-          description: ОК
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserSchema'
-        "404":
-          $ref: '#/components/responses/NotFound'
-        "422":
-          $ref: '#/components/responses/UnprocessableEntity'
   
   
   /users/company:
+    get:
+      summary: Получение всех сотрудников организации
+      tags:
+        - Пользователи
+      operationId: getUserCompany
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersCompanyWithUserInfo'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+          
     post:
       summary: Привязка пользователя к уч. записи компании
       tags:
@@ -438,7 +403,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 
-  /expenses:
+  /expenses/:
     get:
       summary: Получить все расходы
       tags:
@@ -454,7 +419,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Expenses'
 
-  /expenses/{expense_id}:
+  /expenses/{expense_id}/:
     patch:
       summary: Обновить количество расхода
       tags:
@@ -523,19 +488,6 @@ components:
       required:
         - details
 
-    # Модель пользователя
-    UserSchema:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        email:
-          type: string
-        phone:
-          type: string
-
     UserRegisterRequest:
       type: object
       properties:
@@ -550,6 +502,28 @@ components:
         user_type:
           type: string
           enum: [organizer, employee]
+          
+    UserCompanyWithUserInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        user_id:
+          type: integer
+          
+    UsersCompanyWithUserInfo:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserCompanyWithUserInfo'
 
 
     UserLoginRequest:
@@ -603,28 +577,6 @@ components:
           type: string
         bank_details:
           type: string
-
-    OrganizersResponse:
-      type: object
-      properties:
-        organizers:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              role:
-                type: string
-                enum: [ company, supplier ]
-              address:
-                type: string
-              inn:
-                type: string
-              bank_details:
-                type: string
 
     
     # Схемы поставок

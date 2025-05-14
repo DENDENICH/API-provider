@@ -41,6 +41,23 @@ class UserCompanyItem(BaseItem):
         self.user_id = user_id
         self.role = role
 
+class UserCompanyWithUserItem:
+    """Объект сущности уч. записи пользователя компании с данными пользователя"""
+    def __init__(
+        self,
+        user_id: int,
+        role: str,
+        name: str,
+        email: str,
+        phone: str,
+    ):
+
+        self.user_id = user_id
+        self.role = role
+        self.name = name
+        self.email = email
+        self.phone = phone
+
 
 class LinkCodeItem(BaseItem):
     """Объект сущности пригласительного кода"""
@@ -139,6 +156,7 @@ class ExpenseSupplierItem(BaseItem):
 __all__ = [
     "UserItem",
     "UserCompanyItem",
+    "UserCompanyWithUserItem",
     "LinkCodeItem",
     "SupplyItem",
     "SupplyProductItem",

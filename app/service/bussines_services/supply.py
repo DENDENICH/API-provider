@@ -7,7 +7,7 @@ from service.repositories import (
     SupplyProductRepository,
     SupplyRepository,
 )
-from app.service.items_services.supply import (
+from service.items_services.supply import (
     SupplyResponseItem,
     SupplyCreateItem,
     SupplyItem, 
@@ -26,7 +26,7 @@ from service.bussines_services.product import ProductService
 from service.bussines_services.expense.expense_supplier import ExpenseSupplierService
 
 
-from exceptions import not_found_error, bad_request_error
+from exceptions import NotFoundError, BadRequestError
 
 from utils import generate_unique_code
 
@@ -58,7 +58,7 @@ class SupplyService:
                 company_id=company_id,
                 supplier_id=supplier_id
         ) is None:
-            raise bad_request_error("not found contract")
+            raise BadRequestError("not found contract")
         return 
 
 
@@ -162,7 +162,7 @@ class SupplyService:
                 company_id=user_data.organizer_id
             )
         else:
-            raise bad_request_error("not found organizer role")
+            raise BadRequestError("not found organizer role")
         return supplies
     
     async def _get_supplies_by_organizer_id(
@@ -178,7 +178,7 @@ class SupplyService:
             is_wait_confirm=is_wait_confirm
         )
         if not supplies:
-            raise not_found_error("not found supplies")
+            raise NotFoundError("not found supplies")
         return supplies
 
 
@@ -224,7 +224,7 @@ class SupplyService:
             supplier_id=supplier_id
         )
         if not supply_update:
-            raise not_found_error("not found supply")
+            raise NotFoundError("not found supply")
         await self.session.flush()
         return supply_update
 

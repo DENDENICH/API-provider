@@ -12,12 +12,13 @@ from schemas.user import (
     UserTypeForNextRoute
 )
 
-from auth.utils.jwt_processes import jwt_processes as jwt
 from auth.service.user_auth import UserAuthService
 
 from service.bussines_services.link_code import LinkCodeService
 from service.bussines_services.user import UserService
 from service.redis_service import UserDataRedis, redis_user
+
+from exceptions import NotFoundError, BadRequestError
 
 from logger import logger
 
@@ -56,28 +57,41 @@ async def registry(
             await link_code_service.create_link_code(user_id=user.id)
 
         token = user_service.get_jwt(user=user)
-        
+
+        # установка пользовательских данных в redis
+        await redis_user.set_data(
+            key=user.id,
+            data=UserDataRedis(user_id=user.id)
+        )
+    
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
         logger.error(
             msg="Error creating user\n{}".format(e)
         )
-
-    await session.commit()
-
-    # установка пользовательских данных в redis
-    try:
-        await redis_user.set_data(
-            key=user.id,
-            data=UserDataRedis(user_id=user.id)
-        )
-    except Exception as e:
-        logger.error(
-            msg="Error set user data in Redis\n{}".format(e)
-        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+    await session.commit()
     
     return AuthTokenSchema(next_route=next_route, **token)
 
@@ -95,10 +109,32 @@ async def login(
             password=data.password
         )
         token = user_auth_service.get_jwt(user=user)
+
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error loging user\n{}".format(e)
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
     # установка пользовательских данных в redis

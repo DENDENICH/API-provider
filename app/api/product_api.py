@@ -15,7 +15,7 @@ from schemas.product import (
 )
 
 from service.bussines_services.product import ProductService
-from service.items_services.product import ProductFullItem, ProductVersion
+from service.items_services.product import ProductFullItem, ProductVersion, ProductCreate
 from service.redis_service import UserDataRedis
 
 from logger import logger
@@ -37,12 +37,12 @@ async def create_product(
         service = ProductService(session=session)
         product = await service.create_product(
             user_data=user_data,
-            **product_in.model_dump()
+            product_new=ProductCreate(**product_in.model_dump())
         )
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error creating user company\n{}".format(e)
+            msg="Error creating product\n{}".format(e)
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -58,12 +58,24 @@ async def get_products(
     user_data: UserDataRedis = Depends(check_is_company),
     session: AsyncSession = Depends(db_core.session_getter),
 ):
-    service = ProductService(session=session)
-    products = await service.get_available_products_for_company(
-        company_id=user_data.organizer_id,
-        supplier_id=supplier_id,
-        add_quantity=add_quantity
-    )
+    try:
+        service = ProductService(session=session)
+        products = await service.get_available_products_for_company(
+            company_id=user_data.organizer_id,
+            supplier_id=supplier_id,
+            add_quantity=add_quantity
+        )
+    except Exception as e:
+        logger.error(
+            msg="Error getting products\nsupplier_id: {}\nadd_quantity{}".format(
+                supplier_id,
+                add_quantity
+            ),
+            exc_info=e #TODO: так проделать со всеми логами
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     return ProductsResponse(products=products)
     
 
@@ -73,9 +85,19 @@ async def get_product_by_id(
     user_data: UserDataRedis = Depends(check_is_company),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    service = ProductService(session)
-    product = await service.get_product_by_id(product_id)
+    try:
+        service = ProductService(session)
+        product = await service.get_product_by_id(product_id)
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error to getting product by id\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     return ProductResponse(**product.dict)
+
 
 
 @router.put("/{product_id}", response_model=ProductResponse)
@@ -94,7 +116,7 @@ async def update_product(
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error creating user company\n{}".format(e)
+            msg="Error updating products\n{}".format(e)
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

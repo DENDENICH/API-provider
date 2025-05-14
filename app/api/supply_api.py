@@ -12,7 +12,7 @@ from api.dependencies import (
 )
 
 from service.redis_service import UserDataRedis
-from app.service.items_services.supply import SupplyCreateItem, SupplyStatus
+from service.items_services.supply import SupplyCreateItem, SupplyStatus
 from service.bussines_services.supply import SupplyService
 
 from schemas.supply import (
@@ -24,7 +24,7 @@ from schemas.supply import (
 
 from logger import logger
 
-from exceptions import ReverseAmountError
+from exceptions import NotFoundError, BadRequestError
 
 
 router = APIRouter(
@@ -47,13 +47,31 @@ async def get_supplies(
             is_wait_confirm=is_wait_confirm,
         )
 
-    except Exception as e:
+    except NotFoundError as e:
+        await session.rollback()
         logger.error(
             msg="Error getting supplies\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal Server Error"
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
                 
     return SuppliesResponse(
@@ -80,24 +98,31 @@ async def create_supply(
                 company_id=user_data.organizer_id
             )
         )
-    except ReverseAmountError as e:
+    except NotFoundError as e:
         await session.rollback()
         logger.error(
-            msg="Error creating supply\n{}".format(e)
+            msg="Error creating supplies\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Oversupply of reserves"
+            status_code=status.HTTP_404_NOT_FOUND
         )
-    
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error creating supply\n{}".format(e)
+            msg="Error creating supplies\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal Server Error"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
     return {"details": "No content"}
@@ -120,14 +145,31 @@ async def assemble_or_cancel_supply(
             ),
             supplier_id=user_data.organizer_id
         )
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error assembling or cancelling supply\n{}".format(e)
+            msg="Error creating supplies\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal Server Error"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
     return {"details": "No content"}
@@ -150,14 +192,31 @@ async def update_status(
             ),
             supplier_id=user_data.organizer_id
         )
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error updating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error updating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error updating supply status\n{}".format(e)
+            msg="Error updating supplies\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal Server Error"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
     return {"details": "No content"}
