@@ -503,7 +503,7 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
             self, 
             session: AsyncSession,
     ):
-        super().__init__(LinkCodeModel, session=session, item=ExpenseCompanyModel)
+        super().__init__(ExpenseCompanyModel, session=session, item=ExpenseCompanyItem)
 
     async def get_all_expense_response_items(
             self, 
@@ -599,7 +599,7 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
             self, 
             session: AsyncSession,
     ):
-        super().__init__(LinkCodeModel, session=session, item=ExpenseSupplierModel)
+        super().__init__(ExpenseSupplierModel, session=session, item=ExpenseSupplierItem)
 
     async def get_all_expense_response_items(
             self, 

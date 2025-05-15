@@ -1,7 +1,7 @@
 from typing import Optional, Type, Iterable
 from dataclasses import dataclass
 
-from .base import Model, BaseItem
+from service.items_services.base import Model, BaseItem
 
 from exceptions import BadRequestError
 
@@ -60,26 +60,56 @@ class ExpenseSupplierItem(BaseItem):
         model: Optional[Type[Model]] = None
     ):
         super().__init__(id=id, model=model)
-
-        # @property - см в pycharm. Сделать реализацию в ветке продуктов. Перед этим сохранить коммит
-
         self.supplier_id = supplier_id
         self.product_id = product_id
         self.quantity = quantity
         self.reserved = reserved
 
-    def __setattr__(self, name, value):
-        if name == "reserved":
-            if value > self.quantity:
-                raise BadRequestError("Oversupply of reserves")
-        if name == "quantity":
+
+    @property
+    def quantity(self):
+        return self._quantity
+    
+    @quantity.setter
+    def quantity(self, value):
+        if isinstance(value, (int, float)):
             if value < 0:
                 raise BadRequestError("Negative quantity")
+            self._quantity = value
+        else:
+            raise BadRequestError("Error type a quantity")
+        
+    @property
+    def reserved(self):
+        return self._reserved
+    
+    @reserved.setter
+    def reserved(self, value):
+        if isinstance(value, (int, float)):
+            if value < 0:
+                raise BadRequestError("Negative reserved")
+            elif value > self.quantity:
+                raise BadRequestError("Oversupply of reserved")
+            self._reserved = value
+        else:
+            raise BadRequestError("Error type a reserved")
+
 
     @property
     def get_quantity_subtract_reserve(self) -> int:
         """Количество расхода с вычитом резерва"""
         return self.quantity - self.reserved
+    
+    @property
+    def dict(self):
+        base_dict = super().dict
+        base_dict.update(
+            {
+                "quantity": self.quantity,
+                "reserved": self.reserved
+            }
+        )
+        return base_dict
     
 
 @dataclass

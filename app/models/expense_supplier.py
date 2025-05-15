@@ -7,11 +7,10 @@ from core.db import Base
 
 class ExpenseDict(TypedDict):
     id: int
-    company_id: int
-    article: int
-    product_version_id: int
+    supplier_id: int
+    product_id: int
     quantity: int
-    reversed: int
+    reserved: int
 
 
 class ExpenseSupplier(Base):
@@ -29,7 +28,7 @@ class ExpenseSupplier(Base):
         Integer, 
         nullable=False
     )
-    reversed: Mapped[int] = mapped_column(
+    reserved: Mapped[int] = mapped_column(
         Integer, 
         default=0,
         nullable=False
@@ -50,10 +49,9 @@ class ExpenseSupplier(Base):
     def dict(self):
         return ExpenseDict(
             id=self.id,
-            company_id=self.company_id,
-            article=self.article,
-            product_version_id=self.product_version_id,
+            supplier_id=self.supplier_id,
+            product_id=self.product_id,
             quantity=self.quantity,
-            reversed=self.reversed
+            reserved=self.reserved
         )
 
