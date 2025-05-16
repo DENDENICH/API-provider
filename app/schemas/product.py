@@ -32,8 +32,8 @@ class ProductResponse(ProductBase):
     article: int
     supplier_id: int
     organizer_name: str
-    quantity: Optional[int]
-    description: Optional[str]
+    quantity: Optional[int] = None
+    description: Optional[str] = None
 
 
 class ProductResponseSupply(ProductBase):

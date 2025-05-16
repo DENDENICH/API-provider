@@ -78,7 +78,7 @@ async def get_products(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    return ProductsResponse(products=[ProductResponse(**product.dict) for product in products])
+    return ProductsResponse(products=[ProductResponse(id=product.id, **product.dict) for product in products])
     
 
 @router.get("/{product_id}", response_model=ProductResponse)
@@ -98,7 +98,7 @@ async def get_product_by_id(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    return ProductResponse(**product.dict)
+    return ProductResponse(id=product.id, **product.dict)
 
 
 

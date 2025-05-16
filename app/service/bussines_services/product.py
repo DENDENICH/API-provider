@@ -105,7 +105,7 @@ class ProductService:
             self, 
             company_id: int,
             supplier_id: Optional[int] = None,
-            add_quantity: Optional[bool] = False
+            add_quantity: bool = False
     ) -> List[AvailableProductForCompany]:
         """Получить все продукты поставщиков для компании"""
         products: List[AvailableProductForCompany] = await self.product_repo.get_available_products_for_company(

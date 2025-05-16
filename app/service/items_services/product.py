@@ -63,15 +63,21 @@ class AvailableProductForCompany(BaseItem):
             price: float,
             organizer_name: str,
             supplier_id: int,
+            description: Optional[str] = None,
             quantity: Optional[int] = None,
-            img_path: Optional[str] = None
+            img_path: Optional[str] = None,
+            model: Optional[Type[Model]] = None
+
     ):
+        super().__init__(id=id, model=model)
+
         self.article = article
         self.name = name
         self.category = category
         self.price = price
         self.organizer_name = organizer_name
         self.supplier_id = supplier_id
+        self.description = description
         self.quantity = quantity
         self.img_path = img_path
 

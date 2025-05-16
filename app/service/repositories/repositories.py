@@ -258,26 +258,27 @@ class ProductRepository(BaseRepository[ProductModel]):
     ):
         super().__init__(ProductModel, session=session, item=ProductItem)
 
-    async def get_by_id_full_product(self, id: int) -> ProductFullItem:
+    async def get_by_id_full_product(self, id: int) -> AvailableProductForCompany:
         """Получить объект по ID"""
-        result = await self.session.execute(
+        stmt = (
             select(
                 self.model.id,
                 self.model.article,
+                self.model.supplier_id,
                 ProductVersionModel.name,
                 ProductVersionModel.category,
                 ProductVersionModel.price,
+                ProductVersionModel.img_path,
                 ProductVersionModel.description,
-                ProductVersionModel.img_path
+                OrganizerModel.name.label("organizer_name")
             )
-            .join(
-                ProductVersionModel, 
-                self.model.product_version_id == ProductVersionModel.id
-            )
+            .join(ProductVersionModel, ProductVersionModel.id == self.model.product_version_id )
+            .join(OrganizerModel, OrganizerModel.id == self.model.supplier_id)
             .where(self.model.id == id)
         )
+        result = await self.session.execute(stmt)
         product = result.mappings().first()
-        return self.item(**dict(product)) if product is not None else None
+        return AvailableProductForCompany(**dict(product)) if product is not None else None
 
     async def get_all_products(
             self, 
@@ -326,13 +327,10 @@ class ProductRepository(BaseRepository[ProductModel]):
                 ProductVersionModel.img_path,
                 OrganizerModel.name.label("organizer_name")
             )
-            .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
+            .join(ProductVersionModel, ProductVersionModel.id == self.model.product_version_id )
             .join(OrganizerModel, OrganizerModel.id == self.model.supplier_id)
             .join(ContractModel, ContractModel.supplier_id == self.model.supplier_id)
-            .where(
-                ContractModel.company_id == company_id,
-                ContractModel.supplier_id == supplier_id,
-            )
+            .where(ContractModel.company_id == company_id,)
             .limit(limit)
         )
         result = await self.session.execute(stmt)
@@ -340,9 +338,16 @@ class ProductRepository(BaseRepository[ProductModel]):
 
         if products is None:
             return None
-        
-        products = [AvailableProductForCompany(**dict(p)) for p in products]
-
+        if supplier_id:
+            products = [
+                AvailableProductForCompany(**dict(p)) 
+                for p in products if p.get("supplier_id") == supplier_id
+                ]
+        else:
+            products = [
+                AvailableProductForCompany(**dict(p)) 
+                for p in products
+            ]
         return products
     
     async def get_products_by_supplies_products(

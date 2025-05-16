@@ -19,7 +19,7 @@ class OrganizerRole(str, Enum):
 async def get_user_from_redis(request: Request) -> UserDataRedis:
     user_id = request.state.user_id
     if (user_data := await redis_user.get_data(user_id)) is None:
-        raise not_found_error
+        raise forbiden_error
     user_data.user_id = user_id
     return user_data
 
