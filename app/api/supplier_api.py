@@ -43,7 +43,7 @@ async def get_suppliers(
         )
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error getting suppliers\n{}".format(e)
         )
         raise HTTPException(
@@ -52,7 +52,7 @@ async def get_suppliers(
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error getting suppliers\n{}".format(e)
         )
         raise HTTPException(
@@ -87,7 +87,7 @@ async def get_suppliers(
         )
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error getting suppliers\n{}".format(e)
         )
         raise HTTPException(
@@ -96,7 +96,7 @@ async def get_suppliers(
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error getting suppliers\n{}".format(e)
         )
         raise HTTPException(
@@ -117,7 +117,7 @@ async def get_suppliers(
     )
 
 
-@router.post("/{supplier_id}", status_code=201)
+@router.post("/{supplier_id}", status_code=status.HTTP_201_CREATED)
 async def add_supplier(
     supplier_id: int, 
     user_data: UserDataRedis = Depends(check_is_admin),
@@ -134,7 +134,7 @@ async def add_supplier(
         )
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error add supplier\n{}".format(e)
         )
         raise HTTPException(
@@ -143,7 +143,7 @@ async def add_supplier(
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error add supplier\n{}".format(e)
         )
         raise HTTPException(
@@ -152,7 +152,7 @@ async def add_supplier(
 
     except Exception as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error add supplier\n{}".format(e)
         )
         raise HTTPException(
@@ -162,7 +162,7 @@ async def add_supplier(
     return {"detail": "No content"}
     
 
-@router.delete("/{supplier_id}", status_code=204)
+@router.delete("/{supplier_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_supplier(
     supplier_id: int,
     user_data: UserDataRedis = Depends(check_is_admin),
@@ -177,7 +177,7 @@ async def delete_supplier(
         )
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error removing supplier\n{}".format(e)
         )
         raise HTTPException(
@@ -186,7 +186,7 @@ async def delete_supplier(
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
+        logger.info(
             msg="Error removing supplier\n{}".format(e)
         )
         raise HTTPException(

@@ -59,7 +59,7 @@ class OrganizerRepository(BaseRepository[OrganizerModel]):
             )
         )
         model = result.scalar_one_or_none()
-        return self.item(**model.dict, model=model) if model is not None else None
+        return self.item(**model.dict, model=model) if model else None
 
 
 class ContactRepository(BaseRepository[ContractModel]):
