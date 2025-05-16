@@ -52,7 +52,7 @@ class ProductItem(BaseItem):
         self.supplier_id = supplier_id
 
 
-class AvailableProductForCompany:
+class AvailableProductForCompany(BaseItem):
     """Представление объекта продукта, разрешенного для компании"""
     def __init__(
             self,
@@ -72,9 +72,9 @@ class AvailableProductForCompany:
         self.category = category
         self.price = price
         self.organizer_name = organizer_name
+        self.supplier_id = supplier_id
         self.quantity = quantity
         self.img_path = img_path
-        self.supplier_id = supplier_id
 
 
 class ProductFullItem(BaseItem):

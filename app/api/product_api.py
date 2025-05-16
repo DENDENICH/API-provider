@@ -13,6 +13,7 @@ from schemas.product import (
     ProductResponse,
     ProductsResponse
 )
+from schemas.expense import ExpenseResponse
 
 from service.bussines_services.product import ProductService
 from service.items_services.product import ProductFullItem, ProductVersion, ProductCreate
@@ -27,7 +28,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_product(
     product_in: ProductRequest,
     user_data: UserDataRedis = Depends(check_is_supplier),
@@ -35,7 +36,7 @@ async def create_product(
 ):
     try:
         service = ProductService(session=session)
-        product = await service.create_product(
+        expense = await service.create_product(
             user_data=user_data,
             product_new=ProductCreate(**product_in.model_dump())
         )
@@ -48,7 +49,7 @@ async def create_product(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
-    return ProductResponse(id=product.id, **product.dict)
+    return ExpenseResponse(**expense.dict)
 
 
 @router.get("/", response_model=ProductsResponse)
@@ -71,12 +72,12 @@ async def get_products(
                 supplier_id,
                 add_quantity
             ),
-            exc_info=e #TODO: так проделать со всеми логами
+            exc_info=e #TODO: в дальнейшем так проделать со всеми логами
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    return ProductsResponse(products=products)
+    return ProductsResponse(products=[ProductResponse(**product.dict) for product in products])
     
 
 @router.get("/{product_id}", response_model=ProductResponse)

@@ -11,11 +11,11 @@ class ExpenseWithInfoProductItem(BaseItem):
     def __init__(
         self,
         article: int,
-        supplier_name: str,
         product_id: int,
         product_name: str,
         category: str,
         quantity: int,
+        supplier_name: Optional[str] = None,
         description: Optional[str] = None,
         id: Optional[int] = None, 
         model: Optional[Type[Model]] = None
@@ -24,7 +24,7 @@ class ExpenseWithInfoProductItem(BaseItem):
 
         self.article = article
         self.product_id = product_id
-        self.organizer_name = supplier_name
+        self.supplier_name = supplier_name
         self.product_name = product_name
         self.quantity = quantity
         self.category = category

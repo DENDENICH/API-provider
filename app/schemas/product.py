@@ -29,6 +29,7 @@ class ProductResponse(ProductBase):
     id: int
     article: int
     supplier_id: int
+    organizer_name: str
     quantity: Optional[int]
     description: Optional[str]
 

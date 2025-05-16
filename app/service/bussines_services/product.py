@@ -15,7 +15,7 @@ from service.items_services.product import (
     ProductFullItem,
     AvailableProductForCompany
 )
-from service.items_services.expense import ExpenseSupplierItem
+from service.items_services.expense import ExpenseSupplierItem, ExpenseWithInfoProductItem
 from service.bussines_services.expense.expense_supplier import ExpenseSupplierService
 from service.redis_service import UserDataRedis
 
@@ -36,7 +36,7 @@ class ProductService:
             self,
             user_data: UserDataRedis, 
             product_new: ProductCreate
-    ) -> ProductFullItem:
+    ) -> ExpenseWithInfoProductItem:
         """Создание продукта"""
         product_version = await self._create_version_product_and_flush_session(
             data=ProductVersion(
@@ -58,11 +58,14 @@ class ProductService:
             product_id=product.id,
             quantity=product_new.quantity
         )
-
-        return ProductFullItem(
-            id=product.id,
-            article=product.id,
-            **product_version.dict
+        return ExpenseWithInfoProductItem(
+            article=product.article,
+            product_id=product.id,
+            product_name=product_version.name,
+            category=product_version.category,
+            quantity=new_expense.quantity,
+            description=product_version.description,
+            id=new_expense.id
         )
     
     async def _create_version_product_and_flush_session(
