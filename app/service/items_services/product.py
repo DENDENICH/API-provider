@@ -66,7 +66,6 @@ class AvailableProductForCompany(BaseItem):
             quantity: Optional[int] = None,
             img_path: Optional[str] = None
     ):
-        self.id = id
         self.article = article
         self.name = name
         self.category = category

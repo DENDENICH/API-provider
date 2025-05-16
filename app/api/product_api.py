@@ -102,7 +102,7 @@ async def get_product_by_id(
 
 
 
-@router.put("/{product_id}", response_model=ProductResponse)
+@router.put("/{product_id}", response_model=ExpenseResponse)
 async def update_product(
     product_id: int,
     product_in: ProductRequestUpdate,
@@ -111,7 +111,7 @@ async def update_product(
 ):
     try:
         service = ProductService(session)
-        product: ProductFullItem = await service.update_product(
+        product = await service.update_product(
             product_id, 
             ProductVersionItem(**product_in.model_dump())
         )
@@ -124,6 +124,6 @@ async def update_product(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
-    return ProductResponse(id=product.id, **product.dict)
+    return ExpenseResponse(id=product.id, **product.dict)
 
     

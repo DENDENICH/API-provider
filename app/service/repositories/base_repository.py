@@ -65,12 +65,11 @@ class BaseRepository(Generic[Model]):
 
     async def update(
             self, 
-            obj: Type[ItemObj],
-            obj_id: Optional[int] = None, 
+            obj: Type[ItemObj]
     ) -> Optional[Type[ItemObj]]:
         """ Обновить объект по ID """
         query = update(self.model).where(
-            self.model.id == obj_id or self.model.id == obj.id
+            self.model.id == obj.id
         ).values(**obj.dict).returning(self.model)
         
         result = await self.session.execute(query)

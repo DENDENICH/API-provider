@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from service.items_services.base import Model, BaseItem
 
-from service.items_services.product import ProductVersion
+# from service.items_services.product import ProductVersionItem
 
 from schemas.supply import SupplyCreateRequest
 

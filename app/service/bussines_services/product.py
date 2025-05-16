@@ -163,7 +163,7 @@ class ProductService:
             self, 
             product_id: int,
             product_version: ProductVersionItem
-        ) -> ProductFullItem: 
+        ) -> ExpenseWithInfoProductItem: 
         """Обновить данные продукта"""
         product: ProductItem = await self.product_repo.get_by_id(product_id)
         if product is None:
@@ -173,10 +173,21 @@ class ProductService:
             product_version
         )
         product.product_version_id = new_product_version.id
-        product = await self.product_repo.update(product_id, product)
-        return ProductFullItem(
-            id=product.id,
-            article=product.id,
-            **new_product_version.dict
+        product = await self.product_repo.update(product)
+
+        expense_service = ExpenseSupplierService(self.session)
+        expense = await expense_service.get_expense_by_id_supplier_and_product(
+            supplier_id=product.supplier_id,
+            product_id=product.id
+        )
+
+        return ExpenseWithInfoProductItem(
+            id=expense.id,
+            article=product.article,
+            product_id=product.id,
+            product_name=product_version.name,
+            category=product_version.category,
+            quantity=expense.quantity,
+            description=product_version.description,
         )
         
