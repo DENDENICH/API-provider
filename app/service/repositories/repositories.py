@@ -52,12 +52,14 @@ class OrganizerRepository(BaseRepository[OrganizerModel]):
     
     async def get_supplier_by_inn(self, inn: str) -> Optional[OrganizerItem]:
         """Получить поставщика по его ИНН"""
-        result = await self.session.execute(
-            select(self.model).filter(
-                self.model.inn == inn,
-                self.model.role == "supplier"
-            )
+        # Multiple rows were found when one or none was required
+        # Обработка нескольких найденых вариантов
+        stmt = (
+            select(self.model)
+            .filter(self.model.role == "supplier")
+            .where(self.model.inn == inn)
         )
+        result = await self.session.execute(stmt)
         model = result.scalar_one_or_none()
         return self.item(**model.dict, model=model) if model else None
 
@@ -89,7 +91,8 @@ class ContactRepository(BaseRepository[ContractModel]):
         )
         result = await self.session.execute(stmt)
         suppliers = result.scalars().all()
-        return [self.item(**supplier.dict, model=supplier) for supplier in suppliers]
+        # рассмотреть перенос данного метода в логику организации
+        return [OrganizerItem(**supplier.dict, model=supplier) for supplier in suppliers]
 
     async def delete(self, supplier_id: int, company_id: int) -> bool:
         """Удалить контракт по id поставщика"""

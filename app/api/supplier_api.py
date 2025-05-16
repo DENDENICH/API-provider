@@ -69,7 +69,7 @@ async def get_suppliers(
         )
 
     return SuppliersResponse(
-        suppliers=[supplier.dict for supplier in suppliers]
+        organizers=[OrganizerResponse(id=supplier.id, **supplier.dict) for supplier in suppliers]
     )
     
 
@@ -112,9 +112,7 @@ async def get_suppliers(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-    return OrganizerResponse(
-        supplier=supplier.dict
-    )
+    return OrganizerResponse(id=supplier.id, **supplier.dict)
 
 
 @router.post("/{supplier_id}", status_code=status.HTTP_201_CREATED)
