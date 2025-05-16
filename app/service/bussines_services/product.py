@@ -1,7 +1,6 @@
 from typing import Optional, Iterable, List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import SupplyProduct # Убрать данный импорт в будущем
 from service.items_services.items import SupplyProductItem
 
 from service.repositories import (
@@ -9,7 +8,7 @@ from service.repositories import (
     ProductVersionRepository,
 )
 from service.items_services.product import (
-    ProductVersion,
+    ProductVersionItem,
     ProductCreate,
     ProductItem,
     ProductFullItem,
@@ -39,7 +38,7 @@ class ProductService:
     ) -> ExpenseWithInfoProductItem:
         """Создание продукта"""
         product_version = await self._create_version_product_and_flush_session(
-            data=ProductVersion(
+            data=ProductVersionItem(
                 name=product_new.name,
                 category=product_new.category,
                 price=product_new.price,
@@ -70,8 +69,8 @@ class ProductService:
     
     async def _create_version_product_and_flush_session(
             self, 
-            data: ProductVersion
-    ) -> ProductVersion:
+            data: ProductVersionItem
+    ) -> ProductVersionItem:
         product_version = await self.version_repo.create(data)
         await self.session.flush()
         return product_version
@@ -112,7 +111,6 @@ class ProductService:
         products: List[AvailableProductForCompany] = await self.product_repo.get_available_products_for_company(
                 company_id=company_id,
                 supplier_id=supplier_id,
-                add_quantity=add_quantity
             )
         if products is None:
             raise not_found_error
@@ -145,7 +143,7 @@ class ProductService:
     async def get_products_version_by_product_ids(
             self, 
             product_ids: Iterable[int]
-    ) -> Iterable[ProductVersion]:
+    ) -> Iterable[ProductVersionItem]:
         """Получить все версии продуктов по id"""
         if (products_version := await self.version_repo.get_products_version_by_products_ids(product_ids)) is None:
             raise not_found_error
@@ -164,7 +162,7 @@ class ProductService:
     async def update_product(
             self, 
             product_id: int,
-            product_version: ProductVersion
+            product_version: ProductVersionItem
         ) -> ProductFullItem: 
         """Обновить данные продукта"""
         product: ProductItem = await self.product_repo.get_by_id(product_id)

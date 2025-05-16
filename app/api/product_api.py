@@ -9,14 +9,15 @@ from core.db import db_core
 from api.dependencies import check_is_company, check_is_supplier
 
 from schemas.product import (
-    ProductRequest,
+    ProductRequestCreate,
+    ProductRequestUpdate,
     ProductResponse,
     ProductsResponse
 )
 from schemas.expense import ExpenseResponse
 
 from service.bussines_services.product import ProductService
-from service.items_services.product import ProductFullItem, ProductVersion, ProductCreate
+from service.items_services.product import ProductFullItem, ProductVersionItem, ProductCreate
 from service.redis_service import UserDataRedis
 
 from logger import logger
@@ -30,7 +31,7 @@ router = APIRouter(
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_product(
-    product_in: ProductRequest,
+    product_in: ProductRequestCreate,
     user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -104,7 +105,7 @@ async def get_product_by_id(
 @router.put("/{product_id}", response_model=ProductResponse)
 async def update_product(
     product_id: int,
-    product_in: ProductRequest,
+    product_in: ProductRequestUpdate,
     user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -112,7 +113,7 @@ async def update_product(
         service = ProductService(session)
         product: ProductFullItem = await service.update_product(
             product_id, 
-            ProductVersion(**product_in.model_dump())
+            ProductVersionItem(**product_in.model_dump())
         )
     except Exception as e:
         await session.rollback()

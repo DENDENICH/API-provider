@@ -20,8 +20,10 @@ class ProductBase(BaseModel):
     price: float
 
 
-class ProductRequest(ProductBase):
+class ProductRequestUpdate(ProductBase):
     description: str
+
+class ProductRequestCreate(ProductRequestUpdate):
     quantity: int
 
 

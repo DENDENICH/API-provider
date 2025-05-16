@@ -4,7 +4,7 @@ from typing import Optional, Type, Iterable
 from .base import Model, BaseItem
 
 
-class ProductVersion(BaseItem):
+class ProductVersionItem(BaseItem):
     """Бизнес-объект сущности версии продукта"""
     def __init__(
         self,
@@ -102,7 +102,7 @@ class ProductFullItem(BaseItem):
 
 
 def get_ids_from_products_version(
-        products: Iterable[ProductVersion]
+        products: Iterable[ProductVersionItem]
 ) -> Iterable[int]:
     """Получить список id продуктов из списка версий продуктов"""
     return [product.id for product in products]

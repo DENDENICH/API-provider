@@ -22,7 +22,7 @@ from service.repositories.base_repository import(
 )
 from service.items_services.items import *
 from service.items_services.product import (
-    ProductVersion,
+    ProductVersionItem,
     ProductItem,
     ProductFullItem,
     AvailableProductForCompany
@@ -363,12 +363,12 @@ class ProductVersionRepository(BaseRepository[ProductVersionModel]):
             self, 
             session: AsyncSession,
     ):
-        super().__init__(ProductVersionModel, session=session, item=ProductVersion)
+        super().__init__(ProductVersionModel, session=session, item=ProductVersionItem)
 
     async def get_products_version_by_products_ids(
             self,
             products_ids: Iterable[int]
-    ) -> Iterable[ProductItem]:
+    ) -> Iterable[ProductVersionItem]:
         """Получить id всех версий продуктов по id продуктов"""
         stmt = (
             select(ProductModel.product_version)
