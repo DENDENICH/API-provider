@@ -2,15 +2,15 @@ from typing import Optional, List
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
 
-from organizer import OrganizerSupplyObject
-from product import ProductResponseSupply
+from schemas.organizer import OrganizerSupplyObject
+from schemas.product import ProductResponseSupply
 
 
 class CancelledAssembleStatus(str, Enum):
     cancelled = "cancelled"
     assemble = "assemble"
 
-class StatusForUpdate:
+class StatusForUpdate(str, Enum):
     assemble = "assemble"
     in_delivery = "in_delivery"
     adopted = "adopted"
@@ -45,6 +45,7 @@ class SupplyResponse(SupplyBase):
     article: int
     status: str
     create_datetime: str
+    is_wait_confirm: bool
     # delivery_datetime: Optional[str]
 
 

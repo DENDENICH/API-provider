@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel
 
-from organizer import OrganizerResponse
+from schemas.organizer import OrganizerResponse
 
 
 class SuppliersResponse(BaseModel):

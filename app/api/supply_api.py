@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from core.db import db_core
 
 from core import settings
@@ -12,18 +12,20 @@ from api.dependencies import (
 )
 
 from service.redis_service import UserDataRedis
-from app.service.items_services.supply import SupplyCreateItem, SupplyStatus
+from service.items_services.supply import SupplyCreateItem, SupplyStatus
 from service.bussines_services.supply import SupplyService
 
 from schemas.supply import (
     SuppliesResponse,
+    SupplyResponse,
     SupplyCreateRequest,
     SuppliesCancelledAssembleStatus,
-    SupplyStatusUpdate,
-    SupplyProductCreate
+    SupplyStatusUpdate
 )
 
 from logger import logger
+
+from exceptions import NotFoundError, BadRequestError
 
 
 router = APIRouter(
@@ -34,6 +36,7 @@ router = APIRouter(
 
 @router.get("", response_model=SuppliesResponse)
 async def get_supplies(
+    is_wait_confirm: bool = Query(None),
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -41,17 +44,40 @@ async def get_supplies(
     try:
         supply_service = SupplyService(session=session)
         supplies = await supply_service.get_all_supplies_by_user_data(
-            user_data=user_data
+            user_data=user_data,
+            is_wait_confirm=is_wait_confirm,
         )
-            
-        return SuppliesResponse(supplies=[supply.dict for supply in supplies])
-    except Exception as e:
+
+    except NotFoundError as e:
+        await session.rollback()
         logger.error(
             msg="Error getting supplies\n{}".format(e)
         )
-        return SuppliesResponse(
-            supplies=[]
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
         )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error getting supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+                
+    return SuppliesResponse(
+        supplies=[SupplyResponse(**supply.dict) for supply in supplies]
+    )
 
 
 @router.post("", status_code=status.HTTP_204_NO_CONTENT)
@@ -73,30 +99,40 @@ async def create_supply(
                 company_id=user_data.organizer_id
             )
         )
-    except Exception as e:
-        session.rollback()
+    except NotFoundError as e:
+        await session.rollback()
         logger.error(
-            msg="Error creating supply\n{}".format(e)
+            msg="Error creating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
         )
 
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    await session.commit()
     return {"details": "No content"}
-    
-
-
-@router.get("/{supply_id}")
-async def assemble_or_cancel_supply(
-    supply_id: int,
-    user_data: UserDataRedis = Depends(get_user_from_redis),
-    session: AsyncSession = Depends(db_core.session_getter)
-):
-    """Получить информацию о поставке"""
-    pass
 
 
 @router.patch("/{supply_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def assemble_or_cancel_supply(
     supply_id: int,
-    status: SuppliesCancelledAssembleStatus,
+    status_data: SuppliesCancelledAssembleStatus,
     user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -106,23 +142,44 @@ async def assemble_or_cancel_supply(
         await supply_service.assemble_or_cancel_supply(
             status=SupplyStatus(
                 id=supply_id,
-                status=status.status
+                status=status_data.status
             ),
             supplier_id=user_data.organizer_id
         )
-        return {"details": "No content"}
-    except Exception as e:
-        session.rollback()
+    except NotFoundError as e:
+        await session.rollback()
         logger.error(
-            msg="Error assembling or cancelling supply\n{}".format(e)
+            msg="Error creating supplies\n{}".format(e)
         )
-        return {"details": "Error occurred while processing the request"}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    await session.commit()
+    return {"details": "No content"}
 
 
 @router.patch("/{supply_id}/status", status_code=status.HTTP_201_CREATED)
 async def update_status(
     supply_id: int,
-    status: SupplyStatusUpdate,
+    status_data: SupplyStatusUpdate,
     user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -132,14 +189,35 @@ async def update_status(
         await supply_service.update_supply_status(
             status=SupplyStatus(
                 id=supply_id,
-                status=status.status
+                status=status_data.status
             ),
             supplier_id=user_data.organizer_id
         )
-        return {"details": "No content"}
-    except Exception as e:
-        session.rollback()
+    except NotFoundError as e:
+        await session.rollback()
         logger.error(
-            msg="Error updating supply status\n{}".format(e)
+            msg="Error updating supplies\n{}".format(e)
         )
-        return {"details": "Error occurred while processing the request"}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error updating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error updating supplies\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    await session.commit()
+    return {"details": "No content"}

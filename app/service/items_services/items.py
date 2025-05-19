@@ -3,40 +3,7 @@ from typing import Optional, Type
 from .base import Model, BaseItem
 
 
-class OrganizerItem(BaseItem):
-    """Объект организации"""
-    def __init__(
-            self,
-            role: str,
-            name: str,
-            address: str,
-            inn: str,
-            bank_details: str,
-            id: Optional[int] = None, 
-            model: Optional[Type[Model]] = None
-    ):
-        super().__init__(id=id, model=model)
-        
-        self.role = role
-        self.address = address
-        self.name = name
-        self.inn = inn
-        self.bank_details = bank_details
 
-
-class ContractItem(BaseItem):
-    """Объект сущности контракта"""
-    def __init__(
-        self,
-        company_id: int,
-        supplier_id: int,
-        id: Optional[int] = None, 
-        model: Optional[Type[Model]] = None
-    ):
-        super().__init__(id=id, model=model)
-        
-        self.company_id = company_id
-        self.supplier_id = supplier_id
 
 
 class UserItem(BaseItem):
@@ -73,6 +40,23 @@ class UserCompanyItem(BaseItem):
         self.organizer_id = organizer_id
         self.user_id = user_id
         self.role = role
+
+class UserCompanyWithUserItem:
+    """Объект сущности уч. записи пользователя компании с данными пользователя"""
+    def __init__(
+        self,
+        user_id: int,
+        role: str,
+        name: str,
+        email: str,
+        phone: str,
+    ):
+
+        self.user_id = user_id
+        self.role = role
+        self.name = name
+        self.email = email
+        self.phone = phone
 
 
 class LinkCodeItem(BaseItem):
@@ -170,10 +154,9 @@ class ExpenseSupplierItem(BaseItem):
 
 
 __all__ = [
-    "OrganizerItem",
-    "ContractItem",
     "UserItem",
     "UserCompanyItem",
+    "UserCompanyWithUserItem",
     "LinkCodeItem",
     "SupplyItem",
     "SupplyProductItem",

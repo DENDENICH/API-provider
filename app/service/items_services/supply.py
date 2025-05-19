@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 from service.items_services.base import Model, BaseItem
 
-from service.items_services.product import ProductVersion
-
 from schemas.supply import SupplyCreateRequest
 
 
@@ -54,7 +52,7 @@ class ProductInSupply:
     @property
     def dict(self):
         return {
-            "product": self.product.dict(),
+            "product": self.product.dict,
             "quantity": self.quantity
         }
 
@@ -202,7 +200,7 @@ class SupplyResponseItem(BaseItem):
         for key, value in self.__dict__.items():
             if isinstance(value, OrganizerInfoInSupply):
                 dict_supply_response[key] = value.dict
-            if isinstance(value, Iterable[ProductInSupply]):
+            if isinstance(value, list):
                 dicts_products = [product.dict for product in value]
                 dict_supply_response[key] = dicts_products
             else:
@@ -225,7 +223,7 @@ class SupplyProductItem(BaseItem):
         super().__init__(id=id, model=model)
         
         self.supply_id = supply_id
-        self.product_id = product_version_id
+        self.product_version_id = product_version_id
         self.quantity = quantity
 
 

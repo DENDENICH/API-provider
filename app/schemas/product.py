@@ -20,14 +20,20 @@ class ProductBase(BaseModel):
     price: float
 
 
-class ProductRequest(ProductBase):
+class ProductRequestUpdate(ProductBase):
     description: str
+
+class ProductRequestCreate(ProductRequestUpdate):
+    quantity: int
 
 
 class ProductResponse(ProductBase):
     id: int
     article: int
-    description: Optional[str]
+    supplier_id: int
+    organizer_name: str
+    quantity: Optional[int] = None
+    description: Optional[str] = None
 
 
 class ProductResponseSupply(ProductBase):
@@ -36,5 +42,5 @@ class ProductResponseSupply(ProductBase):
     article: int
 
 class ProductsResponse(BaseModel):
-    products: List[ProductResponseSupply]
+    products: List[ProductResponse]
 

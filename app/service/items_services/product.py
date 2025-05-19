@@ -1,9 +1,10 @@
+from dataclasses import dataclass
 from typing import Optional, Type, Iterable
 
 from .base import Model, BaseItem
 
 
-class ProductVersion(BaseItem):
+class ProductVersionItem(BaseItem):
     """Бизнес-объект сущности версии продукта"""
     def __init__(
         self,
@@ -24,6 +25,16 @@ class ProductVersion(BaseItem):
         self.img_path = img_path
 
 
+@dataclass
+class ProductCreate:
+    name: str
+    category: str
+    price: float
+    quantity: int
+    description: str = None,
+    img_path: str = None # Пока не участвует
+
+
 class ProductItem(BaseItem):
     """Бизнес-объект сущности продукта"""
     def __init__(
@@ -41,7 +52,7 @@ class ProductItem(BaseItem):
         self.supplier_id = supplier_id
 
 
-class AvailableProductForCompany:
+class AvailableProductForCompany(BaseItem):
     """Представление объекта продукта, разрешенного для компании"""
     def __init__(
             self,
@@ -51,14 +62,23 @@ class AvailableProductForCompany:
             category: str,
             price: float,
             organizer_name: str,
-            img_path: str = None
+            supplier_id: int,
+            description: Optional[str] = None,
+            quantity: Optional[int] = None,
+            img_path: Optional[str] = None,
+            model: Optional[Type[Model]] = None
+
     ):
-        self.id = id
+        super().__init__(id=id, model=model)
+
         self.article = article
         self.name = name
         self.category = category
         self.price = price
         self.organizer_name = organizer_name
+        self.supplier_id = supplier_id
+        self.description = description
+        self.quantity = quantity
         self.img_path = img_path
 
 
@@ -87,7 +107,7 @@ class ProductFullItem(BaseItem):
 
 
 def get_ids_from_products_version(
-        products: Iterable[ProductVersion]
+        products: Iterable[ProductVersionItem]
 ) -> Iterable[int]:
     """Получить список id продуктов из списка версий продуктов"""
     return [product.id for product in products]

@@ -17,9 +17,11 @@ from core import settings
 from service.bussines_services.user import UserService
 from schemas.user import (
     UserCompanySchema,
-    UserSchema
+    UsersCompanyWithUserSchema
 )
 from service.redis_service import UserDataRedis, redis_user
+
+from exceptions import NotFoundError, BadRequestError
 from logger import logger
 
 router = APIRouter(
@@ -28,42 +30,50 @@ router = APIRouter(
 )
 
 
-# @router.get("/{user_id}", response_model=UserSchema)
-# async def get_user(
-#     user_id: int,
-#     session: AsyncSession = Depends(db_core.session_getter)
-# ):
-#     """Получить пользователя по id"""
-#     user_service = UserService(session=session)
-#     user_response = await user_service.get_user_by_id(user_id=user_id)
-#     return UserSchema(**user_response)
-
-
-# @router.put("/{user_id}", response_model=UserSchema)
-# async def update_user(
-#     user_id: int,
-#     data: UserSchema,
-#     session: AsyncSession = Depends(db_core.session_getter)
-# ):
-#     """Обновить пользователя по id"""
-#     user_service = UserService(session=session)
-#     user_item = user_service.update_user(
-#         content=UserItem(**data.model_dump())
-#     )
-#     return UserSchema(**user_item)
-
-
-@router.get("/company", response_model=UserSchema)
-async def get_user_company(
-    link_code: Optional[int] = Query(None), 
+@router.get(
+    "/company", 
+    status_code=status.HTTP_201_CREATED, 
+    response_model=UsersCompanyWithUserSchema
+)
+async def get_all_employee(
+    user_data: UserDataRedis = Depends(check_is_admin),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Получить пользователя по пригласительному коду"""
-    user_service = UserService(session=session)
-    user = await user_service.get_user_by_link_code(
-        link_code=link_code
-    )
-    return UserSchema(id=user.id, **user.dict)
+    """Получить все учетые записи пользователей в компании"""
+    try:
+        user_service = UserService(session=session)
+        users_company = await user_service.get_all_employ_by_organizer_id(
+            organizer_id=user_data.organizer_id
+        )
+        
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating company user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating company user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating company user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    return {"detail": "OK"}
 
 
 @router.post("/company", status_code=status.HTTP_201_CREATED)
@@ -75,15 +85,33 @@ async def add_user_to_company(
     """Создать учетную запись пользователя в компании"""
     try:
         user_service = UserService(session=session)
-        user_company = await user_service.assign_user_to_company(
+        user_company = await user_service.assign_user_to_company_by_link_code(
             user_data=user_data,
-            user_to_company_id=data.id,
+            link_code=data.link_code,
             role=data.role
         )
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating company user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating company user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error creating user company\n{}".format(e)
+            msg="Error creating company user\n{}".format(e)
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -125,10 +153,28 @@ async def remove_user_from_company(
             user_data=user_data,
             user_for_remove_id=user_id
         )
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error removing company user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error removing company user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error removing user company\n{}".format(e)
+            msg="Error removing company user\n{}".format(e)
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

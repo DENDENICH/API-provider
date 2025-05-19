@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
-from fastapi import APIRouter, Depends, Request, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Query
 
 from core import settings
 from core.db import db_core
@@ -8,13 +9,15 @@ from core.db import db_core
 from api.dependencies import check_is_company, check_is_supplier
 
 from schemas.product import (
-    ProductRequest,
+    ProductRequestCreate,
+    ProductRequestUpdate,
     ProductResponse,
     ProductsResponse
 )
+from schemas.expense import ExpenseResponse
 
 from service.bussines_services.product import ProductService
-from service.items_services.product import ProductFullItem, ProductVersion
+from service.items_services.product import ProductFullItem, ProductVersionItem, ProductCreate
 from service.redis_service import UserDataRedis
 
 from logger import logger
@@ -26,38 +29,56 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_product(
-    product_in: ProductRequest,
+    product_in: ProductRequestCreate,
     user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     try:
         service = ProductService(session=session)
-        product = await service.create_product(
+        expense = await service.create_product(
             user_data=user_data,
-            **product_in.model_dump()
+            product_new=ProductCreate(**product_in.model_dump())
         )
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error creating user company\n{}".format(e)
+            msg="Error creating product\n{}".format(e)
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
-    return ProductResponse(id=product.id, **product.dict)
+    return ExpenseResponse(**expense.dict)
 
 
 @router.get("/", response_model=ProductsResponse)
 async def get_products(
+    supplier_id: Optional[int] = Query(None),
+    add_quantity: Optional[bool] = Query(False),
     user_data: UserDataRedis = Depends(check_is_company),
     session: AsyncSession = Depends(db_core.session_getter),
 ):
-    service = ProductService(session=session)
-    products = await service.get_available_products_for_company(user_data.organizer_id)
-    return ProductsResponse(products=products)
+    try:
+        service = ProductService(session=session)
+        products = await service.get_available_products_for_company(
+            company_id=user_data.organizer_id,
+            supplier_id=supplier_id,
+            add_quantity=add_quantity
+        )
+    except Exception as e:
+        logger.error(
+            msg="Error getting products\nsupplier_id: {}\nadd_quantity{}".format(
+                supplier_id,
+                add_quantity
+            ),
+            exc_info=e #TODO: в дальнейшем так проделать со всеми логами
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    return ProductsResponse(products=[ProductResponse(id=product.id, **product.dict) for product in products])
     
 
 @router.get("/{product_id}", response_model=ProductResponse)
@@ -66,33 +87,43 @@ async def get_product_by_id(
     user_data: UserDataRedis = Depends(check_is_company),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    service = ProductService(session)
-    product = await service.get_product_by_id(product_id)
-    return ProductResponse(**product.dict)
+    try:
+        service = ProductService(session)
+        product = await service.get_product_by_id(product_id)
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error to getting product by id\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    return ProductResponse(id=product.id, **product.dict)
 
 
-@router.put("/{product_id}", response_model=ProductResponse)
+
+@router.put("/{product_id}", response_model=ExpenseResponse)
 async def update_product(
     product_id: int,
-    product_in: ProductRequest,
+    product_in: ProductRequestUpdate,
     user_data: UserDataRedis = Depends(check_is_supplier),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     try:
         service = ProductService(session)
-        product: ProductFullItem = await service.update_product(
+        product = await service.update_product(
             product_id, 
-            ProductVersion(**product_in.model_dump())
+            ProductVersionItem(**product_in.model_dump())
         )
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error creating user company\n{}".format(e)
+            msg="Error updating products\n{}".format(e)
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
-    return ProductResponse(id=product.id, **product.dict)
+    return ExpenseResponse(id=product.id, **product.dict)
 
     

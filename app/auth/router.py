@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,11 +12,14 @@ from schemas.user import (
     UserTypeForNextRoute
 )
 
-from auth.utils.jwt_processes import jwt_processes as jwt
 from auth.service.user_auth import UserAuthService
 
 from service.bussines_services.link_code import LinkCodeService
 from service.bussines_services.user import UserService
+from service.redis_service import UserDataRedis, redis_user
+
+from exceptions import NotFoundError, BadRequestError
+
 from logger import logger
 
 
@@ -54,14 +57,38 @@ async def registry(
             await link_code_service.create_link_code(user_id=user.id)
 
         token = user_service.get_jwt(user=user)
-        # ссылка для перенаправления пользователя
 
-        # коммит всех изменений в БД
-        
+        # установка пользовательских данных в redis
+        await redis_user.set_data(
+            key=user.id,
+            data=UserDataRedis(user_id=user.id)
+        )
+    
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
         await session.rollback()
         logger.error(
             msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
     await session.commit()
@@ -75,16 +102,50 @@ async def login(
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     """Вход пользователя"""
-    user_auth_service = UserAuthService(session=session)
+    try:
+        user_auth_service = UserAuthService(session=session)
+        user = await user_auth_service.check_login_user(
+            email=data.email,
+            password=data.password
+        )
+        token = user_auth_service.get_jwt(user=user)
 
-    user = await user_auth_service.check_login_user(
-        email=data.email,
-        password=data.password
-    )
-    token = user_auth_service.get_jwt(user=user)
+    except NotFoundError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error creating user\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     # установка пользовательских данных в redis
-    user_service = UserService(session=session)
-    await user_service.set_data_user_to_redis(user.id)
-
+    try:
+        user_service = UserService(session=session)
+        await user_service.set_data_user_to_redis(user_id=user.id)
+    except Exception as e:
+        logger.error(
+            msg="Error set user data in Redis\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     return AuthTokenSchema(next_route=None, **token)

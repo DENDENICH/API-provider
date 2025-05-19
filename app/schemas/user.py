@@ -27,8 +27,20 @@ class UserSchema(UserBase):
 
 class UserCompanySchema(BaseModel):
     """Модель уч. записи пользователя в компании"""
-    id: int
+    link_code: int
     role: UserRole
+
+class UserCompanyWithUserSchema(BaseModel):
+    """Модель уч. записи пользователя в компании с данными пользователя"""
+    user_id: int
+    role: UserRole
+    name: str
+    email: EmailStr
+    phone: str
+
+class UsersCompanyWithUserSchema(BaseModel):
+    """Модель уч. записи пользователя в компании с данными пользователя"""
+    users: list[UserCompanyWithUserSchema]
 
 class UserRegisterRequest(UserBase):
     """Модель запроса на регистрацию"""

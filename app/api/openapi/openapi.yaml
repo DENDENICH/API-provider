@@ -49,59 +49,24 @@ paths:
           $ref: '#/components/responses/NotFound'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-
-  /users/{user_id}:
-    get:
-      summary: Получение пользователя
-      tags:
-        - Пользователи
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Информация о пользователе
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserSchema'
-        "404":
-          $ref: '#/components/responses/NotFound'
-        "422":
-          $ref: '#/components/responses/UnprocessableEntity'
-    put:
-      summary: Изменение данных пользователя
-      tags:
-        - Пользователи
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserSchema'
-      responses:
-        "200":
-          description: ОК
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserSchema'
-        "404":
-          $ref: '#/components/responses/NotFound'
-        "422":
-          $ref: '#/components/responses/UnprocessableEntity'
   
   
   /users/company:
+    get:
+      summary: Получение всех сотрудников организации
+      tags:
+        - Пользователи
+      operationId: getUserCompany
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersCompanyWithUserInfo'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+          
     post:
       summary: Привязка пользователя к уч. записи компании
       tags:
@@ -162,20 +127,6 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
           
 
-
-  /organizers:
-    get:
-      summary: Получение организаций, с которыми компания заключила контракт
-      tags:
-        - Организации
-      responses:
-        "200":
-          description: Список организаций
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizersResponse'
-
   /products:
     post:
       summary: Добавить новый товар
@@ -197,6 +148,17 @@ paths:
       summary: Получить список товаров
       tags:
         - Товары
+      parameters:
+        - name: supplier_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: add_quantity
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Список товаров
@@ -263,6 +225,12 @@ paths:
       summary: Получить список всех поставок
       tags:
         - Поставки
+      parameters:
+        - name: is_wait_confirm
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: Список поставок
@@ -361,7 +329,7 @@ paths:
 
   /suppliers:
     get:
-      summary: Получить список поставщиков (фильтр - название)
+      summary: Получить список поставщиков
       tags:
         - Поставщики
       responses:
@@ -371,6 +339,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuppliersResponse'
+                
+  /suppliers/{supplier_inn}:
+    get:
+      summary: Получить поставщика по ИНН
+      tags:
+        - Поставщики
+      parameters:
+        - name: supplier_inn
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Список поставщиков
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
   /suppliers/{supplier_id}:
     post:
@@ -412,27 +403,6 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 
-  /suppliers/products/{supplier_id}:
-    get:
-      summary: Получить список продуктов поставщика
-      tags:
-        - Поставщики
-      parameters:
-        - name: supplier_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Список продуктов поставщика
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductsResponse'
-        "404":
-          $ref: '#/components/responses/NotFound'
-
   /expenses/:
     get:
       summary: Получить все расходы
@@ -448,24 +418,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Expenses'
-    post:
-      summary: Добавить новый расход
-      tags:
-        - Расходы склада
-      operationId: createExpense
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExpenseCreate'
-      responses:
-        '201':
-          description: Расход добавлен
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Expense'
 
   /expenses/{expense_id}/:
     patch:
@@ -536,19 +488,6 @@ components:
       required:
         - details
 
-    # Модель пользователя
-    UserSchema:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        email:
-          type: string
-        phone:
-          type: string
-
     UserRegisterRequest:
       type: object
       properties:
@@ -563,6 +502,28 @@ components:
         user_type:
           type: string
           enum: [organizer, employee]
+          
+    UserCompanyWithUserInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        user_id:
+          type: integer
+          
+    UsersCompanyWithUserInfo:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserCompanyWithUserInfo'
 
 
     UserLoginRequest:
@@ -616,28 +577,6 @@ components:
           type: string
         bank_details:
           type: string
-
-    OrganizersResponse:
-      type: object
-      properties:
-        organizers:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              role:
-                type: string
-                enum: [ company, supplier ]
-              address:
-                type: string
-              inn:
-                type: string
-              bank_details:
-                type: string
 
     
     # Схемы поставок
@@ -743,26 +682,29 @@ components:
             adopted,
             delivered,
           ]
+    
+    SupplierResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+        inn:
+          type: string
+        bank_details:
+          type: string
+    
 
-    # Схемы товаров в поставках
     SuppliersResponse:
       type: object
       properties:
         organizers:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              address:
-                type: string
-              inn:
-                type: string
-              bank_details:
-                type: string
+            $ref: '#/components/schemas/SupplierResponse'
 
 
     # Схемы товаров
@@ -787,6 +729,8 @@ components:
           format: float
         description:
           type: string
+        quantity:
+          type: integer
 
     ProductResponse:
       type: object
@@ -804,6 +748,13 @@ components:
         price:
           type: number
           format: float
+        quantity:
+          type: integer
+          default: null
+        organizer_name:
+          type: string
+        
+          
 
     ProductResponseSupply:
       type: object
@@ -829,13 +780,14 @@ components:
           type: number
           format: float
 
+
     ProductsResponse:
       type: object
       properties:
         products:
           type: array
           items:
-            $ref: '#/components/schemas/ProductResponseSupply'
+            $ref: '#/components/schemas/ProductResponse'
 
     Expenses:
       type: object
@@ -854,34 +806,19 @@ components:
         - category
         - quantity
       properties:
-        company_id:
+        product_id:
           type: integer
+        organizer_name:
+          type: string
         article:
           type: integer
-        name:
+        product_name:
           type: string
         category:
           type: string
           enum: [hair_coloring, hair_care, hair_styling, consumables, perming, eyebrows_and_eyelashes, manicure_and_pedicure, tools_and_equipment]
+        description:
+          type: string
         quantity:
           type: integer
     
-    ExpenseCreate:
-      type: object
-      required:
-        - company_id
-        - article
-        - name
-        - category
-        - quantity
-      properties:
-        company_id:
-          type: integer
-        article:
-          type: integer
-        name:
-          type: string
-        category:
-          type: string
-        quantity:
-          type: integer
