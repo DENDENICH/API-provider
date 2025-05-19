@@ -426,7 +426,6 @@ class SupplyRepository(BaseRepository[SupplyModel]):
                 self.model.total_price,
                 self.model.status,
                 self.model.is_wait_confirm,
-                # self.model.created_at,
 
                 supplier.id.label("supplier_id"),
                 supplier.name.label("supplier_name"),
@@ -442,6 +441,9 @@ class SupplyRepository(BaseRepository[SupplyModel]):
                 ProductVersionModel.category.label("product_category"),
                 ProductVersionModel.price.label("product_price")
             )
+            .select_from(self.model)
+            .join(supplier, supplier.id == self.model.supplier_id)
+            .join(company, company.id == self.model.company_id)
             .join(SupplyProductModel, SupplyModel.id == SupplyProductModel.supply_id)
             .join(ProductModel, ProductVersionModel.product)
             .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
