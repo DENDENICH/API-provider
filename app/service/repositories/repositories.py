@@ -442,8 +442,6 @@ class SupplyRepository(BaseRepository[SupplyModel]):
                 ProductVersionModel.category.label("product_category"),
                 ProductVersionModel.price.label("product_price")
             )
-            .join(supplier, SupplyModel.supplier_id == supplier_id or supplier.id)
-            .join(company, SupplyModel.company_id == company_id or company.id)
             .join(SupplyProductModel, SupplyModel.id == SupplyProductModel.supply_id)
             .join(ProductModel, ProductVersionModel.product)
             .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)

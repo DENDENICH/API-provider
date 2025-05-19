@@ -170,7 +170,7 @@ class SupplyService:
             self,
             company_id: Optional[int] = None,
             supplier_id: Optional[int] = None,
-            is_wait_confirm: Optional[bool] = None   
+            is_wait_confirm: bool = False
     ) -> List[SupplyResponseItem]:
         """Получить все поставки"""
         supplies = await self.supply_repo.get_all_by_organizer_id(
