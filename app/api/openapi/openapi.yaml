@@ -595,8 +595,8 @@ components:
           items:
             type: object
             properties:
-              product:
-                $ref: "#/components/schemas/ProductResponseSupply"
+              product_id:
+                type: integer
               quantity:
                 type: integer
 
