@@ -377,15 +377,18 @@ class ProductVersionRepository(BaseRepository[ProductVersionModel]):
     async def get_products_version_by_products_ids(
             self,
             products_ids: Iterable[int]
-    ) -> Iterable[ProductVersionItem]:
+    ) -> List[ProductVersionItem]:
         """Получить id всех версий продуктов по id продуктов"""
         stmt = (
-            select(ProductModel.product_version)
-            .where(ProductModel.id.in_(products_ids))
+            select(self.model)
+            .where(
+                ProductModel.id.in_(products_ids),
+                self.model.id == ProductModel.product_version_id    
+            )
         )
         result = await self.session.execute(stmt)
         products_version: Iterable[ProductVersionModel] = result.scalars().all()
-        return [self.item(**p.dict()) for p in products_version]
+        return [self.item(**p.dict) for p in products_version]
 
 class SupplyRepository(BaseRepository[SupplyModel]):
     """Репозиторий бизнес логики работы с поставкой"""
@@ -393,7 +396,7 @@ class SupplyRepository(BaseRepository[SupplyModel]):
             self, 
             session: AsyncSession,
     ):
-        super().__init__(LinkCodeModel, session=session, item=SupplyItem)
+        super().__init__(SupplyModel, session=session, item=SupplyItem)
 
     async def update(self, obj: SupplyItem, supplier_id: int) -> Optional[SupplyItem]:
         """Обновить объект поставки"""
@@ -491,7 +494,7 @@ class SupplyProductRepository(BaseRepository[SupplyProductModel]):
             self, 
             session: AsyncSession,
     ):
-        super().__init__(LinkCodeModel, session=session, item=SupplyProductItem)
+        super().__init__(SupplyProductModel, session=session, item=SupplyProductItem)
 
     async def create_all(
             self, 
