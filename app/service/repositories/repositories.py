@@ -37,7 +37,8 @@ from service.items_services.contract import ContractItem
 from service.items_services.supply import (
     SupplyProductItem,
     SupplyResponseItem,
-    SupplyItem
+    SupplyItem,
+    parse_supplies_rows
 )
 from service.redis_service import UserDataRedis
 
@@ -408,7 +409,7 @@ class SupplyRepository(BaseRepository[SupplyModel]):
             self, 
             supplier_id: Optional[int] = None,
             company_id: Optional[int] = None,
-            is_wait_confirm: Optional[bool] = None        
+            is_wait_confirm: bool = False
     ) -> Optional[List[SupplyResponseItem]]:
         """Получить все поставки по id поставщика"""
         supplier = aliased(OrganizerModel)
@@ -421,6 +422,7 @@ class SupplyRepository(BaseRepository[SupplyModel]):
                 self.model.delivery_address,
                 self.model.total_price,
                 self.model.status,
+                self.model.is_wait_confirm,
                 # self.model.created_at,
 
                 supplier.id.label("supplier_id"),
@@ -442,15 +444,23 @@ class SupplyRepository(BaseRepository[SupplyModel]):
             .join(SupplyProductModel, SupplyModel.id == SupplyProductModel.supply_id)
             .join(ProductModel, ProductVersionModel.product)
             .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
-            .where(
+        )
+
+        # filters
+        if company_id:
+            stmt = stmt.where(self.model.company_id == company_id)
+        if supplier_id:
+            stmt = stmt.where(
                 self.model.supplier_id == supplier_id,
                 self.model.is_wait_confirm == is_wait_confirm
             )
-        )
+
         result = await self.session.execute(stmt)
         if (supplies := result.mappings().all()) is None:
             return None
-        return [SupplyResponseItem.get_from_dict(dict(supply)) for supply in supplies]
+        # парсим полученые объекты rows в словарь
+        supplies_dict_list = parse_supplies_rows(supplies)
+        return [SupplyResponseItem.get_from_dict(dict(supply)) for supply in supplies_dict_list]
     
     async def get_supply_products_by_supply_id(self, supply_id: int) -> List[SupplyProductItem]:
         """Получить все продукты в поставке по id поставки"""

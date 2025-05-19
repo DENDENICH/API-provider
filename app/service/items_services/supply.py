@@ -1,4 +1,4 @@
-from typing import Optional, Type, Iterable
+from typing import Optional, Type, Iterable, List, Dict
 from dataclasses import dataclass
 
 from service.items_services.base import Model, BaseItem
@@ -71,7 +71,7 @@ class SupplyItem(BaseItem):
         company_id: int,
         delivery_address: str,
         total_price: float,
-        is_wait_confirm: bool = True,
+        is_wait_confirm: bool = False,
         status: str = 'in_processing',
         article: Optional[int] = None,
         id: Optional[int] = None,
@@ -80,6 +80,7 @@ class SupplyItem(BaseItem):
         super().__init__(id=id, model=model)
         
         self.supplier_id = supplier_id
+        self.company_id = company_id
         self.status = status
         self.delivery_address = delivery_address
         self.total_price = total_price
@@ -234,11 +235,14 @@ def get_supply_item_by_supply_create_item(supply: SupplyCreateItem) -> SupplyIte
     """Получить объект поставки из объекта создания поставки"""
     return SupplyItem(
         supplier_id=supply.supplier_id,
+        company_id=supply.company_id,
         delivery_address=supply.delivery_address,
         total_price=supply.total_price,
         article=supply.article,
+        is_wait_confirm=True,
         id=supply.id
     )
+
 
 
 def get_supply_product_items(
@@ -255,3 +259,43 @@ def get_supply_product_items(
         )
         for product_version_id, quantity in zip(products_version_ids, quantities)
     ]
+
+
+def parse_supplies_rows(rows) -> List[Dict]:
+    """Парсинг данных из запроса к БД"""
+    # В дальнейшем сделать структурой класса
+    supplies_dict = {}
+
+    for row in rows:
+        supply_id = row["id"]
+
+        if supply_id not in supplies_dict:
+            supplies_dict[supply_id] = {
+                "id": supply_id,
+                "supplier": {
+                    "id": row["supplier_id"],
+                    "name": row["supplier_name"]
+                },
+                "company": {
+                    "id": row["company_id"],
+                    "name": row["company_name"]
+                },
+                "supply_products": [],
+                "article": row["article"],
+                "delivery_address": row["delivery_address"],
+                "total_price": row["total_price"],
+                "status": row["status"],
+            }
+
+        # Добавляем продукт в supply_products
+        supplies_dict[supply_id]["supply_products"].append({
+            "product": {
+                "id": row["product_id"],
+                "article": row["product_article"],
+                "name": row["product_name"],
+                "category": row["product_category"],
+                "price": row["product_price"]
+            },
+            "quantity": row["quantity"]
+        })
+    return list(supplies_dict.values())

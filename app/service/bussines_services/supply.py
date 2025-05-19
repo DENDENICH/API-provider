@@ -64,7 +64,7 @@ class SupplyService:
 
     async def create_supply(
             self, 
-            supply: SupplyCreateItem
+            supply: SupplyCreateItem,
     ) -> None:
         """Создать поставку"""
         supply_item = await self._create_supply_and_flush_session(
@@ -149,7 +149,7 @@ class SupplyService:
     async def get_all_supplies_by_user_data(
             self, 
             user_data: UserDataRedis,
-            is_wait_confirm: Optional[bool] = None
+            is_wait_confirm: bool = False
     ) -> List[SupplyResponseItem]:
         """Получить все доступные поставки пользователя по его данным"""
         if user_data.organizer_role == OrganizerRole.supplier:
@@ -194,6 +194,12 @@ class SupplyService:
         await self._update_supply_by_supplier_id_and_flush_session(
             supplier_id=supplier_id,
             supply=supply
+        )
+        # возврат расходов
+        await self._update_quantity_and_reversed_expenses_by_status(
+            supplier_id=supplier_id,
+            supply=supply,
+            status=status,
         )
         return
     
@@ -253,25 +259,17 @@ class SupplyService:
         expenses_list = list()
         expense_service = ExpenseSupplierService(self.session)
 
-        if status.status == CancelledAssembleStatus.assemble:
-            for supply_product, product_id in zip(supply_products, products_ids):
-                expense = await expense_service.get_expense_by_id_supplier_and_product(
-                    supplier_id=supplier_id,
-                    product_id=product_id
-                )
-                expense.quantity -= supply_product.quantity
-                expense.reserved -= supply_product.quantity
-                expense_update = await expense_service.update_expense(expense)
-                expenses_list.append(expense_update)
+        for supply_product, product_id in zip(supply_products, products_ids):
+            expense = await expense_service.get_expense_by_id_supplier_and_product(
+                supplier_id=supplier_id,
+                product_id=product_id
+            )
 
-        elif status.status == CancelledAssembleStatus.cancelled:
-            for supply_product, product_id in zip(supply_products, products_ids):
-                expense = await expense_service.get_expense_by_id_supplier_and_product(
-                    supplier_id=supplier_id,
-                    product_id=product_id
-                )
-                expense.reserved -= supply_product.quantity
-                expense_update = await expense_service.update_expense(expense)
-                expenses_list.append(expense_update)
+            expense.reserved -= supply_product.quantity
+            if status.status == CancelledAssembleStatus.assemble:
+                expense.quantity -= supply_product.quantity
+
+            expense_update = await expense_service.update_expense(expense)
+            expenses_list.append(expense_update)
 
         return expenses_list
