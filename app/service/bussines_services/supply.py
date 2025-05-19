@@ -70,13 +70,14 @@ class SupplyService:
         supply_item = await self._create_supply_and_flush_session(
             supply=get_supply_item_by_supply_create_item(supply)
         )
-        products_ids = await self._get_products_version_ids_by_products_ids(
-            products_ids=supply.get_products_ids
+        products_ids = supply.get_products_ids
+        products_version_ids = await self._get_products_version_ids_by_products_ids(
+            products_ids=products_ids
         )
         supply_products_item = get_supply_product_items(
             supply_id=supply_item.id,
             quantities=supply.get_quantities,
-            products_version_ids=products_ids
+            products_version_ids=products_version_ids
         )
         await self._create_supplies_products_and_flush_session(
             supply=supply_products_item

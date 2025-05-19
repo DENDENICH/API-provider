@@ -2,6 +2,7 @@ from typing import TypedDict
 from sqlalchemy import (
     String,
     Enum,
+    BigInteger,
     Integer,
     ForeignKey,
     Text,
@@ -29,7 +30,7 @@ class Supply(Base):
 
     # Уникальный артикул поставки
     article: Mapped[int] = mapped_column(
-        Integer,
+        BigInteger,
         nullable=False,
         unique=True
     )

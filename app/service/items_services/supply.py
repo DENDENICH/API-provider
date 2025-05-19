@@ -240,7 +240,6 @@ def get_supply_item_by_supply_create_item(supply: SupplyCreateItem) -> SupplyIte
         total_price=supply.total_price,
         article=supply.article,
         is_wait_confirm=True,
-        id=supply.id
     )
 
 
