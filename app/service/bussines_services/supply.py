@@ -158,7 +158,7 @@ class SupplyService:
                 is_wait_confirm=is_wait_confirm
             )
         elif user_data.organizer_role == OrganizerRole.company:
-            supplies: List[SupplyResponseItem] = await self._get_supplies_by_organizer_id(
+            supplies = await self._get_supplies_by_organizer_id(
                 company_id=user_data.organizer_id
             )
         else:
@@ -187,7 +187,7 @@ class SupplyService:
 
         supply: SupplyItem = await self.supply_repo.get_by_id(status.id)
         if not supply:
-            raise not_found_error("not found supply")
+            raise NotFoundError("not found supply")
         
         supply.is_wait_confirm = False
         supply.status = status.status
@@ -205,7 +205,7 @@ class SupplyService:
         """Обновить статус поставки"""
         supply: SupplyItem = await self.supply_repo.get_by_id(status.id)
         if not supply:
-            raise not_found_error("not found supply")
+            raise NotFoundError("not found supply")
         
         supply.status = status.status
         

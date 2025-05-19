@@ -17,6 +17,7 @@ from service.bussines_services.supply import SupplyService
 
 from schemas.supply import (
     SuppliesResponse,
+    SupplyResponse,
     SupplyCreateRequest,
     SuppliesCancelledAssembleStatus,
     SupplyStatusUpdate
@@ -75,7 +76,7 @@ async def get_supplies(
         )
                 
     return SuppliesResponse(
-        supplies=[supply.dict for supply in supplies]
+        supplies=[SupplyResponse(**supply.dict) for supply in supplies]
     )
 
 

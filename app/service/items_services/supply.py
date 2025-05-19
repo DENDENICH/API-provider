@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 from service.items_services.base import Model, BaseItem
 
-# from service.items_services.product import ProductVersionItem
-
 from schemas.supply import SupplyCreateRequest
 
 
@@ -54,7 +52,7 @@ class ProductInSupply:
     @property
     def dict(self):
         return {
-            "product": self.product.dict(),
+            "product": self.product.dict,
             "quantity": self.quantity
         }
 

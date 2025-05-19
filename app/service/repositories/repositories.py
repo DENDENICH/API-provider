@@ -421,7 +421,7 @@ class SupplyRepository(BaseRepository[SupplyModel]):
                 self.model.delivery_address,
                 self.model.total_price,
                 self.model.status,
-                self.model.created_at,
+                # self.model.created_at,
 
                 supplier.id.label("supplier_id"),
                 supplier.name.label("supplier_name"),

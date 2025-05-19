@@ -45,6 +45,7 @@ class SupplyResponse(SupplyBase):
     article: int
     status: str
     create_datetime: str
+    is_wait_confirm: bool
     # delivery_datetime: Optional[str]
 
 
