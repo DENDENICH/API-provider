@@ -75,9 +75,7 @@ async def get_supplies(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
                 
-    return SuppliesResponse(
-        supplies=[SupplyResponse(**supply.dict) for supply in supplies]
-    )
+    return {"supplies": [supply.dict for supply in supplies]}
 
 
 @router.post("", status_code=status.HTTP_204_NO_CONTENT)

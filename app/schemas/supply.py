@@ -1,6 +1,6 @@
-from typing import Optional, List
+from typing import List
 from enum import Enum
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 from schemas.organizer import OrganizerSupplyObject
 from schemas.product import ProductResponseSupply
@@ -38,14 +38,16 @@ class SupplyCreateRequest(SupplyBase):
     supply_products: List[SupplyProductCreate]
 
 
-class SupplyResponse(SupplyBase):
+class SupplyResponse(BaseModel):
+    delivery_address: str
+    total_price: float
     supplier: OrganizerSupplyObject
     supply_products: List[SupplyProduct]
-    # couriers_phone: str
     article: int
     status: str
     create_datetime: str
     is_wait_confirm: bool
+    # couriers_phone: str
     # delivery_datetime: Optional[str]
 
 
