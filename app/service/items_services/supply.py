@@ -151,7 +151,7 @@ class SupplyResponseItem(BaseItem):
         supplier: OrganizerInfoInSupply,
         company: OrganizerInfoInSupply,
         status: str, 
-        is_wait_confirm: bool,
+        # is_wait_confirm: bool,
         delivery_address: str,
         total_price: float,
         supply_products: Optional[Iterable[ProductInSupply]],
@@ -167,7 +167,7 @@ class SupplyResponseItem(BaseItem):
         self.status = status
         self.delivery_address = delivery_address
         self.total_price = total_price
-        self.is_wait_confirm = is_wait_confirm
+        # self.is_wait_confirm = is_wait_confirm
 
     @classmethod
     def get_from_dict(cls, data: dict) -> "SupplyResponseItem":
@@ -183,7 +183,7 @@ class SupplyResponseItem(BaseItem):
                 name=data["company"]["name"]
             ),
             status=data["status"],
-            is_wait_confirm=data["is_wait_confirm"],
+            # is_wait_confirm=data["is_wait_confirm"],
             delivery_address=data["delivery_address"],
             total_price=data["total_price"],
             supply_products=[

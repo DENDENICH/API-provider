@@ -442,11 +442,13 @@ class SupplyRepository(BaseRepository[SupplyModel]):
                 ProductVersionModel.price.label("product_price")
             )
             .select_from(self.model)
+            # Устранить проблему дубликации select_from
+            # .select_from(ProductVersionModel)
             .join(supplier, supplier.id == self.model.supplier_id)
             .join(company, company.id == self.model.company_id)
-            .join(SupplyProductModel, SupplyModel.id == SupplyProductModel.supply_id)
-            .join(ProductModel, ProductVersionModel.product)
-            .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
+            .join(SupplyProductModel, self.model.id == SupplyProductModel.supply_id)
+            .join(ProductVersionModel, SupplyProductModel.product_version_id == ProductVersionModel.id)
+            .join(ProductModel, ProductVersionModel.id == ProductModel.product_version_id)
         )
 
         # filters
@@ -465,7 +467,10 @@ class SupplyRepository(BaseRepository[SupplyModel]):
         supplies_dict_list = parse_supplies_rows(supplies)
         return [SupplyResponseItem.get_from_dict(dict(supply)) for supply in supplies_dict_list]
     
-    async def get_supply_products_by_supply_id(self, supply_id: int) -> List[SupplyProductItem]:
+    async def get_supply_products_by_supply_id(
+            self, 
+            supply_id: int
+    ) -> Optional[List[SupplyProductItem]]:
         """Получить все продукты в поставке по id поставки"""
         stmt = (
             select(
@@ -507,7 +512,7 @@ class SupplyProductRepository(BaseRepository[SupplyProductModel]):
     async def get_by_supply_id(
             self,
             supply_id: int
-    ) -> Iterable[SupplyProductItem]:
+    ) -> Optional[List[SupplyProductItem]]:
         """Получить продукты из поставок по id поставки"""
         stmt = (
             select(self.model)
