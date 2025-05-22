@@ -615,8 +615,8 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
             )
         )
         result = await self.session.execute(stmt)
-        expense = result.scalar_one_or_none()
-        return ExpenseWithInfoProductItem(**expense.dict) if expense is not None else None
+        expense = result.mappings().first()
+        return ExpenseWithInfoProductItem(**dict(expense)) if expense is not None else None
 
 
 class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
@@ -711,8 +711,8 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
             )
         )
         result = await self.session.execute(stmt)
-        expense = result.scalar_one_or_none()
-        return ExpenseWithInfoProductItem(**expense.dict) if expense is not None else None
+        expense = result.mappings().first()
+        return ExpenseWithInfoProductItem(**dict(expense)) if expense is not None else None
     
     async def get_by_product_and_supplier_id(
             self, 

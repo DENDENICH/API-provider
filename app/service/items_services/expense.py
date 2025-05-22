@@ -30,6 +30,12 @@ class ExpenseWithInfoProductItem(BaseItem):
         self.category = category
         self.description = description
 
+    @property
+    def dict(self):
+        base_dict = super().dict
+        base_dict.update({"id": self._id})
+        return base_dict
+
 
 class ExpenseCompanyItem(BaseItem):
     """Объект сущности расхода компании"""
