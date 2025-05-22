@@ -593,30 +593,18 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
             self,
             expense_id: int,
             company_id: int
-    ) -> Optional[ExpenseWithInfoProductItem]:
+    ) -> Optional[ExpenseCompanyItem]:
         """Получение сущности расхода по id компании и расхода"""
         stmt = (
-            select(
-                self.model.id,
-                self.model.product_version_id.label("product_id"),
-                self.model.quantity,
-                ProductModel.article,
-                ProductVersionModel.name.label("product_name"),
-                ProductVersionModel.category,
-                ProductVersionModel.description,
-                OrganizerModel.name.label("supplier_name")
-            )
-            .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
-            .join(ProductModel, ProductVersionModel.id == ProductModel.product_version_id)
-            .join(OrganizerModel, ProductModel.supplier_id == OrganizerModel.id)
+            select(self.model)
             .where(
                 self.model.company_id == company_id,
                 self.model.id == expense_id
             )
         )
         result = await self.session.execute(stmt)
-        expense = result.mappings().first()
-        return ExpenseWithInfoProductItem(**dict(expense)) if expense is not None else None
+        expense = result.scalar_one_or_none()
+        return ExpenseCompanyItem(**expense.dict) if expense is not None else None
 
 
 class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
@@ -689,30 +677,18 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
             self, 
             supplier_id: int,
             expense_id: int,
-    ) -> Optional[ExpenseWithInfoProductItem]:
+    ) -> Optional[ExpenseSupplierItem]:
         """Получить товар по id поставщика и id расхода"""
         stmt = (
-            select(
-                self.model.id,
-                self.model.product_id,
-                self.model.quantity,
-                ProductModel.article,
-                ProductVersionModel.name.label("product_name"),
-                ProductVersionModel.category,
-                ProductVersionModel.description,
-                OrganizerModel.name.label("supplier_name")
-            )
-            .join(OrganizerModel, self.model.supplier_id == OrganizerModel.id)
-            .join(ProductModel, self.model.product_id == ProductModel.id)
-            .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
+            select(self.model)
             .where(
                 self.model.supplier_id == supplier_id,
                 self.model.id == expense_id
             )
         )
         result = await self.session.execute(stmt)
-        expense = result.mappings().first()
-        return ExpenseWithInfoProductItem(**dict(expense)) if expense is not None else None
+        expense = result.scalar_one_or_none()
+        return ExpenseSupplierItem(**expense.dict) if expense is not None else None
     
     async def get_by_product_and_supplier_id(
             self, 

@@ -33,7 +33,7 @@ class ExpenseSupplierService(ExpenseInterface):
         self, 
         expense_id: int,
         organizer_id: int
-    ) -> ExpenseWithInfoProductItem:
+    ) -> ExpenseSupplierItem:
         """Получить расход по id"""
         expense = await self.expense_repo.get_by_expense_and_supplier_id(
             expense_id=expense_id,
