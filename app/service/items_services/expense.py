@@ -29,7 +29,7 @@ class ExpenseWithInfoProductItem(BaseItem):
         self.quantity = quantity
         self.category = category
         self.description = description
-    
+
 
 class ExpenseCompanyItem(BaseItem):
     """Объект сущности расхода компании"""

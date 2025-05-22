@@ -546,9 +546,9 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
                 ProductVersionModel.category,
                 OrganizerModel.name.label("supplier_name")
             )
-            .join(OrganizerModel, OrganizerModel.id == ProductModel.supplier_id)
-            .join(ProductModel, ProductModel.product_version_id == ProductVersionModel.id)
-            .join(ProductVersionModel, self.model.product_version)    
+            .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
+            .join(ProductModel, ProductVersionModel.id == ProductModel.product_version_id)
+            .join(OrganizerModel, ProductModel.supplier_id == OrganizerModel.id)
             .where(self.model.company_id == company_id)
         )
         result = await self.session.execute(stmt)
@@ -577,9 +577,9 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
                 ProductVersionModel.description,
                 OrganizerModel.name.label("supplier_name")
             )
-            .join(OrganizerModel, OrganizerModel.id == ProductModel.supplier_id)
-            .join(ProductModel, ProductModel.product_version_id == ProductVersionModel.id)
-            .join(ProductVersionModel, self.model.product_version)    
+            .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
+            .join(ProductModel, ProductVersionModel.id == ProductModel.product_version_id)
+            .join(OrganizerModel, ProductModel.supplier_id == OrganizerModel.id)
             .where(
                 self.model.company_id == company_id,
                 self.model.product_version_id == product_version_id
@@ -606,9 +606,9 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
                 ProductVersionModel.description,
                 OrganizerModel.name.label("supplier_name")
             )
-            .join(OrganizerModel, OrganizerModel.id == ProductModel.supplier_id)
-            .join(ProductModel, ProductModel.product_version_id == ProductVersionModel.id)
-            .join(ProductVersionModel, self.model.product_version)
+            .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
+            .join(ProductModel, ProductVersionModel.id == ProductModel.product_version_id)
+            .join(OrganizerModel, ProductModel.supplier_id == OrganizerModel.id)
             .where(
                 self.model.company_id == company_id,
                 self.model.id == expense_id
@@ -642,9 +642,9 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
                 ProductVersionModel.category,
                 OrganizerModel.name.label("supplier_name")
             )
-            .join(OrganizerModel, self.model.supplier)
-            .join(ProductVersionModel, ProductVersionModel.id == ProductModel.product_version_id)
-            .join(ProductModel, self.model.product)    
+            .join(OrganizerModel, self.model.supplier_id == OrganizerModel.id)
+            .join(ProductModel, self.model.product_id == ProductModel.id)
+            .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
             .where(self.model.supplier_id == supplier_id)
         )
         result = await self.session.execute(stmt)
@@ -673,14 +673,13 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
                 ProductVersionModel.description,
                 OrganizerModel.name.label("supplier_name")
             )
-            .join(OrganizerModel, self.model.supplier)
-            .join(ProductVersionModel, ProductVersionModel.id == ProductModel.product_version_id)
-            .join(ProductModel, self.model.product)    
+            .join(OrganizerModel, self.model.supplier_id == OrganizerModel.id)
+            .join(ProductModel, self.model.product_id == ProductModel.id)
+            .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
             .where(
                 self.model.supplier_id == supplier_id,
                 self.model.product_id == product_id    
             )
-        
         )
         result = await self.session.execute(stmt)
         expense = result.mappings().first()
@@ -703,9 +702,9 @@ class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
                 ProductVersionModel.description,
                 OrganizerModel.name.label("supplier_name")
             )
-            .join(OrganizerModel, self.model.supplier)
-            .join(ProductVersionModel, ProductVersionModel.id == ProductModel.product_version_id)
-            .join(ProductModel, self.model.product)
+            .join(OrganizerModel, self.model.supplier_id == OrganizerModel.id)
+            .join(ProductModel, self.model.product_id == ProductModel.id)
+            .join(ProductVersionModel, ProductModel.product_version_id == ProductVersionModel.id)
             .where(
                 self.model.supplier_id == supplier_id,
                 self.model.id == expense_id
