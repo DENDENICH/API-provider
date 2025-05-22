@@ -199,9 +199,11 @@ class SupplyResponseItem(BaseItem):
     def dict(self):
         dict_supply_response = dict()
         for key, value in self.__dict__.items():
-            if isinstance(value, OrganizerInfoInSupply):
+            if key.startswith("_"):
+                continue
+            elif isinstance(value, OrganizerInfoInSupply):
                 dict_supply_response[key] = value.dict
-            if isinstance(value, list):
+            elif isinstance(value, list):
                 dicts_products = [product.dict for product in value]
                 dict_supply_response[key] = dicts_products
             else:

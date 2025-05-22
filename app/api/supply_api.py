@@ -34,7 +34,7 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=SuppliesResponse)
+@router.get("") #response_model=SuppliesResponse)
 async def get_supplies(
     is_wait_confirm: bool = Query(False),
     user_data: UserDataRedis = Depends(get_user_from_redis),
