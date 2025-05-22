@@ -33,7 +33,7 @@ router = APIRouter(
 )
 
 
-@router.get("/expenses", response_model=ExpensesResponse)
+@router.get("", response_model=ExpensesResponse)
 async def get_expenses(
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
@@ -80,7 +80,7 @@ async def get_expenses(
         )
 
 
-@router.get("/expenses/{expenses_id}", response_model=ExpenseResponse)
+@router.get("/{expenses_id}", response_model=ExpenseResponse)
 async def get_expenses(
     expenses_id: int,
     user_data: UserDataRedis = Depends(get_user_from_redis),
@@ -125,7 +125,7 @@ async def get_expenses(
     return ExpenseResponse(**expense.dict)
 
 
-@router.patch("/expenses/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.patch("/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_quantity_expense(
     expense_id: int,
     expense_quantity: ExpenseQuantity,
@@ -175,7 +175,7 @@ async def update_quantity_expense(
     return {"detail": "No content"}
 
 
-@router.delete("/expenses/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_expense(
     expense_id: int, 
     user_data: UserDataRedis = Depends(get_user_from_redis),
