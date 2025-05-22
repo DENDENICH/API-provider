@@ -358,12 +358,12 @@ class ProductRepository(BaseRepository[ProductModel]):
         """Получить все продукты по id продуктов в поставке"""
         products_version_ids = [supply_product.product_version_id for supply_product in supply_products]
         stmt = (
-            select(ProductVersionModel.product)
-            .where(ProductVersionModel.id.in_(products_version_ids))
+            select(self.model)
+            .where(self.model.product_version_id.in_(products_version_ids))
         )
         result = await self.session.execute(stmt)
         products: Iterable[ProductModel] = result.scalars().all()
-        return [self.item(**p.dict()) for p in products]
+        return [self.item(**p.dict) for p in products]
     
 
 class ProductVersionRepository(BaseRepository[ProductVersionModel]):
@@ -520,7 +520,7 @@ class SupplyProductRepository(BaseRepository[SupplyProductModel]):
         )
         result = await self.session.execute(stmt)
         models = result.scalars().all()
-        return [self.item(**model.dict()) for model in models] if models is not None else None
+        return [self.item(**model.dict) for model in models] if models is not None else None
 
 
 class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):

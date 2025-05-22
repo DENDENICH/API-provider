@@ -34,7 +34,7 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=SuppliesResponse)
+@router.get("") #response_model=SuppliesResponse)
 async def get_supplies(
     is_wait_confirm: bool = Query(False),
     user_data: UserDataRedis = Depends(get_user_from_redis),
@@ -174,7 +174,7 @@ async def assemble_or_cancel_supply(
     return {"details": "No content"}
 
 
-@router.patch("/{supply_id}/status", status_code=status.HTTP_201_CREATED)
+@router.patch("/{supply_id}/status", status_code=status.HTTP_204_NO_CONTENT)
 async def update_status(
     supply_id: int,
     status_data: SupplyStatusUpdate,

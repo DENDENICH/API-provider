@@ -43,11 +43,11 @@ class SupplyProduct(Base):
     )
 
     @property
-    def dict(self):
+    def dict(self) -> dict:
         return SuppliesProductDict(
             id=self.id,
             supply_id=self.supply_id,
             product_version_id=self.product_version_id,
-            quantit=self.quantity
+            quantity=self.quantity
         )
     
