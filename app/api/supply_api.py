@@ -219,3 +219,4 @@ async def update_status(
         )
     await session.commit()
     return {"details": "No content"}
+

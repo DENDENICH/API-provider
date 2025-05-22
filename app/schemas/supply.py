@@ -39,14 +39,16 @@ class SupplyCreateRequest(SupplyBase):
 
 
 class SupplyResponse(BaseModel):
+    # переработать схему под новый формат, возвращаемый из
     delivery_address: str
     total_price: float
     supplier: OrganizerSupplyObject
+    company: OrganizerSupplyObject
     supply_products: List[SupplyProduct]
     article: int
     status: str
-    create_datetime: str
-    is_wait_confirm: bool
+    # create_datetime: str
+    # is_wait_confirm: bool
     # couriers_phone: str
     # delivery_datetime: Optional[str]
 
