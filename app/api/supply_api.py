@@ -174,7 +174,7 @@ async def assemble_or_cancel_supply(
     return {"details": "No content"}
 
 
-@router.patch("/{supply_id}/status", status_code=status.HTTP_201_CREATED)
+@router.patch("/{supply_id}/status", status_code=status.HTTP_204_NO_CONTENT)
 async def update_status(
     supply_id: int,
     status_data: SupplyStatusUpdate,

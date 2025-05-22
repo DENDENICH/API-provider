@@ -214,6 +214,10 @@ class SupplyService:
         if not supply:
             raise NotFoundError("not found supply")
         
+        # переместить в запрос where или отдельную бизнес логику
+        # если поставка в статусе "Ожидается"
+        if supply.is_wait_confirm:
+            raise BadRequestError("Cannot change status - supply is wait confirm")
         supply.status = status.status
         
         return await self._update_supply_by_supplier_id_and_flush_session(
