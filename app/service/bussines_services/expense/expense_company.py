@@ -26,7 +26,11 @@ class ExpenseCompanyService(ExpenseInterface):
             raise NotFoundError("Expenses not found")
         return expenses
     
-    async def get_expense(self, expense_id: int, organizer_id: int) -> ExpenseWithInfoProductItem:
+    async def get_expense(
+            self,
+            expense_id: int,
+            organizer_id: int
+    ) -> ExpenseCompanyItem:
         """Получить расход по id расхода и организатора"""
         expense = await self.expense_repo.get_by_expense_and_company_id(
             expense_id=expense_id,
@@ -48,9 +52,9 @@ class ExpenseCompanyService(ExpenseInterface):
         expense_update_quantity: ExpenseUpdateQuantityItem
     ) -> ExpenseCompanyItem:
         """Обновить количество расхода"""
-        expense = await self.expense_repo.get_by_expense_and_company_id(
+        expense = await self.get_expense(
             expense_id=expense_update_quantity.expense_id,
-            company_id=expense_update_quantity.organizer_id
+            organizer_id=expense_update_quantity.organizer_id
         )
         if not expense:
             raise NotFoundError("Expenses not found")
