@@ -226,9 +226,9 @@ class SupplyService:
         # TODO: добавить бизнес логику для проверки поставки по статусу и влага "Ожидается" (is_wait_confirm)
         if supply.is_wait_confirm:
             raise BadRequestError("Cannot change status - supply is wait confirm")
-        elif status.status == CancelledAssembleStatus.cancelled:
+        elif supply.status == CancelledAssembleStatus.cancelled:
             raise BadRequestError("Cannot change status - supply is cancelled")
-        if status.status == StatusForUpdate.adopted:
+        if supply.status == StatusForUpdate.adopted:
             raise BadRequestError("Cannot change status - supply is adopted")
 
         supply.status = status.status
