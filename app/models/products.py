@@ -1,48 +1,60 @@
+from typing import TypedDict
 from sqlalchemy import (
-    String,
-    CheckConstraint,
-    Text,
-    Float,
-    Integer,
+    BigInteger,
     ForeignKey
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db import Base
-from .annotades import intpk
 
 
-class Products(Base):
+class ProductDict(TypedDict):
+    id: int
+    article: str
+    product_version_id: int
+    supplier_id: int
+
+
+class Product(Base):
     """Таблица товаров"""
-    __tablename__ = ['products']
 
-    id: Mapped[intpk]
-    name: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False
+    article: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        unique=True
     )
-    category: Mapped[str] = mapped_column(
-        String(255),
-        CheckConstraint(
-            """role IN (
-            'hair_coloring', 
-            'hair_care',
-            'hair_styling',
-            'consumables',
-            'perming',
-            'eyebrows',
-            'manicure_and_pedicure',
-            )"""
-        )
-    )
-    description: Mapped[str] = mapped_column(
-        Text
-    )
-    price: Mapped[str]  = mapped_column(
-        Float,
+    product_version_id: Mapped[int] = mapped_column(
+        ForeignKey("product_versions.id", ondelete="CASCADE"),
         nullable=False
     )
     supplier_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey('organizers.id')
+        ForeignKey("organizers.id", ondelete="CASCADE"),
+        nullable=False
     )
+    
+    #relationship
+    supplier = relationship(
+        "Organizer", 
+        back_populates="product",
+        foreign_keys=[supplier_id]
+    )
+    product_version = relationship(
+        "ProductVersion", 
+        back_populates="product",
+        foreign_keys=[product_version_id]    
+    )
+    expense_supplier = relationship(
+        "ExpenseSupplier",
+        back_populates="product",
+        foreign_keys="[ExpenseSupplier.product_id]"
+    )
+
+    @property
+    def dict(self):
+        return ProductDict(
+            id=self.id,
+            article=self.article,
+            product_version_id=self.product_version_id,
+            supplier_id=self.supplier_id
+        )
+    

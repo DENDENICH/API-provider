@@ -17,3 +17,7 @@ black
 # хэширование, jwt
 pyjwt
 bcrypt
+cryptography
+
+# работа с yaml файлами
+pyyaml

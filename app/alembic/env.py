@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
+from models import * # noqa
+
 from core import settings
 from core.db import Base
 
@@ -29,7 +31,7 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-config.set_main_option("sqlalchemy.url", str(settings.database.url))
+config.set_main_option("sqlalchemy.url", f"{settings.database.url}?async_fallback=True")
 
 
 def run_migrations_offline() -> None:
@@ -50,6 +52,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True,
     )
 
     with context.begin_transaction():
@@ -82,9 +85,9 @@ async def run_async_migrations() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
+    """Run migrations in 'online' mode"""
 
-    asyncio.run(run_async_migrations())
+    asyncio.run(run_async_migrations())    
 
 
 if context.is_offline_mode():
