@@ -281,6 +281,12 @@ paths:
       summary: Принять/отклонить поставку
       tags:
         - Поставки
+      parameters:
+      - name: supply_id
+        in: path
+        required: true
+        schema:
+          type: integer
       requestBody:
         required: true
         content:

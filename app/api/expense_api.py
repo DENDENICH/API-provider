@@ -9,7 +9,7 @@ from core.db import db_core
 from api.dependencies import get_user_from_redis
 
 from schemas.expense import (
-    ExpenseQuantity, 
+    ExpenseQuantity,
     ExpenseResponse,
     ExpensesResponse
 )

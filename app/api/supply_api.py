@@ -50,30 +50,34 @@ async def get_supplies(
 
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
-            msg="Error getting supplies\n{}".format(e)
+        logger.info(
+            msg="Supply is not found \n{}".format(user_data.organizer_id)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
-            msg="Error getting supplies\n{}".format(e)
+        logger.info(
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error getting supplies\n{}".format(e)
+            msg="Error getting supply\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
+
                 
     return {"supplies": [supply.dict for supply in supplies]}
 
@@ -99,29 +103,32 @@ async def create_supply(
         )
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating supplies\n{}".format(e)
+        logger.info(
+            msg="Supply is not found \n{}".format(user_data.organizer_id)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating supplies\n{}".format(e)
+        logger.info(
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error creating supplies\n{}".format(e)
+            msg="Error creating supply\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
     await session.commit()
     return {"details": "No content"}
@@ -146,30 +153,34 @@ async def assemble_or_cancel_supply(
         )
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating supplies\n{}".format(e)
+        logger.info(
+            msg="Supply is not found \n{}".format(user_data.organizer_id)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating supplies\n{}".format(e)
+        logger.info(
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error creating supplies\n{}".format(e)
+            msg="Error update supply\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
+    
     await session.commit()
     return {"details": "No content"}
 
@@ -193,30 +204,34 @@ async def update_status(
         )
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
-            msg="Error updating supplies\n{}".format(e)
+        logger.info(
+            msg="Supply is not found \n{}".format(user_data.organizer_id)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
-            msg="Error updating supplies\n{}".format(e)
+        logger.info(
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error updating supplies\n{}".format(e)
+            msg="Error update supply\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
+    
     await session.commit()
     return {"details": "No content"}
 

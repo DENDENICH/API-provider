@@ -44,19 +44,21 @@ async def get_suppliers(
     except NotFoundError as e:
         await session.rollback()
         logger.info(
-            msg="Error getting suppliers\n{}".format(e)
+            msg="Suppliers is not found \n{}".format(user_data.organizer_id)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
         logger.info(
-            msg="Error getting suppliers\n{}".format(e)
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
@@ -65,7 +67,8 @@ async def get_suppliers(
             msg="Error getting suppliers\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
 
     return SuppliersResponse(
@@ -74,7 +77,7 @@ async def get_suppliers(
     
 
 @router.get("/{supplier_inn}", response_model=OrganizerResponse)
-async def get_suppliers(
+async def get_supplier_by_inn(
     supplier_inn: int,
     user_data: UserDataRedis = Depends(check_is_admin), 
     session: AsyncSession = Depends(db_core.session_getter)
@@ -88,28 +91,31 @@ async def get_suppliers(
     except NotFoundError as e:
         await session.rollback()
         logger.info(
-            msg="Error getting suppliers\n{}".format(e)
+            msg="Supplier is not found \n{}".format(user_data.organizer_id)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
         logger.info(
-            msg="Error getting suppliers\n{}".format(e)
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error getting suppliers\n{}".format(e)
+            msg="Error getting supplier\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
 
     return OrganizerResponse(id=supplier.id, **supplier.dict)
@@ -133,28 +139,31 @@ async def add_supplier(
     except NotFoundError as e:
         await session.rollback()
         logger.info(
-            msg="Error add supplier\n{}".format(e)
+            msg="Is not found \n{}".format(user_data.organizer_id)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
         logger.info(
-            msg="Error add supplier\n{}".format(e)
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
         await session.rollback()
-        logger.info(
-            msg="Error add supplier\n{}".format(e)
+        logger.error(
+            msg="Error creating supplier\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
     await session.commit()
     return {"detail": "No content"}
@@ -176,28 +185,32 @@ async def delete_supplier(
     except NotFoundError as e:
         await session.rollback()
         logger.info(
-            msg="Error removing supplier\n{}".format(e)
+            msg="Supplier is not found \n{}".format(user_data.organizer_id)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
         logger.info(
-            msg="Error removing supplier\n{}".format(e)
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
         await session.rollback()
         logger.error(
-            msg="Error removing supplier\n{}".format(e)
+            msg="Error update supplier\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
+    
     await session.commit()
     return {"detail": "No content"}

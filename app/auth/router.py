@@ -50,7 +50,7 @@ async def registry(
 
         # создание пригласительного кода если запрос на регистрацию от сотрудника
         if data.user_type == UserTypeForNextRoute.organizer:
-            next_route = "/organizers/register"
+            next_route = "organizers/register"
         else:
             next_route = "/"
             link_code_service = LinkCodeService(session=session)
@@ -66,20 +66,22 @@ async def registry(
     
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating user\n{}".format(e)
+        logger.info(
+            msg="Is not found\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating user\n{}".format(e)
+        logger.info(
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
@@ -88,7 +90,8 @@ async def registry(
             msg="Error creating user\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
 
     await session.commit()
@@ -112,20 +115,22 @@ async def login(
 
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating user\n{}".format(e)
+        logger.info(
+            msg="Is not found\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating user\n{}".format(e)
+        logger.info(
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
@@ -134,7 +139,8 @@ async def login(
             msg="Error creating user\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
 
     # установка пользовательских данных в redis
@@ -146,6 +152,8 @@ async def login(
             msg="Error set user data in Redis\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+
         )
     return AuthTokenSchema(next_route=None, **token)
