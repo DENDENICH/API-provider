@@ -35,12 +35,12 @@ async def get_linkcode(
     """Получить все учетые записи пользователей в компании"""
     try:
         link_code_service = LinkCodeService(session=session)
-        linkcode = await link_code_service.get_link_code_by_user_id(user_id=request.user.user_id)
+        linkcode = await link_code_service.get_link_code_by_user_id(user_id=request.state.user_id)
 
     except NotFoundError as e:
         await session.rollback()
         logger.info(
-            msg="Linkcode is not found by user id -> \n{}".format(request.user.user_id)
+            msg="Linkcode is not found by user id -> \n{}".format(request.state.user_id)
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -67,4 +67,4 @@ async def get_linkcode(
             detail="Internal server error"
         )
 
-    return LinkCodeResponse(linkcode=linkcode)
+    return LinkCodeResponse(linkcode=linkcode.code)
