@@ -107,7 +107,21 @@ paths:
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
 
-
+  /linkcode:
+    get:
+      summary: Получение пригласительного кода
+      tags:
+        - Пригласительный код
+      operationId: getLinkCode
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkCodeResponse'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
   /organizers/register:
     post:
@@ -564,6 +578,12 @@ components:
         role_organizer:
           type: string
           enum: [company, supplier, not_have_organizer]
+
+    LinkCodeResponse:
+      type: object
+      properties:
+        linkcode:
+          type: integer
           
     # Схемы организаций
     OrganizerRegisterRequest:
