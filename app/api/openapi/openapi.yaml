@@ -23,7 +23,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: '#/components/schemas/AuthResponseAfterRegister'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
 
@@ -44,13 +44,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: '#/components/schemas/AuthResponseAfterLogin'
         "404":
           $ref: '#/components/responses/NotFound'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-  
-  
+
+
   /users/company:
     get:
       summary: Получение всех сотрудников организации
@@ -66,7 +66,7 @@ paths:
                 $ref: '#/components/schemas/UsersCompanyWithUserInfo'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-          
+
     post:
       summary: Привязка пользователя к уч. записи компании
       tags:
@@ -107,8 +107,8 @@ paths:
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
 
-    
-                    
+
+
   /organizers/register:
     post:
       summary: Регистрация организации
@@ -123,9 +123,13 @@ paths:
       responses:
         "201":
           description: Организация успешно зарегистрирована
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizerResponse'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-          
+
 
   /products:
     post:
@@ -166,7 +170,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductsResponse'
-              
+
 
   /products/{product_id}:
     get:
@@ -238,7 +242,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuppliesResponse'
-                
+
     post:
       summary: Создать новую поставку
       tags:
@@ -344,7 +348,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuppliersResponse'
-                
+
   /suppliers/{supplier_inn}:
     get:
       summary: Получить поставщика по ИНН
@@ -403,7 +407,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrganizerResponse" 
+                $ref: "#/components/schemas/OrganizerResponse"
         "404":
           $ref: '#/components/responses/NotFound'
 
@@ -507,7 +511,7 @@ components:
         user_type:
           type: string
           enum: [organizer, employee]
-          
+
     UserCompanyWithUserInfo:
       type: object
       properties:
@@ -521,7 +525,7 @@ components:
           type: string
         user_id:
           type: integer
-          
+
     UsersCompanyWithUserInfo:
       type: object
       properties:
@@ -539,7 +543,7 @@ components:
         password:
           type: string
 
-    AuthResponse:
+    AuthResponseAfterRegister:
       type: object
       properties:
         access_token:
@@ -549,6 +553,17 @@ components:
         next_route:
           type: string
           enum: [organizers/register, /]
+
+    AuthResponseAfterLogin:
+      type: object
+      properties:
+        access_token:
+          type: string
+        type_token:
+          type: string
+        role_organizer:
+          type: string
+          enum: [company, supplier, not_have_organizer]
           
     # Схемы организаций
     OrganizerRegisterRequest:

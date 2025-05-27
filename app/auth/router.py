@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from enum import Enum
 
 from core import settings
 from core.db import db_core
@@ -8,7 +9,8 @@ from core.db import db_core
 from schemas.user import (
     UserRegisterRequest,
     UserLoginRequest,
-    AuthTokenSchema,
+    AuthTokenSchemaAfterRegister,
+    AuthTokenSchemaAfterLogin,
     UserTypeForNextRoute
 )
 
@@ -29,7 +31,7 @@ router = APIRouter(
 )
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthTokenSchema)
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthTokenSchemaAfterRegister)
 async def registry(
     data: UserRegisterRequest,
     session: AsyncSession = Depends(db_core.session_getter)
@@ -96,10 +98,10 @@ async def registry(
 
     await session.commit()
     
-    return AuthTokenSchema(next_route=next_route, **token)
+    return AuthTokenSchemaAfterRegister(next_route=next_route, **token)
 
 
-@router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchema)
+@router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchemaAfterLogin)
 async def login(
     data: UserLoginRequest,
     session: AsyncSession = Depends(db_core.session_getter)
@@ -146,7 +148,7 @@ async def login(
     # установка пользовательских данных в redis
     try:
         user_service = UserService(session=session)
-        await user_service.set_data_user_to_redis(user_id=user.id)
+        user_context = await user_service.set_data_user_to_redis(user_id=user.id)
     except Exception as e:
         logger.error(
             msg="Error set user data in Redis\n{}".format(e)
@@ -156,4 +158,4 @@ async def login(
             detail="Internal server error"
 
         )
-    return AuthTokenSchema(next_route=None, **token)
+    return AuthTokenSchemaAfterLogin(role_organizer=user_context.organizer_role, **token)

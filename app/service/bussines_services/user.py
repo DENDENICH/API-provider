@@ -115,13 +115,18 @@ class UserService:
         self, 
         user_id: int,
         user_context: UserDataRedis = None
-    ) -> None:
+    ) -> UserDataRedis:
         """Сохранить данные пользователя в Redis"""
         if user_context is None:
             if (user_context := await self.user_repo.get_user_context_by_user_id(user_id)) is None:
-                return
+
+                return UserDataRedis(
+                    user_id=user_id,
+                    organizer_role="not_have_organizer"
+                )
         await redis_user.set_data(
             key=user_id,
             data=user_context
         )
+        return user_context
         

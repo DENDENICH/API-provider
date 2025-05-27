@@ -59,4 +59,9 @@ class AuthTokenSchema(BaseModel):
     """Аутентификационый токен"""
     access_token: str
     type_token: str
-    next_route: Optional[str]
+
+class AuthTokenSchemaAfterRegister(AuthTokenSchema):
+    next_route: str
+
+class AuthTokenSchemaAfterLogin(AuthTokenSchema):
+    role_organizer: str
