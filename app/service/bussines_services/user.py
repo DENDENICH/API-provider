@@ -122,7 +122,8 @@ class UserService:
 
                 return UserDataRedis(
                     user_id=user_id,
-                    organizer_role="not_have_organizer"
+                    organizer_role="not_have_organizer",
+                    user_company_role="not_have_role",
                 )
         await redis_user.set_data(
             key=user_id,

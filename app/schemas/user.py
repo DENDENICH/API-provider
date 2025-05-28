@@ -65,3 +65,4 @@ class AuthTokenSchemaAfterRegister(AuthTokenSchema):
 
 class AuthTokenSchemaAfterLogin(AuthTokenSchema):
     role_organizer: str
+    user_role: UserRole

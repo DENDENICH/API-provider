@@ -158,4 +158,8 @@ async def login(
             detail="Internal server error"
 
         )
-    return AuthTokenSchemaAfterLogin(role_organizer=user_context.organizer_role, **token)
+    return AuthTokenSchemaAfterLogin(
+        role_organizer=user_context.organizer_role,
+        user_role=user_context.user_company_role,
+        **token
+    )
