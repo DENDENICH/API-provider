@@ -25,7 +25,7 @@ router = APIRouter(
 
 @router.get(
     "",
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     response_model=LinkCodeResponse
 )
 async def get_linkcode(
