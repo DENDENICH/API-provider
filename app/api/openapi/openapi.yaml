@@ -23,7 +23,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponseAfterRegister'
+                $ref: '#/components/schemas/AuthResponse'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
 
@@ -44,13 +44,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponseAfterLogin'
+                $ref: '#/components/schemas/AuthResponse'
         "404":
           $ref: '#/components/responses/NotFound'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-
-
+  
+  
   /users/company:
     get:
       summary: Получение всех сотрудников организации
@@ -66,7 +66,7 @@ paths:
                 $ref: '#/components/schemas/UsersCompanyWithUserInfo'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-
+          
     post:
       summary: Привязка пользователя к уч. записи компании
       tags:
@@ -107,22 +107,8 @@ paths:
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
 
-  /linkcode:
-    get:
-      summary: Получение пригласительного кода
-      tags:
-        - Пригласительный код
-      operationId: getLinkCode
-      responses:
-        '200':
-          description: Успешно
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LinkCodeResponse'
-        "422":
-          $ref: '#/components/responses/UnprocessableEntity'
-
+    
+                    
   /organizers/register:
     post:
       summary: Регистрация организации
@@ -137,13 +123,9 @@ paths:
       responses:
         "201":
           description: Организация успешно зарегистрирована
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizerResponse'
         "422":
           $ref: '#/components/responses/UnprocessableEntity'
-
+          
 
   /products:
     post:
@@ -184,7 +166,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductsResponse'
-
+              
 
   /products/{product_id}:
     get:
@@ -256,7 +238,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuppliesResponse'
-
+                
     post:
       summary: Создать новую поставку
       tags:
@@ -362,7 +344,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuppliersResponse'
-
+                
   /suppliers/{supplier_inn}:
     get:
       summary: Получить поставщика по ИНН
@@ -421,7 +403,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrganizerResponse"
+                $ref: "#/components/schemas/OrganizerResponse" 
         "404":
           $ref: '#/components/responses/NotFound'
 
@@ -525,7 +507,7 @@ components:
         user_type:
           type: string
           enum: [organizer, employee]
-
+          
     UserCompanyWithUserInfo:
       type: object
       properties:
@@ -539,7 +521,7 @@ components:
           type: string
         user_id:
           type: integer
-
+          
     UsersCompanyWithUserInfo:
       type: object
       properties:
@@ -557,7 +539,7 @@ components:
         password:
           type: string
 
-    AuthResponseAfterRegister:
+    AuthResponse:
       type: object
       properties:
         access_token:
@@ -567,27 +549,7 @@ components:
         next_route:
           type: string
           enum: [organizers/register, /]
-
-    AuthResponseAfterLogin:
-      type: object
-      properties:
-        access_token:
-          type: string
-        type_token:
-          type: string
-        role_organizer:
-          type: string
-          enum: [company, supplier, not_have_organizer]
-        user_role:
-          type: string
-          enum: [admin, manager, employee, not_have_role]
-
-    LinkCodeResponse:
-      type: object
-      properties:
-        linkcode:
-          type: integer
-
+          
     # Схемы организаций
     OrganizerRegisterRequest:
       type: object
@@ -621,7 +583,7 @@ components:
         bank_details:
           type: string
 
-
+    
     # Схемы поставок
     SupplyCreateRequest:
       type: object
@@ -693,13 +655,13 @@ components:
         status:
           type: string
           enum: [
-            assembled,
-            in_delivery,
+            assembled, 
+            in_delivery, 
             adopted,
             delivered,
             cancelled
           ]
-        create_datetime:
+        create_datetime: 
           type: string
         delivery_datetime:
           type: string
@@ -718,12 +680,12 @@ components:
         status:
           type: string
           enum:  [
-            assembled,
-            in_delivery,
+            assembled, 
+            in_delivery, 
             adopted,
             delivered,
           ]
-
+    
     SupplierResponse:
       type: object
       properties:
@@ -737,7 +699,7 @@ components:
           type: string
         bank_details:
           type: string
-
+    
 
     SuppliersResponse:
       type: object
@@ -756,14 +718,14 @@ components:
           type: string
         category:
           type: string
-          enum: [
-            hair_coloring,
-            hair_care,
-            hair_styling,
-            consumables, perming,
-            eyebrows,
-            manicure_and_pedicure,
-            tools_and_equipment
+          enum: [ 
+            hair_coloring, 
+            hair_care, 
+            hair_styling, 
+            consumables, perming, 
+            eyebrows, 
+            manicure_and_pedicure, 
+            tools_and_equipment 
             ]
         price:
           type: number
@@ -794,8 +756,8 @@ components:
           default: null
         organizer_name:
           type: string
-
-
+        
+          
 
     ProductResponseSupply:
       type: object
@@ -808,14 +770,14 @@ components:
           type: string
         category:
           type: string
-          enum: [
-            hair_coloring,
-            hair_care,
-            hair_styling,
-            consumables, perming,
-            eyebrows,
-            manicure_and_pedicure,
-            tools_and_equipment
+          enum: [ 
+            hair_coloring, 
+            hair_care, 
+            hair_styling, 
+            consumables, perming, 
+            eyebrows, 
+            manicure_and_pedicure, 
+            tools_and_equipment 
             ]
         price:
           type: number
@@ -837,7 +799,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Expense'
-
+              
     Expense:
       type: object
       required:
