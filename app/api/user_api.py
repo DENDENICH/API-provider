@@ -17,7 +17,8 @@ from core import settings
 from service.bussines_services.user import UserService
 from schemas.user import (
     UserCompanySchema,
-    UsersCompanyWithUserSchema
+    UsersCompanyWithUserSchema,
+    UserCompanyWithUserSchema
 )
 from service.redis_service import UserDataRedis, redis_user
 
@@ -76,7 +77,9 @@ async def get_all_employee(
             detail="Internal server error"
         )
 
-    return {"detail": "OK"}
+    return UsersCompanyWithUserSchema(
+        users=[UserCompanyWithUserSchema(**u.dict) for u in users_company]
+    )
 
 
 @router.post("/company", status_code=status.HTTP_201_CREATED)
