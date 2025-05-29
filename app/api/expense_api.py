@@ -157,7 +157,7 @@ async def update_quantity_expense(
     except BadRequestError as e:
         await session.rollback()
         logger.error(
-            msg="Error updating sttaus expenses\n{}".format(e)
+            msg="Error updating status expenses\n{}".format(e)
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST
