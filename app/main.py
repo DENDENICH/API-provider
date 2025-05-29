@@ -1,8 +1,5 @@
-from pathlib import Path
 from contextlib import asynccontextmanager
 import uvicorn
-from fastapi import FastAPI
-import yaml
 
 from core import settings
 from core.db import db_core
@@ -16,8 +13,6 @@ import yaml
 from fastapi import FastAPI
 
 from starlette.middleware.cors import CORSMiddleware
-
-# from exception_handlers import error_handlers
 
 from middlewares import AuthorizeRequestMiddleware
 
@@ -48,7 +43,7 @@ app_main.include_router(auth_router)
 
 # регистрация middlewares
 app_main.add_middleware(AuthorizeRequestMiddleware)
-# TODO: донастроить параметры CORS
+# TODO: донастроить параметры CORS - добавить домен и порт фронтенд приложения
 app_main.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

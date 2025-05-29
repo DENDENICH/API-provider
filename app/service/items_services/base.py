@@ -11,11 +11,11 @@ class BaseItem:
             id: Optional[int] = None, 
             model: Optional[Type[Model]] = None
     ):
-        self._id = id
-        self._model = model
+        self._id: int = id
+        self._model: Type[Model] = model
 
     @property
-    def id(self):
+    def id(self) -> int:
         return self._id or self._model.id
     
     @property

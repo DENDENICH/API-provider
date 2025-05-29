@@ -34,6 +34,10 @@ class ApiSuppliersPrefix:
     prefix: str = "/suppliers"
     tags: list[str] = ["Suppliers"]
 
+class ApiLinkCodePrefix:
+    prefix: str = "/linkcode"
+    tags: list[str] = ["LinkCode"]
+
 class ApiSetting:
     users: ApiUsersPrefix = ApiUsersPrefix()
     organizers: ApiOrganizersPrefix = ApiOrganizersPrefix()
@@ -42,6 +46,7 @@ class ApiSetting:
     products: ApiProductsPrefix = ApiProductsPrefix()
     auth: ApiAuthPrefix = ApiAuthPrefix()
     suppliers: ApiSuppliersPrefix = ApiSuppliersPrefix()
+    linkcode: ApiLinkCodePrefix = ApiLinkCodePrefix()
 
 
 class AuthSettings(BaseSettings):

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from enum import Enum
 
 from core import settings
 from core.db import db_core
@@ -8,7 +9,8 @@ from core.db import db_core
 from schemas.user import (
     UserRegisterRequest,
     UserLoginRequest,
-    AuthTokenSchema,
+    AuthTokenSchemaAfterRegister,
+    AuthTokenSchemaAfterLogin,
     UserTypeForNextRoute
 )
 
@@ -29,7 +31,7 @@ router = APIRouter(
 )
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthTokenSchema)
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthTokenSchemaAfterRegister)
 async def registry(
     data: UserRegisterRequest,
     session: AsyncSession = Depends(db_core.session_getter)
@@ -50,7 +52,7 @@ async def registry(
 
         # создание пригласительного кода если запрос на регистрацию от сотрудника
         if data.user_type == UserTypeForNextRoute.organizer:
-            next_route = "/organizers/register"
+            next_route = "organizers/register"
         else:
             next_route = "/"
             link_code_service = LinkCodeService(session=session)
@@ -66,20 +68,22 @@ async def registry(
     
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating user\n{}".format(e)
+        logger.info(
+            msg="Is not found\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating user\n{}".format(e)
+        logger.info(
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
@@ -88,15 +92,16 @@ async def registry(
             msg="Error creating user\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
 
     await session.commit()
     
-    return AuthTokenSchema(next_route=next_route, **token)
+    return AuthTokenSchemaAfterRegister(next_route=next_route, **token)
 
 
-@router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchema)
+@router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchemaAfterLogin)
 async def login(
     data: UserLoginRequest,
     session: AsyncSession = Depends(db_core.session_getter)
@@ -112,20 +117,22 @@ async def login(
 
     except NotFoundError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating user\n{}".format(e)
+        logger.info(
+            msg="Is not found\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
         )
 
     except BadRequestError as e:
         await session.rollback()
-        logger.error(
-            msg="Error creating user\n{}".format(e)
+        logger.info(
+            msg="Bad request\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
 
     except Exception as e:
@@ -134,18 +141,25 @@ async def login(
             msg="Error creating user\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
         )
 
     # установка пользовательских данных в redis
     try:
         user_service = UserService(session=session)
-        await user_service.set_data_user_to_redis(user_id=user.id)
+        user_context = await user_service.set_data_user_to_redis(user_id=user.id)
     except Exception as e:
         logger.error(
             msg="Error set user data in Redis\n{}".format(e)
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+
         )
-    return AuthTokenSchema(next_route=None, **token)
+    return AuthTokenSchemaAfterLogin(
+        role_organizer=user_context.organizer_role,
+        user_role=user_context.user_company_role,
+        **token
+    )

@@ -6,6 +6,7 @@ from .product_api import router as router_products
 from .organizer_api import router as router_organizer
 from .supplier_api import router as router_supplier
 from .expense_api import router as router_expense
+from .linkcode_api import router as router_linkcode
 
 router = APIRouter()
 
@@ -26,4 +27,7 @@ router.include_router(
 )
 router.include_router(
     router=router_expense
+)
+router.include_router(
+    router=router_linkcode
 )

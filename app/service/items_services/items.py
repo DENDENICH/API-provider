@@ -58,6 +58,10 @@ class UserCompanyWithUserItem:
         self.email = email
         self.phone = phone
 
+    @property
+    def dict(self):
+        return self.__dict__
+
 
 class LinkCodeItem(BaseItem):
     """Объект сущности пригласительного кода"""
