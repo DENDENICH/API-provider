@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Query
 from core import settings
 from core.db import db_core
 
-from api.dependencies import check_is_company, check_is_supplier
+from api.dependencies import check_is_company, check_is_supplier, get_user_from_redis
 
 from schemas.product import (
     ProductRequestCreate,
@@ -57,7 +57,7 @@ async def create_product(
 async def get_products(
     supplier_id: Optional[int] = Query(None),
     add_quantity: Optional[bool] = Query(False),
-    user_data: UserDataRedis = Depends(check_is_company),
+    user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter),
 ):
     try:
@@ -84,7 +84,7 @@ async def get_products(
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product_by_id(
     product_id: int,
-    user_data: UserDataRedis = Depends(check_is_company),
+    user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
     try:
@@ -125,5 +125,3 @@ async def update_product(
         )
     await session.commit()
     return ExpenseResponse(id=product.id, **product.dict)
-
-    
