@@ -191,7 +191,8 @@ class SupplyResponseItem(BaseItem):
                     product=Product(**product["product"]),
                     quantity=product["quantity"]
                 ) for product in data["supply_products"]
-            ]
+            ],
+            id=data["id"]
         )
     
     # алгоритм данного метода нужно реализовать и в методе dict базового класса BaseItem
@@ -199,15 +200,16 @@ class SupplyResponseItem(BaseItem):
     def dict(self):
         dict_supply_response = dict()
         for key, value in self.__dict__.items():
-            if key.startswith("_"):
-                continue
-            elif isinstance(value, OrganizerInfoInSupply):
+            if isinstance(value, OrganizerInfoInSupply):
                 dict_supply_response[key] = value.dict
             elif isinstance(value, list):
                 dicts_products = [product.dict for product in value]
                 dict_supply_response[key] = dicts_products
             else:
-                dict_supply_response[key] = value
+                if key.startswith("_id"):
+                    dict_supply_response["id"] = self.id
+                elif not key.startswith("_model"):
+                    dict_supply_response[key] = value
 
         return dict_supply_response
       

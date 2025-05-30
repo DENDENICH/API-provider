@@ -104,7 +104,9 @@ class ExpenseSupplierService(ExpenseInterface):
 
     async def delete_expense(self, expense_id: int) -> ExpenseSupplierItem:
         """Удалить расход"""
-        expense = await self.expense_repo.delete(expense_id)
+        expense: ExpenseSupplierItem = await self.expense_repo.get_by_id(expense_id)
         if not expense:
             raise NotFoundError("Expenses not found")
+
+        expense = await self.expense_repo.delete(expense_id)
         return expense

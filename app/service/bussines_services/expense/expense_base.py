@@ -39,7 +39,7 @@ class ExpenseInterface(ABC):
         pass
     
     @abstractmethod
-    async def delete_expense(self, expense_id: int) -> ExpenseCompanyItem:
+    async def delete_expense(self, expense_id: int) -> ExpenseSupplierItem:
         """Удалить расход"""
         pass
     

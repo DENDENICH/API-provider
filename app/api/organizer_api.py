@@ -7,6 +7,7 @@ from core import settings
 
 from schemas.organizer import (
     OrganizerRegisterRequest,
+    OrganizerResponse
 )
 
 from service.bussines_services.user import UserService
@@ -101,5 +102,5 @@ async def register_organizer(
     
     await session.commit()
 
-    return {"details": "OK"}
+    return OrganizerResponse(id=organizer.id, **organizer.dict)
 

@@ -9,7 +9,7 @@ from core.db import db_core
 from api.dependencies import get_user_from_redis
 
 from schemas.expense import (
-    ExpenseQuantity, 
+    ExpenseQuantity,
     ExpenseResponse,
     ExpensesResponse
 )
@@ -18,8 +18,10 @@ from service.bussines_services.expense.expense_factory import ExpenseFactory
 from service.bussines_services.expense.expense_base import ExpenseInterface
 from service.items_services.expense import (
     ExpenseUpdateQuantityItem,
-    ExpenseWithInfoProductItem
+    ExpenseWithInfoProductItem,
+    ExpenseSupplierItem
 )
+from service.bussines_services.product import ProductService
 from service.redis_service import UserDataRedis
 
 from exceptions import NotFoundError, BadRequestError
@@ -157,7 +159,7 @@ async def update_quantity_expense(
     except BadRequestError as e:
         await session.rollback()
         logger.error(
-            msg="Error updating sttaus expenses\n{}".format(e)
+            msg="Error updating status expenses\n{}".format(e)
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST
@@ -187,9 +189,11 @@ async def delete_expense(
             session=session,
             organizer_role=user_data.organizer_role
         )
-        expenses = await expense_service.delete_expense(
+        expense: ExpenseSupplierItem = await expense_service.delete_expense(
             expense_id=expense_id
         )
+        product_service = ProductService(session=session)
+        await product_service.delete_product(product_id=expense.product_id)
     except NotFoundError as e:
         await session.rollback()
         logger.error(

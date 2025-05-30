@@ -10,7 +10,7 @@ from core.db import Base
 
 class ProductDict(TypedDict):
     id: int
-    article: str
+    article: int
     product_version_id: int
     supplier_id: int
 

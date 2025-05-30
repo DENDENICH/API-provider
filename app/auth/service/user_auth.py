@@ -16,7 +16,7 @@ class UserAuthService:
     def __init__(self, session: AsyncSession):
         self.user_repo = UserRepository(session=session)
 
-    async def check_login_user(self, email: str, password: str) -> Optional[UserItem]:
+    async def check_login_user(self, email: str, password: str) -> UserItem:
         """Получить пользователя по email"""
         if (user := await self.user_repo.get_by_email(email)) is None:
             raise NotFoundError("User not found")
