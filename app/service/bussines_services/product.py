@@ -190,4 +190,16 @@ class ProductService:
             quantity=expense.quantity,
             description=product_version.description,
         )
+    
+    async def delete_product(
+            self, 
+            product_id: int
+        ) -> None:
+        """Удалить продукт"""
+        product: ProductItem = await self.product_repo.get_by_id(product_id)
+        if product is None:
+            raise not_found_error
+        
+        await self.product_repo.delete(product.id)
+        await self.session.flush()
         
