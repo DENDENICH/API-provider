@@ -18,7 +18,7 @@ from service.items_services.expense import ExpenseSupplierItem, ExpenseWithInfoP
 from service.bussines_services.expense.expense_supplier import ExpenseSupplierService
 from service.redis_service import UserDataRedis
 
-from exceptions import not_found_error
+from exceptions import NotFoundError
 
 from utils import generate_unique_code
 
@@ -113,7 +113,7 @@ class ProductService:
                 supplier_id=supplier_id,
             )
         if products is None:
-            raise not_found_error
+            raise NotFoundError("products not found")
         if add_quantity:
             products = await self._get_quantity_for_products(products)
         return products
@@ -136,7 +136,7 @@ class ProductService:
     async def get_product_by_id(self, product_id: int) -> Optional[ProductFullItem]:
         """Получить продукт по id"""
         if (product := await self.product_repo.get_by_id_full_product(product_id)) is None:
-            raise not_found_error
+            raise NotFoundError("products not found")
         return product
     
 
@@ -146,7 +146,7 @@ class ProductService:
     ) -> Iterable[ProductVersionItem]:
         """Получить все версии продуктов по id"""
         if (products_version := await self.version_repo.get_products_version_by_products_ids(product_ids)) is None:
-            raise not_found_error
+            raise NotFoundError("products not found")
         return products_version
     
     async def get_products_by_supplies_products(
@@ -155,7 +155,7 @@ class ProductService:
     ) -> Iterable[ProductItem]:
         """Получить все продукты по продуктам в поставках"""
         if (products := await self.product_repo.get_products_by_supplies_products(supplies_products)) is None:
-            raise not_found_error
+            raise NotFoundError("products not found")
         return products
     
 
@@ -167,7 +167,7 @@ class ProductService:
         """Обновить данные продукта"""
         product: ProductItem = await self.product_repo.get_by_id(product_id)
         if product is None:
-            raise not_found_error
+            raise NotFoundError("products not found")
         
         new_product_version = await self._create_version_product_and_flush_session(
             product_version
@@ -198,7 +198,7 @@ class ProductService:
         """Удалить продукт"""
         product: ProductItem = await self.product_repo.get_by_id(product_id)
         if product is None:
-            raise not_found_error
+            raise NotFoundError("products not found")
         
         await self.product_repo.delete(product.id)
         await self.session.flush()
