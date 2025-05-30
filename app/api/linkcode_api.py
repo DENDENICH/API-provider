@@ -32,7 +32,7 @@ async def get_linkcode(
         request: Request,
         session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Получить все учетые записи пользователей в компании"""
+    """Получить собственный код привязки"""
     try:
         link_code_service = LinkCodeService(session=session)
         linkcode = await link_code_service.get_link_code_by_user_id(user_id=request.state.user_id)

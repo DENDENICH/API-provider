@@ -62,6 +62,7 @@ class UserService:
         )
         return await self.user_company_repo.create(user_company)
     
+    
     async def get_all_employ_by_organizer_id(
             self,
             organizer_id: int,

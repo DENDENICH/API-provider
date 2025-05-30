@@ -654,8 +654,6 @@ components:
                 $ref: "#/components/schemas/ProductResponseSupply"
               quantity:
                 type: integer
-        couriers_phone:
-          type: string
         article:
           type: integer
         delivery_address:
@@ -672,10 +670,6 @@ components:
             delivered,
             cancelled
           ]
-        create_datetime:
-          type: string
-        delivery_datetime:
-          type: string
 
     SuppliesResponse:
       type: object
