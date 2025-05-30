@@ -38,10 +38,10 @@ class OrganizerRole(str, Enum):
 
 class CancelledAssembleStatus(str, Enum):
     cancelled = "cancelled"
-    assemble = "assemble"
+    assemble = "assembled"
 
 class StatusForUpdate(str, Enum):
-    assemble = "assemble"
+    assemble = "assembled"
     in_delivery = "in_delivery"
     adopted = "adopted"
     delivery = "delivery"
