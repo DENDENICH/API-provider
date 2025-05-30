@@ -7,8 +7,8 @@ from schemas.product import ProductResponseSupply
 
 
 class CancelledAssembleStatus(str, Enum):
-    cancelled = "cancel"
-    assemble = "assemble"
+    cancelled = "cancelled"
+    assemble = "assembled"
 
 class StatusForUpdate(str, Enum):
     assemble = "assemble"
