@@ -191,7 +191,8 @@ class SupplyResponseItem(BaseItem):
                     product=Product(**product["product"]),
                     quantity=product["quantity"]
                 ) for product in data["supply_products"]
-            ]
+            ],
+            id=data["id"]
         )
     
     # алгоритм данного метода нужно реализовать и в методе dict базового класса BaseItem
@@ -206,7 +207,7 @@ class SupplyResponseItem(BaseItem):
                 dict_supply_response[key] = dicts_products
             else:
                 if key.startswith("_id"):
-                    dict_supply_response["id"] = value
+                    dict_supply_response["id"] = self.id
                 elif not key.startswith("_model"):
                     dict_supply_response[key] = value
 
