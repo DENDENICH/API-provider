@@ -268,23 +268,6 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
 
   /supplies/{supply_id}:
-    get:
-      summary: Получить информацию о поставке
-      tags:
-        - Поставки
-      parameters:
-      - name: supply_id
-        in: path
-        required: true
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Список поставок
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SupplyResponse'
     patch:
       summary: Принять/отклонить поставку
       tags:
