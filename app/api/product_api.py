@@ -31,7 +31,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_product(
     product_in: ProductRequestCreate,
     user_data: UserDataRedis = Depends(check_is_supplier),
@@ -73,7 +73,7 @@ async def create_product(
     return ExpenseResponse(**expense.dict)
 
 
-@router.get("/", response_model=ProductsResponse)
+@router.get("", response_model=ProductsResponse)
 async def get_products(
     supplier_id: Optional[int] = Query(None),
     add_quantity: Optional[bool] = Query(False),

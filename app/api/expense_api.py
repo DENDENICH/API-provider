@@ -83,7 +83,7 @@ async def get_expenses(
 
 
 @router.get("/{expenses_id}", response_model=ExpenseResponse)
-async def get_expenses(
+async def get_expense_by_id(
     expenses_id: int,
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
