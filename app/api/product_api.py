@@ -195,4 +195,4 @@ async def update_product(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
-    return ExpenseResponse(id=product.id, **product.dict)
+    return ExpenseResponse(**product.dict)
