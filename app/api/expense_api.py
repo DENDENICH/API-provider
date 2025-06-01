@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from core import settings
 from core.db import db_core
 
-from api.dependencies import get_user_from_redis
+from api.dependencies import get_user_from_redis, OrganizerRole
 
 from schemas.expense import (
     ExpenseQuantity,
@@ -192,8 +192,12 @@ async def delete_expense(
         expense: ExpenseSupplierItem = await expense_service.delete_expense(
             expense_id=expense_id
         )
-        product_service = ProductService(session=session)
-        await product_service.delete_product(product_id=expense.product_id)
+
+        # убрать данный костыль из endpoint
+        if user_data.organizer_role == OrganizerRole.supplier:
+            product_service = ProductService(session=session)
+            await product_service.delete_product(product_id=expense.product_id)
+            
     except NotFoundError as e:
         await session.rollback()
         logger.error(
