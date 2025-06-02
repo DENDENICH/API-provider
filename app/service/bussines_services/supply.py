@@ -74,6 +74,10 @@ class SupplyService:
             supply: SupplyCreateItem,
     ) -> None:
         """Создать поставку"""
+        # TODO! 
+        # ПЕРЕРАБОТАТЬ ЛОГИКУ СОЗДАНИЯ ПОСТАВКИ
+        # КАК МИНИМУМ НАЧАТЬ С ПРОВЕРКИ МУЩЕСТВОВАНИЯ ПРОДУКТОВ ПО ИХ ID,
+        # ПОЛУЧАЕМЫХ ИЗ СХЕМЫ SUPPLY
         supply_item = await self._create_supply_and_flush_session(
             supply=get_supply_item_by_supply_create_item(supply)
         )
