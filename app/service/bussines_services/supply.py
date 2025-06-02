@@ -82,6 +82,8 @@ class SupplyService:
             supply=get_supply_item_by_supply_create_item(supply)
         )
         products_ids = supply.get_products_ids
+        # проблемное место - ids версии продуктов находятся в порядке, отличающийся от
+        # продуктов
         products_version_ids = await self._get_products_version_ids_by_products_ids(
             products_ids=products_ids
         )
@@ -206,7 +208,7 @@ class SupplyService:
             supplier_id=supplier_id,
             supply=supply
         )
-        # возврат расходов
+        # реализовать возврат расходов
         await self._update_quantity_and_reversed_expenses_by_status(
             supplier_id=supplier_id,
             supply=supply,
@@ -314,22 +316,28 @@ class SupplyService:
         #   - списать у кол-ва товара на складе кол-во товара в поставке
         # Если поставка отклоняется: 
         #   - списать у резерва кол-во каждого товара в поставке
-        supply_products: Iterable[SupplyProductItem] = await self.supply_product_repo.get_by_supply_id(
+        supply_products: Optional[List[SupplyProductItem]] = await self.supply_product_repo.get_by_supply_id(
             supply_id=supply.id
         )
+        if supply_products is None:
+            raise NotFoundError("Supplies products is not in supply")
         product_service = ProductService(self.session)
-        products: Iterable[ProductItem] = await product_service.get_products_by_supplies_products(
-            supplies_products=supply_products
-        )
-        products_ids = [p.id for p in products]
+        # Вынести получение продукта по продукту в поставке в цикл
+        # products: Iterable[ProductItem] = await product_service.get_products_by_supplies_products(
+        #     supplies_products=supply_products
+        # )
+        # products_ids = [p.id for p in products]
 
         expenses_list = list()
         expense_service = ExpenseSupplierService(self.session)
 
-        for supply_product, product_id in zip(supply_products, products_ids):
+        for supply_product in supply_products:
+            product = await product_service.get_product_by_product_version_id(
+                product_version_id=supply_product.product_version_id
+            )
             expense = await expense_service.get_expense_by_id_supplier_and_product(
                 supplier_id=supplier_id,
-                product_id=product_id
+                product_id=product.id
             )
 
             expense.reserved -= supply_product.quantity

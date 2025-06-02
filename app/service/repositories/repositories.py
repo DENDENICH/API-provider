@@ -281,6 +281,18 @@ class ProductRepository(BaseRepository[ProductModel]):
         product = result.mappings().first()
         return AvailableProductForCompany(**dict(product)) if product is not None else None
 
+    async def get_by_product_version_id(self, product_version_id: int) -> ProductItem:
+        """Получить продукт по id версии"""
+        stmt = (
+            select(self.model)
+            .where(
+                self.model.product_version_id == product_version_id  
+            )
+        )
+        result = await self.session.execute(stmt)
+        product = result.scalar_one_or_none()
+        return ProductItem(**product.dict)
+
     async def get_all_products(
             self, 
             supplier_id: int, 
@@ -378,7 +390,7 @@ class ProductVersionRepository(BaseRepository[ProductVersionModel]):
             self,
             products_ids: Iterable[int]
     ) -> List[ProductVersionItem]:
-        """Получить id всех версий продуктов по id продуктов"""
+        """Получить все версии продуктов по id продуктов"""
         stmt = (
             select(self.model)
             .where(
@@ -389,6 +401,20 @@ class ProductVersionRepository(BaseRepository[ProductVersionModel]):
         result = await self.session.execute(stmt)
         products_version: Iterable[ProductVersionModel] = result.scalars().all()
         return [self.item(**p.dict) for p in products_version]
+    
+    # временно эта функция нужна для логики формирования поставки
+    async def get_by_product_id(self, product_id: int) -> Optional[ProductVersionItem]:
+        """Получить версию продукта по id продукта"""
+        stmt = (
+            select(self.model)
+            .where(
+                ProductModel.id == product_id,
+                self.model.id == ProductModel.product_version_id    
+            )
+        )
+        result = await self.session.execute(stmt)
+        products_version = result.scalar_one_or_none()
+        return ProductVersionItem(**products_version.dict) if products_version else None
 
 class SupplyRepository(BaseRepository[SupplyModel]):
     """Репозиторий бизнес логики работы с поставкой"""
