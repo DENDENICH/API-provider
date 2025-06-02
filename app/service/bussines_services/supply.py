@@ -348,3 +348,16 @@ class SupplyService:
             expenses_list.append(expense_update)
 
         return expenses_list
+    
+
+    async def delete_supply(
+            self, 
+            supply_id: int,
+    ) -> None:
+        """Удалить поставку"""
+        supply = await self.supply_repo.get_by_id(supply_id)
+        if not supply:
+            raise NotFoundError("not found supply")
+        await self.supply_repo.delete(supply.id)
+        await self.session.flush()
+        return

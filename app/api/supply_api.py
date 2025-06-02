@@ -235,3 +235,48 @@ async def update_status(
     await session.commit()
     return {"details": "No content"}
 
+# Сделано на случай багов с поставками
+@router.delete("/{supply_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_supply(
+    supply_id: int,
+    # user_data: UserDataRedis = Depends(check_is_company),
+    session: AsyncSession = Depends(db_core.session_getter)
+):
+    """Удалить поставку"""
+    try:
+        supply_service = SupplyService(session=session)
+        await supply_service.delete_supply(
+            supply_id=supply_id
+        )
+    except NotFoundError as e:
+        await session.rollback()
+        logger.info(
+            msg="Supply is not found \n{}".format(supply_id)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+
+    except BadRequestError as e:
+        await session.rollback()
+        logger.info(
+            msg="Bad request\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            msg="Error delete supply\n{}".format(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+    
+    await session.commit()
+    return {"details": "No content"}
