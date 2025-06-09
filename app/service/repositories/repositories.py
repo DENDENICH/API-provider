@@ -792,7 +792,7 @@ class StatisticRepository:
                         SupplyModel.company_id == company_id,
                         SupplyModel.is_wait_confirm
                     ).label("is_wait_confirm_supplies_count"),
-                select(func.count(ExpenseCompanyModel.id))
+                select(func.sum(ExpenseCompanyModel.quantity))
                     .where(ExpenseCompanyModel.company_id == company_id).label("count_adopted_products"),
                 select(func.count(ContractModel.id))
                     .where(ContractModel.company_id == company_id).label("organizers_contract_count")
@@ -818,8 +818,8 @@ class StatisticRepository:
                         SupplyModel.supplier_id == supplier_id,
                         SupplyModel.is_wait_confirm
                     ).label("is_wait_confirm_supplies_count"),
-                select(func.count(ProductModel.id))
-                    .where(ProductModel.supplier_id == supplier_id).label("all_products_count"),
+                select(func.sum(ExpenseSupplierModel.quantity))
+                    .where(ExpenseSupplierModel.supplier_id == supplier_id).label("all_products_count"),
                 select(func.count(ContractModel.id))
                     .where(ContractModel.supplier_id == supplier_id).label("organizers_contract_count")
             )
