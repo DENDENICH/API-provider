@@ -105,3 +105,4 @@ class SuppliesStatisticOfMonthItem:
 class FilterForGettingGraphStatistic:
     organization_id: int
     organizer_role: str
+    

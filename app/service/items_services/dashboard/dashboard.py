@@ -19,7 +19,7 @@ class StatisticResponseItem:
     @staticmethod
     def get_response_schema_statistic(
         general_statistic: Type[T],
-        supplies_statistic_of_month: list[dict],
+        supplies_statistic_of_month: list[dict] | list,
     ) -> dict[str, Any]:
         """Формирование ответа со статистикой для API"""
         response: dict[str, Any] = general_statistic.dict

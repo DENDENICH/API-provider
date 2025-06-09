@@ -9,7 +9,7 @@ from fastapi import (
 )
 from core.db import db_core
 
-from api.dependencies import check_is_admin, get_user_from_redis
+from api.dependencies import get_user_from_redis
 
 from core import settings
 from schemas.dashboard import (
@@ -32,7 +32,7 @@ async def get_company_statistic(
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Создать учетную запись пользователя в компании"""
+    """Получить полную статистику компании"""
     try:
         statistic_service = StaticticService(session)
         result: dict = await statistic_service.get_statistics_by_company(
@@ -76,7 +76,7 @@ async def get_supplier_statistic(
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
-    """Удалить учетную запись пользователя из компании"""
+    """Получить полную статистику поставщика"""
     try:
         statistic_service = StaticticService(session)
         result: dict = await statistic_service.get_statistics_by_supplier(

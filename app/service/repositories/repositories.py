@@ -773,7 +773,7 @@ class StatisticRepository:
         supplies_statistics = result.mappings().all()
 
         return [
-            SuppliesStatisticOfMonthItem(**dict(statistic)).dict 
+            SuppliesStatisticOfMonthItem(**statistic).dict 
             for statistic in supplies_statistics
         ] if supplies_statistics else None
 
