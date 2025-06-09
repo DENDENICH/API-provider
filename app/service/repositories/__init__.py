@@ -9,5 +9,6 @@ from .repositories import (
     SupplyRepository,
     SupplyProductRepository,
     ExpenseCompanyRepository,
-    ExpenseSupplierRepository
+    ExpenseSupplierRepository,
+    StatisticRepository
 )

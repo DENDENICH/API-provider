@@ -47,7 +47,7 @@ class JWT:
     def decode_jwt(
             self,
             token: str | bytes,
-    ) -> Optional[Dict]:
+    ) -> Dict:
         """JWT декодирование"""
         decoded = jwt.decode(
             token,

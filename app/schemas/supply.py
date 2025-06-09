@@ -14,7 +14,7 @@ class StatusForUpdate(str, Enum):
     assemble = "assemble"
     in_delivery = "in_delivery"
     adopted = "adopted"
-    delivery = "delivery"
+    delivery = "delivered"
 
 
 class SupplyBase(BaseModel):

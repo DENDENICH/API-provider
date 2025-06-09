@@ -391,7 +391,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 
-  /expenses/:
+  /expenses:
     get:
       summary: Получить все расходы
       tags:
@@ -407,7 +407,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Expenses'
 
-  /expenses/{expense_id}/:
+  /expenses/{expense_id}:
     patch:
       summary: Обновить количество расхода
       tags:
@@ -447,6 +447,42 @@ paths:
       responses:
         '204':
           description: Расход удален
+
+  /dashboard/company:
+    get:
+      summary: Получить статистику компании
+      tags:
+        - Статистика
+      operationId: getCompanyDashboard
+      responses:
+        "200":
+          description: Статистика
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticCompany'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+    
+  /dashboard/supplier:
+    get:
+      summary: Получить статистику поставщика
+      tags:
+        - Статистика
+      operationId: getSupplierDashboard
+      responses:
+        "200":
+          description: Статистика
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticSupplier'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
 components:
   responses:
@@ -839,3 +875,44 @@ components:
           type: string
         quantity:
           type: integer
+
+    SuppliesStatisticOfMonthItem:
+      type: object
+      properties:
+        month:
+          type: string
+        count:
+          type: integer
+        
+    StatisticCompany:
+      type: object
+      properties:
+        count_adopted_products:
+          type: integer
+        all_supplies_count:
+          type: integer
+        is_wait_confirm_supplies_count:
+          type: integer
+        organizers_contract_count:
+          type: integer
+        supplies_statistic_of_month:
+          type: array
+          items: 
+            $ref: '#/components/schemas/SuppliesStatisticOfMonthItem'
+        
+    
+    StatisticSupplier:
+      type: object
+      properties:
+        all_products_count:
+          type: integer
+        all_supplies_count:
+          type: integer
+        is_wait_confirm_supplies_count:
+          type: integer
+        organizers_contract_count:
+          type: integer
+        supplies_statistic_of_month:
+          type: array
+          items: 
+            $ref: '#/components/schemas/SuppliesStatisticOfMonthItem' 
