@@ -30,7 +30,8 @@ from service.items_services.product import (
 from service.items_services.expense import (
     ExpenseWithInfoProductItem,
     ExpenseSupplierItem,
-    ExpenseCompanyItem
+    ExpenseCompanyItem,
+    ExpenseUpdateQuantityItem
 )
 from service.items_services.organizer import OrganizerItem
 from service.items_services.contract import ContractItem
@@ -593,34 +594,22 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
             ]
         return expenses_items
     
-    async def get_expense_response_items(
+    async def get_by_product_organizer_ids(
             self, 
             company_id: int,
             product_version_id: int
-    ) -> Optional[ExpenseWithInfoProductItem]:
+    ) -> Optional[ExpenseCompanyItem]:
         """Получить расход по company_id и product_version_id"""
         stmt = (
-            select(
-                self.model.id,
-                self.model.product_version_id.label("product_id"),
-                self.model.quantity,
-                ProductModel.article,
-                ProductVersionModel.name.label("product_name"),
-                ProductVersionModel.category,
-                ProductVersionModel.description,
-                OrganizerModel.name.label("supplier_name")
-            )
-            .join(ProductVersionModel, self.model.product_version_id == ProductVersionModel.id)
-            .join(ProductModel, ProductVersionModel.id == ProductModel.product_version_id)
-            .join(OrganizerModel, ProductModel.supplier_id == OrganizerModel.id)
+            select(self.model)
             .where(
                 self.model.company_id == company_id,
                 self.model.product_version_id == product_version_id
             )
         )
         result = await self.session.execute(stmt)
-        expense = result.mappings().first()
-        return ExpenseWithInfoProductItem(**dict(expense)) if expense is not None else None
+        expense = result.scalar_one_or_none()
+        return ExpenseCompanyItem(**expense.dict) if expense is not None else None
     
     async def get_by_expense_and_company_id(
             self,
@@ -638,6 +627,17 @@ class ExpenseCompanyRepository(BaseRepository[ExpenseCompanyModel]):
         result = await self.session.execute(stmt)
         expense = result.scalar_one_or_none()
         return ExpenseCompanyItem(**expense.dict) if expense is not None else None
+    
+    async def update_quantity(self, expense: ExpenseUpdateQuantityItem) -> Optional[ExpenseCompanyItem]:
+        """Обновление количества расхода"""
+        query = update(self.model).where(
+            self.model.id == expense.expense_id,
+            self.model.company_id == expense.organizer_id
+        ).values(quantity=expense.quantity).returning(self.model)
+        
+        result = await self.session.execute(query)
+        model = result.scalar_one_or_none()
+        return ExpenseCompanyItem(**model.dict) if model is not None else None
 
 
 class ExpenseSupplierRepository(BaseRepository[ExpenseSupplierModel]):
