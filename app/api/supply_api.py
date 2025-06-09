@@ -37,6 +37,7 @@ router = APIRouter(
 @router.get("") #response_model=SuppliesResponse)
 async def get_supplies(
     is_wait_confirm: bool = Query(False),
+    limit: int = Query(100),
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -44,6 +45,7 @@ async def get_supplies(
     try:
         supply_service = SupplyService(session=session)
         supplies = await supply_service.get_all_supplies_by_user_data(
+            limit=limit,
             user_data=user_data,
             is_wait_confirm=is_wait_confirm,
         )

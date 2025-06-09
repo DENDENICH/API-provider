@@ -442,6 +442,7 @@ class SupplyRepository(BaseRepository[SupplyModel]):
 
     async def get_all_by_organizer_id(
             self, 
+            limit: int,
             supplier_id: Optional[int] = None,
             company_id: Optional[int] = None,
             is_wait_confirm: bool = False
@@ -481,7 +482,7 @@ class SupplyRepository(BaseRepository[SupplyModel]):
             .join(SupplyProductModel, self.model.id == SupplyProductModel.supply_id)
             .join(ProductVersionModel, SupplyProductModel.product_version_id == ProductVersionModel.id)
             .join(ProductModel, ProductVersionModel.id == ProductModel.product_version_id)
-        )
+        ).limit(limit).order_by(self.model.created_at.desc())
 
         # filters
         if company_id:

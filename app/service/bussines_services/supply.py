@@ -162,17 +162,23 @@ class SupplyService:
     async def get_all_supplies_by_user_data(
             self, 
             user_data: UserDataRedis,
-            is_wait_confirm: bool = False
+            limit: int = 100,
+            is_wait_confirm: bool = False,
     ) -> List[SupplyResponseItem]:
         """Получить все доступные поставки пользователя по его данным"""
+        if limit > 100:
+            raise BadRequestError("value limit is incorrect")
+
         if user_data.organizer_role == OrganizerRole.supplier:
             supplies = await self._get_supplies_by_organizer_id(
                 supplier_id=user_data.organizer_id,
-                is_wait_confirm=is_wait_confirm
+                is_wait_confirm=is_wait_confirm,
+                limit=limit
             )
         elif user_data.organizer_role == OrganizerRole.company:
             supplies = await self._get_supplies_by_organizer_id(
-                company_id=user_data.organizer_id
+                company_id=user_data.organizer_id,
+                limit=limit
             )
         else:
             raise BadRequestError("not found organizer role")
@@ -180,6 +186,7 @@ class SupplyService:
     
     async def _get_supplies_by_organizer_id(
             self,
+            limit: int,
             company_id: Optional[int] = None,
             supplier_id: Optional[int] = None,
             is_wait_confirm: bool = False
@@ -188,7 +195,8 @@ class SupplyService:
         supplies = await self.supply_repo.get_all_by_organizer_id(
             company_id=company_id,
             supplier_id=supplier_id,
-            is_wait_confirm=is_wait_confirm
+            is_wait_confirm=is_wait_confirm,
+            limit=limit
         )
         if not supplies:
             raise NotFoundError("not found supplies")
