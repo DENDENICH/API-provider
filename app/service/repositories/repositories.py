@@ -475,30 +475,37 @@ class SupplyRepository(BaseRepository[SupplyModel]):
                 ProductVersionModel.category.label("product_category"),
                 ProductVersionModel.price.label("product_price")
             )
-            .select_from(self.model)
-            # Устранить проблему дубликации select_from
-            # .select_from(ProductVersionModel)
+
             .join(supplier, supplier.id == self.model.supplier_id)
             .join(company, company.id == self.model.company_id)
             .join(SupplyProductModel, self.model.id == SupplyProductModel.supply_id)
             .join(ProductVersionModel, SupplyProductModel.product_version_id == ProductVersionModel.id)
             .join(ProductModel, ProductVersionModel.id == ProductModel.product_version_id)
-        ).limit(limit).order_by(self.model.created_at.desc())
+
+        )
 
         # filters
         if company_id:
-            stmt = stmt.where(self.model.company_id == company_id)
+            stmt = (
+                stmt.where(self.model.company_id == company_id)
+            
+            .order_by(self.model.created_at.desc())
+            )
         if supplier_id:
-            stmt = stmt.where(
+            stmt = (
+                stmt.where(
                 self.model.supplier_id == supplier_id,
                 self.model.is_wait_confirm == is_wait_confirm
             )
+            .order_by(self.model.created_at.desc())
+        )
 
         result = await self.session.execute(stmt)
         if (supplies := result.mappings().all()) is None:
             return None
         # парсим полученые объекты rows в словарь
-        supplies_dict_list = parse_supplies_rows(supplies)
+        # TODO: исправить временную реализацию с limit
+        supplies_dict_list = parse_supplies_rows(supplies, limit)
         return [SupplyResponseItem.get_from_dict(dict(supply)) for supply in supplies_dict_list]
     
     async def get_supply_products_by_supply_id(
