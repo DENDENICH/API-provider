@@ -145,9 +145,14 @@ class ProductService:
             product_ids: Iterable[int]
     ) -> Iterable[ProductVersionItem]:
         """Получить все версии продуктов по id"""
-        if (products_version := await self.version_repo.get_products_version_by_products_ids(product_ids)) is None:
-            raise NotFoundError("products not found")
-        return products_version
+        products_version_list = list()
+        for product_id in product_ids:
+            products_version = await self.version_repo.get_by_product_id(product_id)
+            if products_version is None:
+                raise NotFoundError(f"product with id {product_id} not found")
+            products_version_list.append(products_version)
+
+        return products_version_list
     
     async def get_products_by_supplies_products(
             self,
@@ -158,6 +163,9 @@ class ProductService:
             raise NotFoundError("products not found")
         return products
     
+    async def get_product_by_product_version_id(self, product_version_id: int) -> ProductItem:
+        """Получение продукта по id его версии"""
+        return await self.product_repo.get_by_product_version_id(product_version_id)
 
     async def update_product(
             self, 
