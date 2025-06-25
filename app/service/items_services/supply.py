@@ -264,12 +264,14 @@ def get_supply_product_items(
     ]
 
 
-def parse_supplies_rows(rows) -> List[Dict]:
+def parse_supplies_rows(rows, limit: int) -> List[Dict]:
     """Парсинг данных из запроса к БД"""
     # В дальнейшем сделать структурой класса
     supplies_dict = {}
+    count_supply_record = 0
 
     for row in rows:
+
         supply_id = row["id"]
 
         if supply_id not in supplies_dict:
@@ -290,6 +292,8 @@ def parse_supplies_rows(rows) -> List[Dict]:
                 "status": row["status"],
             }
 
+            count_supply_record += 1
+
         # Добавляем продукт в supply_products
         supplies_dict[supply_id]["supply_products"].append({
             "product": {
@@ -301,4 +305,7 @@ def parse_supplies_rows(rows) -> List[Dict]:
             },
             "quantity": row["quantity"]
         })
+
+        if count_supply_record >= limit:
+            break
     return list(supplies_dict.values())

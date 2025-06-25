@@ -27,7 +27,7 @@ class StaticticService:
         ) is None:
             raise NotFoundError("Общая статистика компании не найдена")
         
-        graph_statistics = await self._get_graph_supplies_statistics(organizer)
+        graph_statistics = await self.get_graph_supplies_statistics(organizer)
         
         return StatisticResponseItem.get_response_schema_statistic(
             general_statistic=general_statistic,
