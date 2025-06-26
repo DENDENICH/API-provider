@@ -48,7 +48,6 @@ async def get_all_employee(
         )
         
     except NotFoundError as e:
-        await session.rollback()
         logger.info(
             msg="Users is not found by organizer id -> \n{}".format(user_data.organizer_id)
         )
@@ -58,7 +57,6 @@ async def get_all_employee(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.info(
             msg="Bad request\n{}".format(e)
         )
@@ -68,7 +66,6 @@ async def get_all_employee(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error creating user\n{}".format(e)
         )

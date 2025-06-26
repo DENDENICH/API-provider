@@ -23,11 +23,7 @@ router = APIRouter(
 )
 
 
-@router.get(
-    "",
-    status_code=status.HTTP_200_OK,
-    response_model=LinkCodeResponse
-)
+@router.get("", status_code=status.HTTP_200_OK, response_model=LinkCodeResponse)
 async def get_linkcode(
         request: Request,
         session: AsyncSession = Depends(db_core.session_getter)
@@ -38,7 +34,6 @@ async def get_linkcode(
         linkcode = await link_code_service.get_link_code_by_user_id(user_id=request.state.user_id)
 
     except NotFoundError as e:
-        await session.rollback()
         logger.info(
             msg="Linkcode is not found by user id -> \n{}".format(request.state.user_id)
         )
@@ -48,7 +43,6 @@ async def get_linkcode(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.info(
             msg="Bad request\n{}".format(e)
         )
@@ -58,7 +52,6 @@ async def get_linkcode(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error \n{}".format(e)
         )

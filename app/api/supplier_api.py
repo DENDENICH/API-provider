@@ -42,7 +42,6 @@ async def get_suppliers(
             company_id=user_data.organizer_id
         )
     except NotFoundError as e:
-        await session.rollback()
         logger.info(
             msg="Suppliers is not found \n{}".format(user_data.organizer_id)
         )
@@ -52,7 +51,6 @@ async def get_suppliers(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.info(
             msg="Bad request\n{}".format(e)
         )
@@ -62,7 +60,6 @@ async def get_suppliers(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error getting suppliers\n{}".format(e)
         )
@@ -89,7 +86,6 @@ async def get_supplier_by_inn(
             supplier_inn=supplier_inn
         )
     except NotFoundError as e:
-        await session.rollback()
         logger.info(
             msg="Supplier is not found \n{}".format(user_data.organizer_id)
         )
@@ -99,7 +95,6 @@ async def get_supplier_by_inn(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.info(
             msg="Bad request\n{}".format(e)
         )
@@ -109,7 +104,6 @@ async def get_supplier_by_inn(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error getting supplier\n{}".format(e)
         )

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Query
 from core import settings
 from core.db import db_core
 
-from api.dependencies import check_is_company, check_is_supplier, get_user_from_redis
+from api.dependencies import check_is_supplier, get_user_from_redis
 
 from schemas.product import (
     ProductRequestCreate,
@@ -31,7 +31,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_product(
     product_in: ProductRequestCreate,
     user_data: UserDataRedis = Depends(check_is_supplier),
@@ -73,7 +73,7 @@ async def create_product(
     return ExpenseResponse(**expense.dict)
 
 
-@router.get("/", response_model=ProductsResponse)
+@router.get("", response_model=ProductsResponse)
 async def get_products(
     supplier_id: Optional[int] = Query(None),
     add_quantity: Optional[bool] = Query(False),
@@ -88,7 +88,6 @@ async def get_products(
             add_quantity=add_quantity
         )
     except NotFoundError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting products\n{}".format(e)
         )
@@ -97,7 +96,6 @@ async def get_products(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting products\n{}".format(e)
         )
@@ -106,7 +104,6 @@ async def get_products(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error getting products\n{}".format(e)
         )
@@ -126,7 +123,6 @@ async def get_product_by_id(
         service = ProductService(session)
         product = await service.get_product_by_id(product_id)
     except NotFoundError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting products by id\n{}".format(e)
         )
@@ -135,7 +131,6 @@ async def get_product_by_id(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting products by id\n{}".format(e)
         )
@@ -144,7 +139,6 @@ async def get_product_by_id(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error getting products by id\n{}".format(e)
         )
@@ -195,4 +189,4 @@ async def update_product(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     await session.commit()
-    return ExpenseResponse(id=product.id, **product.dict)
+    return ExpenseResponse(**product.dict)

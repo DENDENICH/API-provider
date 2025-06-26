@@ -5,4 +5,13 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["python", "app/main.py"]
+# Копирование entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Установка рабочей директории
+WORKDIR /app
+
+ENV ALREADY_CONFIGURED=TRUE
+
+CMD ["/entrypoint.sh"]

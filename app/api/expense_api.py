@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from core import settings
 from core.db import db_core
 
-from api.dependencies import get_user_from_redis
+from api.dependencies import get_user_from_redis, OrganizerRole
 
 from schemas.expense import (
     ExpenseQuantity,
@@ -51,7 +51,6 @@ async def get_expenses(
         )
         
     except NotFoundError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -60,7 +59,6 @@ async def get_expenses(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -83,7 +81,7 @@ async def get_expenses(
 
 
 @router.get("/{expenses_id}", response_model=ExpenseResponse)
-async def get_expenses(
+async def get_expense_by_id(
     expenses_id: int,
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(db_core.session_getter)
@@ -99,7 +97,6 @@ async def get_expenses(
             organizer_id=user_data.organizer_id
         )
     except NotFoundError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -108,7 +105,6 @@ async def get_expenses(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -117,7 +113,6 @@ async def get_expenses(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -192,8 +187,12 @@ async def delete_expense(
         expense: ExpenseSupplierItem = await expense_service.delete_expense(
             expense_id=expense_id
         )
-        product_service = ProductService(session=session)
-        await product_service.delete_product(product_id=expense.product_id)
+
+        # убрать данный костыль из endpoint
+        if user_data.organizer_role == OrganizerRole.supplier:
+            product_service = ProductService(session=session)
+            await product_service.delete_product(product_id=expense.product_id)
+            
     except NotFoundError as e:
         await session.rollback()
         logger.error(

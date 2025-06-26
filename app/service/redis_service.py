@@ -85,22 +85,5 @@ class RedisUser(RedisBase):
     async def delete_data(self, key: int) -> None:
         await self.redis.delete(str(key))
 
-    # async def get_organizer_id_by_user_id(self, user_id: int) -> int:
-    #     user = await self.get_data(user_id)
-    #     return user.organizer_id
-    
-    # async def get_organizer_role_by_user_id(self, user_id: int) -> str:
-    #     user = await self.get_data(user_id)
-    #     return user["organizer_role"]
-    
-    # async def get_user_company_id_by_user_id(self, user_id: int) -> int:
-    #     user = await self.get_data(user_id)
-    #     return user["user_company_id"]
-
-    # async def get_user_company_role_by_user_id(self, user_id: int) -> str:
-    #     user = await self.get_data(user_id)
-    #     return user["user_company_role"]
-    
-
 
 redis_user = RedisUser()

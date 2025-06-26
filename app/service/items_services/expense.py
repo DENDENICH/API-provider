@@ -127,7 +127,7 @@ class ExpenseAddReservedItem(BaseItem):
 
 
 @dataclass
-class ExpenseUpdateQuantityItem(BaseItem):
+class ExpenseUpdateQuantityItem:
     """Объект обновления количества"""
     organizer_id: int
     expense_id: int

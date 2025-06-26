@@ -25,7 +25,11 @@ from service.redis_service import UserDataRedis
 from service.bussines_services.contract import ContractService
 from service.bussines_services.product import ProductService
 from service.bussines_services.expense.expense_supplier import ExpenseSupplierService
-from service.bussines_services.expense.expense_company import ExpenseCompanyItem, ExpenseCompanyService
+from service.bussines_services.expense.expense_company import (
+    ExpenseCompanyItem, 
+    ExpenseCompanyService,
+    AddingExpenseCompany
+)
 
 from exceptions import NotFoundError, BadRequestError
 
@@ -74,10 +78,16 @@ class SupplyService:
             supply: SupplyCreateItem,
     ) -> None:
         """Создать поставку"""
+        # TODO! 
+        # ПЕРЕРАБОТАТЬ ЛОГИКУ СОЗДАНИЯ ПОСТАВКИ
+        # КАК МИНИМУМ НАЧАТЬ С ПРОВЕРКИ МУЩЕСТВОВАНИЯ ПРОДУКТОВ ПО ИХ ID,
+        # ПОЛУЧАЕМЫХ ИЗ СХЕМЫ SUPPLY
         supply_item = await self._create_supply_and_flush_session(
             supply=get_supply_item_by_supply_create_item(supply)
         )
         products_ids = supply.get_products_ids
+        # проблемное место - ids версии продуктов находятся в порядке, отличающийся от
+        # продуктов
         products_version_ids = await self._get_products_version_ids_by_products_ids(
             products_ids=products_ids
         )
@@ -156,17 +166,23 @@ class SupplyService:
     async def get_all_supplies_by_user_data(
             self, 
             user_data: UserDataRedis,
-            is_wait_confirm: bool = False
+            limit: int = 100,
+            is_wait_confirm: bool = False,
     ) -> List[SupplyResponseItem]:
         """Получить все доступные поставки пользователя по его данным"""
+        if limit > 100:
+            raise BadRequestError("value limit is incorrect")
+
         if user_data.organizer_role == OrganizerRole.supplier:
             supplies = await self._get_supplies_by_organizer_id(
                 supplier_id=user_data.organizer_id,
-                is_wait_confirm=is_wait_confirm
+                is_wait_confirm=is_wait_confirm,
+                limit=limit
             )
         elif user_data.organizer_role == OrganizerRole.company:
             supplies = await self._get_supplies_by_organizer_id(
-                company_id=user_data.organizer_id
+                company_id=user_data.organizer_id,
+                limit=limit
             )
         else:
             raise BadRequestError("not found organizer role")
@@ -174,6 +190,7 @@ class SupplyService:
     
     async def _get_supplies_by_organizer_id(
             self,
+            limit: int,
             company_id: Optional[int] = None,
             supplier_id: Optional[int] = None,
             is_wait_confirm: bool = False
@@ -182,7 +199,8 @@ class SupplyService:
         supplies = await self.supply_repo.get_all_by_organizer_id(
             company_id=company_id,
             supplier_id=supplier_id,
-            is_wait_confirm=is_wait_confirm
+            is_wait_confirm=is_wait_confirm,
+            limit=limit
         )
         if not supplies:
             raise NotFoundError("not found supplies")
@@ -202,17 +220,14 @@ class SupplyService:
             supplier_id=supplier_id,
             supply=supply
         )
-        # возврат расходов
+        # реализовать возврат расходов
         await self._update_quantity_and_reversed_expenses_by_status(
             supplier_id=supplier_id,
             supply=supply,
             status=status,
         )
         return
-    
-    async def _get_products_by_supplies(self, supplies):
-        # извлечение продуктов их поставок
-        pass
+
 
     async def update_supply_status(self, supplier_id: int, status: SupplyStatus) -> SupplyItem:
         """Обновить статус поставки"""
@@ -246,10 +261,9 @@ class SupplyService:
 
     async def _create_expenses_company_by_supply(self, supply: SupplyItem) -> Iterable[ExpenseCompanyItem]:
         """Создать расходы компании на поставку"""
-        expense_service = ExpenseCompanyService(self.session)
         supply_products: Iterable[SupplyProductItem] = await self._get_supply_products_by_supply(supply)
         expenses = await self._create_all_expenses_company_and_flush_session(
-            expense_service=expense_service,
+            adding_expense_service=AddingExpenseCompany(self.session),
             supply=supply,
             supply_products=supply_products
         )
@@ -265,19 +279,19 @@ class SupplyService:
 
     async def _create_all_expenses_company_and_flush_session(
             self,
-            expense_service: ExpenseCompanyService,
+            adding_expense_service: AddingExpenseCompany,
             supply: SupplyItem,
             supply_products: Iterable[SupplyProductItem]
     ) -> Iterable[ExpenseCompanyItem]:
         """Создать расходы компании на поставку и зафиксировать изменения в сессии"""
         expenses_list = []
         for supply_product in supply_products:
-            expense = ExpenseCompanyItem(
+            expense_item = ExpenseCompanyItem(
                 company_id=supply.company_id,
                 product_version_id=supply_product.product_version_id,
                 quantity=supply_product.quantity
             )
-            expense = await expense_service.add_expense(expense)
+            expense = await adding_expense_service.adding_expense_process(expense_item)
             expenses_list.append(expense)
             await self.session.flush()
         return expenses_list
@@ -310,22 +324,28 @@ class SupplyService:
         #   - списать у кол-ва товара на складе кол-во товара в поставке
         # Если поставка отклоняется: 
         #   - списать у резерва кол-во каждого товара в поставке
-        supply_products: Iterable[SupplyProductItem] = await self.supply_product_repo.get_by_supply_id(
+        supply_products: Optional[List[SupplyProductItem]] = await self.supply_product_repo.get_by_supply_id(
             supply_id=supply.id
         )
+        if supply_products is None:
+            raise NotFoundError("Supplies products is not in supply")
         product_service = ProductService(self.session)
-        products: Iterable[ProductItem] = await product_service.get_products_by_supplies_products(
-            supplies_products=supply_products
-        )
-        products_ids = [p.id for p in products]
+        # Вынести получение продукта по продукту в поставке в цикл
+        # products: Iterable[ProductItem] = await product_service.get_products_by_supplies_products(
+        #     supplies_products=supply_products
+        # )
+        # products_ids = [p.id for p in products]
 
         expenses_list = list()
         expense_service = ExpenseSupplierService(self.session)
 
-        for supply_product, product_id in zip(supply_products, products_ids):
+        for supply_product in supply_products:
+            product = await product_service.get_product_by_product_version_id(
+                product_version_id=supply_product.product_version_id
+            )
             expense = await expense_service.get_expense_by_id_supplier_and_product(
                 supplier_id=supplier_id,
-                product_id=product_id
+                product_id=product.id
             )
 
             expense.reserved -= supply_product.quantity
@@ -336,3 +356,16 @@ class SupplyService:
             expenses_list.append(expense_update)
 
         return expenses_list
+    
+
+    async def delete_supply(
+            self, 
+            supply_id: int,
+    ) -> None:
+        """Удалить поставку"""
+        supply = await self.supply_repo.get_by_id(supply_id)
+        if not supply:
+            raise NotFoundError("not found supply")
+        await self.supply_repo.delete(supply.id)
+        await self.session.flush()
+        return
