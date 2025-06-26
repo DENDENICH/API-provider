@@ -3,7 +3,7 @@ from fastapi import Request, Depends
 
 from service.redis_service import redis_user, UserDataRedis 
 
-from exceptions import not_found_error, forbiden_error
+from exceptions import forbiden_error
 
 
 class UserRoleType(str, Enum):
@@ -43,4 +43,3 @@ async def check_is_company(
     if user_data.organizer_role != OrganizerRole.company:
         raise forbiden_error
     return user_data
-

@@ -51,7 +51,6 @@ async def get_supplies(
         )
 
     except NotFoundError as e:
-        await session.rollback()
         logger.info(
             msg="Supply is not found \n{}".format(user_data.organizer_id)
         )
@@ -61,7 +60,6 @@ async def get_supplies(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.info(
             msg="Bad request\n{}".format(e)
         )
@@ -71,7 +69,6 @@ async def get_supplies(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error getting supply\n{}".format(e)
         )

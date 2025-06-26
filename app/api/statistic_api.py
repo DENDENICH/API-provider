@@ -39,7 +39,6 @@ async def get_company_statistic(
             organizer=user_data
         )
     except NotFoundError as e:
-        await session.rollback()
         logger.info(
             msg="statisic is not found\n{}".format(e)
         )
@@ -49,7 +48,6 @@ async def get_company_statistic(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.info(
             msg="Bad request\n{}".format(e)
         )
@@ -59,7 +57,6 @@ async def get_company_statistic(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error gettint dashboard\n{}".format(e)
         )
@@ -83,7 +80,6 @@ async def get_supplier_statistic(
             organizer=user_data
         )
     except NotFoundError as e:
-        await session.rollback()
         logger.info(
             msg="statisic is not found\n{}".format(e)
         )
@@ -93,7 +89,6 @@ async def get_supplier_statistic(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.info(
             msg="Bad request\n{}".format(e)
         )
@@ -103,7 +98,6 @@ async def get_supplier_statistic(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error gettint dashboard\n{}".format(e)
         )

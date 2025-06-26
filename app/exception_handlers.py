@@ -5,6 +5,7 @@ from fastapi.responses import ORJSONResponse
 from pydantic import ValidationError
 from exceptions import NotFoundError, BadRequestError
 
+
 def error_handlers(app: FastAPI) -> None:
     """Обработчики исключений в ендпоинтах"""
 
@@ -48,8 +49,8 @@ def error_handlers(app: FastAPI) -> None:
         )
     
     # Заменятся на более дружелюбные и абстрактнеы ошибки
-    app.exception_handler(BadRequestError)
-    async def bad_request_error(
+    app.exception_handler(Exception)
+    async def other_error(
             request: Request,
             exc: Exception
     ):

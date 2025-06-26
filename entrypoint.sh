@@ -1,8 +1,6 @@
-#!/bin/sh
 set -e
-echo "Waiting for postgres"
+echo "Waiting for postgres 10 seconds..."
 sleep 10
-# Перейдём в директорию app, если alembic.ini там
 cd /app
 
 echo "Applying Alembic migrations..."

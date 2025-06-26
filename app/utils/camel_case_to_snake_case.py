@@ -4,11 +4,7 @@ import re
 def camel_case_to_snake_case(camel_case: str) -> str:
     """
     Преобразует CamelCase в snake_case
-
-    :param camel_case: Название в CamelCase
-    :return: Название в snake_case
     """
-    # snake_case = re.sub(r'([A-Z])', r'_\1', camel_case).lower()
     chars = []
     for i, char in enumerate(camel_case):
         if i and char.isupper():

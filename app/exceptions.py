@@ -13,13 +13,6 @@ not_found_error = HTTPException(
 )
 
 
-# def bad_request_error(detail: str) -> HTTPException:
-#     return HTTPException(
-#         status_code=status.HTTP_400_BAD_REQUEST,
-#         detail=detail
-# )
-
-
 class NotFoundError(Exception):
     """Ошибка - не найдено"""
     pass

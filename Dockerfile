@@ -5,11 +5,11 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-# Копируем entrypoint
+# Копирование entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Устанавливаем рабочую директорию
+# Установка рабочей директории
 WORKDIR /app
 
 ENV ALREADY_CONFIGURED=TRUE

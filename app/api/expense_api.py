@@ -51,7 +51,6 @@ async def get_expenses(
         )
         
     except NotFoundError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -60,7 +59,6 @@ async def get_expenses(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -99,7 +97,6 @@ async def get_expense_by_id(
             organizer_id=user_data.organizer_id
         )
     except NotFoundError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -108,7 +105,6 @@ async def get_expense_by_id(
         )
 
     except BadRequestError as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
@@ -117,7 +113,6 @@ async def get_expense_by_id(
         )
 
     except Exception as e:
-        await session.rollback()
         logger.error(
             msg="Error getting expenses\n{}".format(e)
         )
