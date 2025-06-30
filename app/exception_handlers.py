@@ -8,7 +8,7 @@ from exceptions import NotFoundError, BadRequestError
 def error_handlers(app: FastAPI) -> None:
     """Обработчики исключений в ендпоинтах"""
 
-    app.exception_handler(ValidationError)
+    @app.exception_handler(ValidationError)
     async def pydantic_validation_error(
             request: Request,
             exc: ValidationError
@@ -16,12 +16,12 @@ def error_handlers(app: FastAPI) -> None:
         return ORJSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content={
-                "message": "Unprocessable entity",
+                "message": "Unhandled validation error",
                 "error": exc.errors()
             }
         )
 
-    app.exception_handler(NotFoundError)
+    @app.exception_handler(NotFoundError)
     async def not_found_error(
             request: Request,
             exc: NotFoundError
@@ -34,7 +34,7 @@ def error_handlers(app: FastAPI) -> None:
             }
         )
 
-    app.exception_handler(BadRequestError)
+    @app.exception_handler(BadRequestError)
     async def bad_request_error(
             request: Request,
             exc: BadRequestError
@@ -48,7 +48,7 @@ def error_handlers(app: FastAPI) -> None:
         )
     
     # Заменятся на более дружелюбные и абстрактнеы ошибки
-    app.exception_handler(BadRequestError)
+    @app.exception_handler(BadRequestError)
     async def bad_request_error(
             request: Request,
             exc: Exception
