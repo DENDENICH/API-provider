@@ -4,7 +4,6 @@ from fastapi import (
     APIRouter,
     Depends, 
     status,
-    Query,
     HTTPException
 )
 from core.db import db_core
@@ -16,10 +15,10 @@ from schemas.dashboard import (
     StatisticCompany,
     StatisticSupplier
 )
-from service.redis_service import UserDataRedis, redis_user
+from service.redis_service import UserDataRedis
 from service.bussines_services.dashboard import StaticticService
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 from logger import logger
 
 router = APIRouter(

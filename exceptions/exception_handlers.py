@@ -3,7 +3,7 @@ from fastapi.responses import ORJSONResponse
 
 # exceptions
 from pydantic import ValidationError
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError, ForbidenError
 
 def error_handlers(app: FastAPI) -> None:
     """Обработчики исключений в ендпоинтах"""
@@ -13,6 +13,7 @@ def error_handlers(app: FastAPI) -> None:
             request: Request,
             exc: ValidationError
     ):
+        """"Обработчик ошибок валидации"""
         return ORJSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content={
@@ -26,6 +27,7 @@ def error_handlers(app: FastAPI) -> None:
             request: Request,
             exc: NotFoundError
     ):
+        """Обработчик ошибок 404"""
         return ORJSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={
@@ -39,6 +41,7 @@ def error_handlers(app: FastAPI) -> None:
             request: Request,
             exc: BadRequestError
     ):
+        """Обработчик ошибок 400"""
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
@@ -46,13 +49,12 @@ def error_handlers(app: FastAPI) -> None:
                 "error": str(exc)
             }
         )
-    
-    # Заменятся на более дружелюбные и абстрактнеы ошибки
-    @app.exception_handler(BadRequestError)
-    async def bad_request_error(
+    @app.exception_handler(Exception)
+    async def server_error(
             request: Request,
             exc: Exception
     ):
+        """Обработчик ошибок 5xx"""
         return ORJSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={

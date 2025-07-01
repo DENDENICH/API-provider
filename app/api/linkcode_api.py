@@ -14,7 +14,7 @@ from core import settings
 from service.bussines_services.link_code import LinkCodeService
 from schemas.linkcode import LinkCodeResponse
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 from logger import logger
 
 router = APIRouter(

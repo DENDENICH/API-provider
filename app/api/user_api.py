@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import (
@@ -22,7 +20,7 @@ from schemas.user import (
 )
 from service.redis_service import UserDataRedis, redis_user
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 from logger import logger
 
 router = APIRouter(

@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Literal
+from typing import Dict, Literal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.repositories import UserRepository
@@ -8,7 +8,7 @@ from service.items_services.items import UserItem
 from auth.utils.hashing_password import hashing_password
 from auth.utils.jwt_processes import jwt_processes as jwt
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 
 class UserAuthService:

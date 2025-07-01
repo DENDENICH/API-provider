@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from service.repositories import OrganizerRepository, UserCompanyRepository
 from service.items_services.organizer import OrganizerItem
 
-from exceptions import BadRequestError, NotFoundError
+from exceptions.exceptions import BadRequestError, NotFoundError
 
 
 class OrganizerService:

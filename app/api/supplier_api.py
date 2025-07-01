@@ -19,7 +19,7 @@ from service.bussines_services.supplier import SupplierService
 
 from service.redis_service import UserDataRedis
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 from logger import logger
 

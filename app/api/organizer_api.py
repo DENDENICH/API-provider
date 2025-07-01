@@ -14,7 +14,7 @@ from service.bussines_services.user import UserService
 from service.bussines_services.organizer import OrganizerService
 from service.redis_service import UserDataRedis
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 from logger import logger
 

@@ -13,8 +13,7 @@ from service.items_services.items import (
 )
 from service.redis_service import redis_user, UserDataRedis
 
-from exceptions import NotFoundError, BadRequestError
-from logger import logger
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 
 class UserService:

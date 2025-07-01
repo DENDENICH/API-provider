@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Query
 from core import settings
 from core.db import db_core
 
-from api.dependencies import check_is_company, check_is_supplier, get_user_from_redis
+from api.dependencies import check_is_supplier, get_user_from_redis
 
 from schemas.product import (
     ProductRequestCreate,
@@ -17,10 +17,10 @@ from schemas.product import (
 from schemas.expense import ExpenseResponse
 
 from service.bussines_services.product import ProductService
-from service.items_services.product import ProductFullItem, ProductVersionItem, ProductCreate
+from service.items_services.product import ProductVersionItem, ProductCreate
 from service.redis_service import UserDataRedis
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 from logger import logger
 

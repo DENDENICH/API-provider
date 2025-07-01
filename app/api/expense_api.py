@@ -24,7 +24,7 @@ from service.items_services.expense import (
 from service.bussines_services.product import ProductService
 from service.redis_service import UserDataRedis
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 from logger import logger
 
