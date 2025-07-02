@@ -1,8 +1,6 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
 
-from core import settings
-from core.db import db_core
+from fastapi import FastAPI
 
 from fastapi import FastAPI
 from jwt import (
@@ -23,6 +21,8 @@ from starlette.middleware.base import (
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
 
+from core import settings
+from core.db import db_core
 from auth.utils.jwt_processes import jwt_processes as jwt
 
 # Включение/выключение аутентификации. Используется False при дебаге
@@ -42,9 +42,8 @@ class AuthorizeRequestMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        # if os.getenv("AUTH_ON", "False") != "True":
-        #     request.state.user_id = "test"
-        #     return await call_next(request)
+
+        request.state.session = await db_core.get_async_session
 
         if not AUTH_ON:
             request.state.user_id = "test"

@@ -88,6 +88,8 @@ class UserService:
         ) 
 
         admin = await self.user_company_repo.create(user_company)
+        await self.session.flush()
+
         return admin
 
     async def update_user(self, user_id: int, user: UserItem) -> UserItem:
