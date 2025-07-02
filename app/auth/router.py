@@ -104,9 +104,9 @@ async def registry(
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchemaAfterLogin)
 async def login(
     data: UserLoginRequest,
-    session: AsyncSession = Depends(db_core.session_getter).
-	 request: Request
-):
+    request: Request,
+    session: AsyncSession = Depends(db_core.session_getter)
+) -> AuthTokenSchemaAfterLogin:
     """Вход пользователя"""
     try:
         user_auth_service = UserAuthService(session=session)
@@ -147,7 +147,7 @@ async def login(
         )
 
     # установка пользовательских данных в redis
-    try:
+    try: # вместо кучи траев можно сделать хендлер для самого приложения на общую ошибку либы
         user_service = UserService(session=session)
         user_context = await user_service.set_data_user_to_redis(user_id=user.id)
     except Exception as e:
@@ -157,11 +157,12 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
-
         )
-	 request.state.auth_user_id = user.id
+
+    request.state.auth_user_id = user.id
     return AuthTokenSchemaAfterLogin(
         role_organizer=user_context.organizer_role,
         user_role=user_context.user_company_role,
         **token
     )
+

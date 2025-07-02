@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from typing import Awaitable, Callable
 from fastapi import FastAPI
 
 from core import settings
@@ -112,77 +113,79 @@ PUBLIC_PATHS: set[str] = {
 
 
 class FullAuthMiddleware(BaseHTTPMiddleware):
-	async def auth_middleware(
-    request: Request,
-    call_next: Callable[[Request], Awaitable[Response]]
-) -> Response:
+    async def auth_middleware(
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
 
-    path = request.url.path
-    new_access_token = False
-	 if not AUTH_ON:
+        path = request.url.path
+        new_access_token = False
+
+        if not AUTH_ON:
             request.state.user_id = "test"
-            return await call_next(request) 
-
-    elif path in PUBLIC_PATHS:
-            return await call_next(request)
-        
-    elif request.method == "OPTIONS":
             return await call_next(request)
 
-    access_token = request.cookies.get('Bearer-token')
-    refresh_token = request.cookies.get('Refresh-token')
-    if not access_token and refresh_token:
+        elif path in PUBLIC_PATHS:
+            return await call_next(request)
+
+        elif request.method == "OPTIONS":
+            return await call_next(request)
+
+        access_token = request.cookies.get('Bearer-token')
+        refresh_token = request.cookies.get('Refresh-token')
+
+        if not access_token and refresh_token:
             user_id = int(_jwt.decode_jwt(refresh_token).get('sub'))
             access_token = _jwt.create_access_token(user_id)
             new_access_token = True
-            
-    try:
-         current_user_id = _jwt.decode_jwt(access_token).get('sub')
-         # current_user = await UserService().get_by_id(uow, current_user_id) # can be used for request.state.current_user
-    except:
-         current_user_id = None
-         # current_user = None
-         
-    if not current_user_id: # before current_user
-          if path in UNAUTHENTICATED_ONLY_PATHS:
+
+        try:
+            current_user_id = _jwt.decode_jwt(access_token).get('sub')
+            # current_user = await UserService().get_by_id(uow, current_user_id) # can be used for request.state.current_user
+        except:
+            current_user_id = None
+            # current_user = None
+
+        if not current_user_id:  # before current_user
+            if path in UNAUTHENTICATED_ONLY_PATHS:
                 response = await call_next(request)
                 if path == "/auth/login":
-                      if response.status_code == status.HTTP_200_OK:
-                            auth_user_id = request.state.auth_user_id
-									 refresh_token = _jwt.create_refresh_token(auth_user_id)
-									 access_token = _jwt.create_access_token(auth_user_id)
-									 response.set_cookie('Refresh-token', refresh_token)
-                            response.set_cookie('Bearer-token', access_token)
-                            return response
-                     
+                    if response.status_code == status.HTTP_200_OK:
+                        auth_user_id = request.state.auth_user_id
+                        refresh_token = _jwt.create_refresh_token(auth_user_id)
+                        access_token = _jwt.create_access_token(auth_user_id)
+                        response.set_cookie('Refresh-token', refresh_token)
+                        response.set_cookie('Bearer-token', access_token)
+                        return response
+
                 return response
-          else:
+            else:
                 return JSONResponse(
-                     status_code=status.HTTP_401_UNAUTHORIZED,
-                     content={"detail": 'Unauthenticated'}
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"detail": 'Unauthenticated'}
                 )
-    if path in UNAUTHENTICATED_ONLY_PATHS:
-         return JSONResponse(
-              status_code=status.HTTP_403_FORBIDDEN,
-              content={"detail": "This path is only for unauthenticated users"}
-         )
-    
-    elif path not in UNAUTHENTICATED_ONLY_PATHS and path not in PUBLIC_PATHS:
+
+        if path in UNAUTHENTICATED_ONLY_PATHS:
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"detail": "This path is only for unauthenticated users"}
+            )
+
+        elif path not in UNAUTHENTICATED_ONLY_PATHS and path not in PUBLIC_PATHS:
             if path == "/auth/logout":
-                 response = await call_next(request)
-                 response.delete_cookie('Bearer-token')
-                 response.delete_cookie('Refresh-token')
-                 return response
-                 
+                response = await call_next(request)
+                response.delete_cookie('Bearer-token')
+                response.delete_cookie('Refresh-token')
+                return response
+
             request.state.user_id = current_user_id
             response = await call_next(request)
             if new_access_token:
-                 response.set_cookie('Bearer-token', access_token)
+                response.set_cookie('Bearer-token', access_token)
             return response
 
-    else:
-         return JSONResponse(
-              status_code=status.HTTP_403_FORBIDDEN,
-              content={"detail": "Forbidden"}
-         )
-    
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"detail": "Forbidden"}
+            )
