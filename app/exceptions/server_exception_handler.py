@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
 
 # exceptions
-from sqlalchemy.exc import DatabaseError
+from sqlalchemy.exc import DataError, IntegrityError, OperationalError, SQLAlchemyError
 from redis.exceptions import RedisError
 
 from exceptions.utils import ROLLBACK_SESSION_METHODS
@@ -13,10 +13,10 @@ from logger import logger
 def server_error_handlers(app: FastAPI) -> None:
     """Обработчики пользовательских исключений в ендпоинтах"""
 
-    @app.exception_handler(DatabaseError)
+    @app.exception_handler(SQLAlchemyError)
     async def database_error(
             request: Request,
-            exc: DatabaseError
+            exc: SQLAlchemyError
     ):
         """"Обработчик ошибок базы данных"""
         await request.state.session.rollback() if request.method in ROLLBACK_SESSION_METHODS else None
@@ -26,11 +26,24 @@ def server_error_handlers(app: FastAPI) -> None:
             exc_info=exc
         )
 
+        if isinstance(exc, IntegrityError):
+            status_code = status.HTTP_409_CONFLICT
+            detail = "Data conflict integrity"
+        elif isinstance(exc, OperationalError):
+            status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+            detail = "Database unavailable"
+        elif isinstance(exc, DataError):
+            status_code = status.HTTP_400_BAD_REQUEST
+            detail = "Invalid data format"
+        else:
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            detail = "An unintended error"
+
         return ORJSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status_code,
             content={
                 "message": "Internal database error",
-                "error": exc.detail
+                "error": detail
             }
         )
     
