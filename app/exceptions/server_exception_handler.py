@@ -67,4 +67,25 @@ def server_error_handlers(app: FastAPI) -> None:
                 "error": str(exc)
             }
         )
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception(
+            request: Request,
+            exc: Exception
+    ):
+        """Обработчик необработанных (неизвестных) исключений"""
+        await request.state.session.rollback() if request.method in ROLLBACK_SESSION_METHODS else None
+
+        logger.critical(
+            msg="Internal unhandled server error",
+            exc_info=exc
+        )
+
+        return ORJSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "message": "Internal server error",
+                "error": str(exc)
+            }
+        )
     
