@@ -3,7 +3,6 @@ from enum import Enum
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import ExpenseCompany
 from service.repositories import (
     SupplyProductRepository,
     SupplyRepository,
@@ -17,7 +16,7 @@ from service.items_services.supply import (
     get_supply_item_by_supply_create_item,
     get_supply_product_items
 )
-from service.items_services.product import get_ids_from_products_version, ProductItem
+from service.items_services.product import get_ids_from_products_version
 from service.items_services.expense import ExpenseAddReservedItem, ExpenseSupplierItem
 
 from service.redis_service import UserDataRedis
@@ -26,12 +25,11 @@ from service.bussines_services.contract import ContractService
 from service.bussines_services.product import ProductService
 from service.bussines_services.expense.expense_supplier import ExpenseSupplierService
 from service.bussines_services.expense.expense_company import (
-    ExpenseCompanyItem, 
-    ExpenseCompanyService,
+    ExpenseCompanyItem,
     AddingExpenseCompany
 )
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 from utils import generate_unique_code
 

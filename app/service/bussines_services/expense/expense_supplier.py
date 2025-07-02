@@ -12,7 +12,7 @@ from service.items_services.expense import (
     ExpenseUpdateQuantityItem,
 )
 from .expense_base import ExpenseInterface
-from exceptions import NotFoundError
+from exceptions.exceptions import NotFoundError
 
 
 class ExpenseSupplierService(ExpenseInterface):

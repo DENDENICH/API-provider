@@ -7,7 +7,7 @@ from service.items_services.contract import ContractItem
 
 from service.bussines_services.contract import ContractService
 
-from exceptions import BadRequestError, NotFoundError
+from exceptions.exceptions import BadRequestError, NotFoundError
 
 
 class SupplierService:

@@ -18,7 +18,7 @@ from service.items_services.expense import ExpenseSupplierItem, ExpenseWithInfoP
 from service.bussines_services.expense.expense_supplier import ExpenseSupplierService
 from service.redis_service import UserDataRedis
 
-from exceptions import NotFoundError
+from exceptions.exceptions import NotFoundError
 
 from utils import generate_unique_code
 

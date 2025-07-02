@@ -13,8 +13,7 @@ from service.items_services.items import (
 )
 from service.redis_service import redis_user, UserDataRedis
 
-from exceptions import NotFoundError, BadRequestError
-from logger import logger
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 
 class UserService:
@@ -89,6 +88,8 @@ class UserService:
         ) 
 
         admin = await self.user_company_repo.create(user_company)
+        await self.session.flush()
+
         return admin
 
     async def update_user(self, user_id: int, user: UserItem) -> UserItem:
