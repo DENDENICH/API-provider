@@ -63,8 +63,8 @@ def server_error_handlers(app: FastAPI) -> None:
         return ORJSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
-                "message": "Internal database error",
-                "error": str(exc)
+                "message": "Internal server error",
+                "error": ""
             }
         )
 
@@ -85,7 +85,7 @@ def server_error_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "message": "Internal server error",
-                "error": str(exc)
+                "error": "Unexpected error has occurred"
             }
         )
     
