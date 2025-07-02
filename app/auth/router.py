@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Request
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from enum import Enum
@@ -104,7 +104,8 @@ async def registry(
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchemaAfterLogin)
 async def login(
     data: UserLoginRequest,
-    session: AsyncSession = Depends(db_core.session_getter)
+    session: AsyncSession = Depends(db_core.session_getter).
+	 request: Request
 ):
     """Вход пользователя"""
     try:
@@ -158,6 +159,7 @@ async def login(
             detail="Internal server error"
 
         )
+	 request.state.auth_user_id = user.id
     return AuthTokenSchemaAfterLogin(
         role_organizer=user_context.organizer_role,
         user_role=user_context.user_company_role,

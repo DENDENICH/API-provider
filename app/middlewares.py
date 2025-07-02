@@ -148,7 +148,7 @@ class FullAuthMiddleware(BaseHTTPMiddleware):
                 response = await call_next(request)
                 if path == "/auth/login":
                       if response.status_code == status.HTTP_200_OK:
-                            auth_user_id = request.state.user_id
+                            auth_user_id = request.state.auth_user_id
 									 refresh_token = _jwt.create_refresh_token(auth_user_id)
 									 access_token = _jwt.create_access_token(auth_user_id)
 									 response.set_cookie('Refresh-token', refresh_token)

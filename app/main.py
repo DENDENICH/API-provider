@@ -14,7 +14,7 @@ from fastapi import FastAPI
 
 from starlette.middleware.cors import CORSMiddleware
 
-from middlewares import AuthorizeRequestMiddleware
+from middlewares import AuthorizeRequestMiddleware, FullAuthMiddleware
 
 
 @asynccontextmanager
@@ -42,7 +42,8 @@ app_main.include_router(api_router)
 app_main.include_router(auth_router)
 
 # регистрация middlewares
-app_main.add_middleware(AuthorizeRequestMiddleware)
+# app_main.add_middleware(AuthorizeRequestMiddleware)
+app_main.add_middleware(FullAuthMiddleware) # Full auth middleware with cookies
 # TODO: донастроить параметры CORS - добавить домен и порт фронтенд приложения
 app_main.add_middleware(
     CORSMiddleware,
