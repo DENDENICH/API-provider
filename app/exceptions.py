@@ -6,11 +6,20 @@ forbiden_error = HTTPException(
     detail="Forbiden error"
 )
 
+not_found_error = None
 
-not_found_error = HTTPException(
-    status_code=status.HTTP_404_NOT_FOUND, 
-    detail="Not found"
-)
+
+# not_found_error = HTTPException(
+#     status_code=status.HTTP_404_NOT_FOUND, 
+#     detail="Not found"
+# )
+
+from fastapi import HTTPException, status
+
+class SomeError(HTTPException):
+    def __init__(self, detail: str = "Not found"):
+        super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
+
 
 
 class NotFoundError(Exception):

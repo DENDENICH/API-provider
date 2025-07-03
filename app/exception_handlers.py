@@ -1,15 +1,16 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.responses import ORJSONResponse
 
 # exceptions
 from pydantic import ValidationError
-from exceptions import NotFoundError, BadRequestError
+from exceptions import BadRequestError, not_found_error
+from logger import logger
 
 
 def error_handlers(app: FastAPI) -> None:
     """Обработчики исключений в ендпоинтах"""
 
-    app.exception_handler(ValidationError)
+    @app.exception_handler(ValidationError)
     async def pydantic_validation_error(
             request: Request,
             exc: ValidationError
@@ -22,20 +23,20 @@ def error_handlers(app: FastAPI) -> None:
             }
         )
 
-    app.exception_handler(NotFoundError)
+    @app.exception_handler(HTTPException)
     async def not_found_error(
             request: Request,
-            exc: NotFoundError
+            exc: HTTPException
     ):
         return ORJSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={
                 "message": "Not found",
-                "error": str(exc)
+                "error": exc.detail
             }
         )
 
-    app.exception_handler(BadRequestError)
+    @app.exception_handler(BadRequestError)
     async def bad_request_error(
             request: Request,
             exc: BadRequestError
@@ -49,7 +50,7 @@ def error_handlers(app: FastAPI) -> None:
         )
     
     # Заменятся на более дружелюбные и абстрактнеы ошибки
-    app.exception_handler(Exception)
+    @app.exception_handler(Exception)
     async def other_error(
             request: Request,
             exc: Exception
@@ -58,5 +59,17 @@ def error_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "message": "Internal server error",
+            }
+        )
+    @app.exception_handler(not_found_error)
+    async def ntf_error(
+            request: Request,
+            exc: not_found_error
+    ):
+        logger.warning('Hell')
+        return ORJSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "message": "Not found custom",
             }
         )

@@ -37,6 +37,7 @@ async def lifespan(app: FastAPI):
     print("dispose engine")
     await db_core.dispose()
 
+AUTH_ON = False
 
 class AuthorizeRequestMiddleware(BaseHTTPMiddleware):
     async def dispatch(

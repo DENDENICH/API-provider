@@ -1,0 +1,38 @@
+services:
+  # rosso1:
+  #   build:
+  #     context: .
+  #     dockerfile: rosso.Dockerfile
+  #   container_name: rosso1
+  #   ports:
+  #     - "7654:7654"
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - redis
+  #     - postgres
+
+  redis:
+    image: redis:latest
+    container_name: rosso-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:16
+    container_name: my-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pswd
+      POSTGRES_DB: name
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  pgdata:

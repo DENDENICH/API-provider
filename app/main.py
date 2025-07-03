@@ -10,11 +10,20 @@ from auth import router as auth_router
 from pathlib import Path
 
 import yaml
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
 
 from starlette.middleware.cors import CORSMiddleware
 
 from middlewares import AuthorizeRequestMiddleware
+
+from utils.transaction_context import CtxException
+
+from service.bussines_services.user import UserService
+
+from exceptions import NotFoundError, not_found_error
+
+from exception_handlers import error_handlers
 
 
 @asynccontextmanager
@@ -29,10 +38,37 @@ async def lifespan(app: FastAPI):
 app_main = FastAPI(
     title="ROSSO API",
     debug=True,
-    openapi_url="/openapi/rosso.json",
+    # openapi_url="/openapi/rosso.json",
     docs_url="/docs",
     lifespan=lifespan,
 )
+# error_handlers(app=app_main)
+
+# from exceptions import SomeError
+# @app_main.exception_handler(SomeError)
+# async def failed_token_refresh_handler(request: Request, exc: SomeError):
+#     return JSONResponse(
+#         status_code=exc.status_code,
+#         content={"detail": exc.detail}
+#     )
+
+# async def ctx_exception_handler(request: Request, exc: CtxException):
+#     return JSONResponse(
+#         status_code=exc.status_code,
+#         content={"detail": exc.detail}
+#     )
+
+# app_main.add_exception_handler(CtxException, ctx_exception_handler)
+
+
+
+# async def ntf_exception_handler(request: Request, exc: not_found_error):
+#     return JSONResponse(
+#         status_code=exc.status_code,
+#         content={"detail": exc.detail}
+#     )
+
+# app_main.add_exception_handler(not_found_error, ntf_exception_handler)
 
 #запуск обработчиков ошибок
 # error_handlers(app=app_main)
@@ -53,18 +89,17 @@ app_main.add_middleware(
 )
 
 # Добавление собственной документации openapi в swagger
-openapi_doc = yaml.safe_load(
-    (Path(__file__).parent / "api" / "openapi" / "openapi.yaml").read_text()
-)
+# openapi_doc = yaml.safe_load(
+#     (Path(__file__).parent / "api" / "openapi" / "openapi.yaml").read_text(encoding="utf-8")
+# )
 
-app_main.openapi = lambda: openapi_doc
-
+# app_main.openapi = lambda: openapi_doc
 
 if __name__ == '__main__':
     uvicorn.run(
         app="main:app_main",
         reload=True,
-        host=settings.run.host,
-        port=settings.run.port,
+        host='localhost',
+        port=8000,
         log_level="info" 
     )

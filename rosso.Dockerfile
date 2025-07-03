@@ -10,8 +10,9 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Установка рабочей директории
-WORKDIR /app
+#WORKDIR /app
 
 ENV ALREADY_CONFIGURED=TRUE
 
-CMD ["/entrypoint.sh"]
+# CMD ["/entrypoint.sh"]
+CMD ["python", "app/main.py"]

@@ -31,7 +31,8 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-config.set_main_option("sqlalchemy.url", f"{settings.database.url}?async_fallback=True")
+# config.set_main_option("sqlalchemy.url", f"{settings.database.url}?async_fallback=True")
+config.set_main_option("sqlalchemy.url", "postgresql+asyncpg://user:pswd@localhost:5432/name")
 
 
 def run_migrations_offline() -> None:

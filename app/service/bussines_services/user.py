@@ -1,6 +1,10 @@
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi import HTTPException, status
+
+from utils.transaction_context import TransactionContext
+
 from service.repositories import (
     UserRepository,
     UserCompanyRepository,
@@ -13,9 +17,9 @@ from service.items_services.items import (
 )
 from service.redis_service import redis_user, UserDataRedis
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions import NotFoundError, BadRequestError, not_found_error
 from logger import logger
-
+from exceptions import SomeError
 
 class UserService:
     """Класс бизнес-логики работы с пользователем"""
@@ -23,13 +27,25 @@ class UserService:
         self.session = session
         self.user_repo = UserRepository(session=session)
         self.link_code_repo = LinkCodeRepository(session=session)
-        self.user_company_repo = UserCompanyRepository(session=session)        
+        self.user_company_repo = UserCompanyRepository(session=session)
+        self.ctx = TransactionContext()    
 
     async def get_user_by_id(self, user_id: int) -> Optional[UserItem]:
         """Получить пользователя по ID"""
         if (user := await self.user_repo.get_by_id(user_id)) is None:
-            raise NotFoundError("User not found")
+            raise NotFoundError('User not found')
         return user
+    
+    async def ctx_get_user_by_id(self, user_id: int) -> Optional[UserItem]:
+        """Получить пользователя по ID"""
+        async with self.ctx as ctx:
+               user = await ctx.users.get_by_id(user_id)
+               if not user:
+                    raise SomeError('User not found')
+               return user
+      #   if (user := await self.user_repo.get_by_id(user_id)) is None:
+      #       raise NotFoundError("User not found")
+      #   return user
 
     async def _get_user_by_link_code(self, link_code: int) -> Optional[UserItem]:
         """Получение пользователя по пригласительному коду LinkCodeModel"""

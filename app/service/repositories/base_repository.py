@@ -47,6 +47,7 @@ class BaseRepository(Generic[Model]):
 
 
     async def get_by_id(self, id: int) -> Optional[Type[ItemObj]]:
+        raise NotImplementedError
         """ Получить объект по ID """
         result = await self.session.execute(
             select(self.model)
