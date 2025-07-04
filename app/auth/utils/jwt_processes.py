@@ -75,7 +75,7 @@ class JWT:
 
     def create_access_token(self, user_id: int) -> str: # for accepting user: UserItem middleware should have access to DB (i used uow)
         jwt_payload = {
-            'sub': str(user.id)
+            'sub': str(user_id)
         }
         return self.create_token(
             ACCESS_TOKEN_TYPE,
@@ -85,14 +85,13 @@ class JWT:
 
     def create_refresh_token(self, user_id: int) -> str: # for accepting user: UserItem middleware should have access to DB (i used uow). UserItem makes sense if u wanna add more fields than just id to token
         jwt_payload = {
-            'sub': str(user.id),
+            'sub': str(user_id),
         }
         return self.create_token(
             REFRESH_TOKEN_TYPE,
             jwt_payload,
             settings.auth.refresh_token_expire_minutes
         )
-
 
 
 jwt_processes = JWT()

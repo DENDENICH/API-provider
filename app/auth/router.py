@@ -1,7 +1,8 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, status, HTTPException, Request
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from enum import Enum
 
 from core import settings
 from core.db import db_core
@@ -15,6 +16,8 @@ from schemas.user import (
 )
 
 from auth.service.user_auth import UserAuthService
+
+from auth.utils.jwt_processes import jwt_processes as _jwt
 
 from service.bussines_services.link_code import LinkCodeService
 from service.bussines_services.user import UserService
@@ -58,8 +61,6 @@ async def registry(
             link_code_service = LinkCodeService(session=session)
             await link_code_service.create_link_code(user_id=user.id)
 
-        token = user_service.get_jwt(user=user)
-
         # установка пользовательских данных в redis
         await redis_user.set_data(
             key=user.id,
@@ -98,7 +99,7 @@ async def registry(
 
     await session.commit()
     
-    return AuthTokenSchemaAfterRegister(next_route=next_route, **token)
+    # return AuthTokenSchemaAfterRegister(next_route=next_route, **token)
 
 
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchemaAfterLogin)
@@ -114,7 +115,6 @@ async def login(
             email=data.email,
             password=data.password
         )
-        token = user_auth_service.get_jwt(user=user)
 
     except NotFoundError as e:
         await session.rollback()
@@ -160,9 +160,9 @@ async def login(
         )
 
     request.state.auth_user_id = user.id
-    return AuthTokenSchemaAfterLogin(
-        role_organizer=user_context.organizer_role,
-        user_role=user_context.user_company_role,
-        **token
-    )
+    # return AuthTokenSchemaAfterLogin(
+    #     role_organizer=user_context.organizer_role,
+    #     user_role=user_context.user_company_role,
+    #     **token
+    # )
 

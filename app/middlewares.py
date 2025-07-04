@@ -1,6 +1,5 @@
 from contextlib import asynccontextmanager
 from typing import Awaitable, Callable
-from fastapi import FastAPI
 
 from core import settings
 from core.db import db_core
@@ -22,7 +21,7 @@ from starlette.middleware.base import (
     BaseHTTPMiddleware,
 )
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse
+from starlette.responses import Response, JSONResponse, RedirectResponse
 
 from auth.utils.jwt_processes import jwt_processes as _jwt
 
@@ -141,25 +140,31 @@ class FullAuthMiddleware(BaseHTTPMiddleware):
 
         try:
             current_user_id = _jwt.decode_jwt(access_token).get('sub')
-            # current_user = await UserService().get_by_id(uow, current_user_id) # can be used for request.state.current_user
         except:
             current_user_id = None
             # current_user = None
-
+        # current_user = await UserService().get_by_id(uow, current_user_id) # can be used for request.state.current_user
         if not current_user_id:  # before current_user
             if path in UNAUTHENTICATED_ONLY_PATHS:
                 response = await call_next(request)
                 if path == "/auth/login":
                     if response.status_code == status.HTTP_200_OK:
-                        auth_user_id = request.state.auth_user_id
+                        auth_user_id = request.state.auth_user_id # Выдаст ошибку - id пользователя мы ранее не клали в state
                         refresh_token = _jwt.create_refresh_token(auth_user_id)
                         access_token = _jwt.create_access_token(auth_user_id)
                         response.set_cookie('Refresh-token', refresh_token)
                         response.set_cookie('Bearer-token', access_token)
                         return response
 
+                elif path == "/auth/register":
+                    return RedirectResponse(
+                        url=f"{settings.api.auth.prefix}/login",
+                        # TODO: JSON объект в ручку
+                    )
+
                 return response
             else:
+                # raise UnauthenticatedError
                 return JSONResponse(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     content={"detail": 'Unauthenticated'}
