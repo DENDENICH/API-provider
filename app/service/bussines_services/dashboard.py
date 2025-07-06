@@ -9,7 +9,7 @@ from service.items_services.dashboard.statistic_map_item import (
 
 from service.redis_service import UserDataRedis
 
-from exceptions import NotFoundError
+from exceptions.exceptions import NotFoundError
 
 
 class StaticticService:

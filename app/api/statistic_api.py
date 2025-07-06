@@ -4,23 +4,21 @@ from fastapi import (
     APIRouter,
     Depends, 
     status,
-    Query,
-    HTTPException
 )
-from core.db import db_core
 
-from api.dependencies import get_user_from_redis
+from api.dependencies import (
+    get_user_from_redis,
+    get_session
+)
 
 from core import settings
 from schemas.dashboard import (
     StatisticCompany,
     StatisticSupplier
 )
-from service.redis_service import UserDataRedis, redis_user
+from service.redis_service import UserDataRedis
 from service.bussines_services.dashboard import StaticticService
 
-from exceptions import NotFoundError, BadRequestError
-from logger import logger
 
 router = APIRouter(
     prefix=settings.api.dashboard.prefix,
@@ -30,8 +28,9 @@ router = APIRouter(
 @router.get("/company", response_model=StatisticCompany, status_code=status.HTTP_200_OK)
 async def get_company_statistic(
     user_data: UserDataRedis = Depends(get_user_from_redis),
-    session: AsyncSession = Depends(db_core.session_getter)
+    session: AsyncSession = Depends(get_session)
 ):
+<<<<<<< HEAD
     """Получить полную статистику компании"""
     try:
         statistic_service = StaticticService(session)
@@ -65,14 +64,22 @@ async def get_company_statistic(
             detail="Internal server error"
         )
 
+=======
+    """Get statistic dashboard for company"""
+    statistic_service = StaticticService(session)
+    result: dict = await statistic_service.get_statistics_by_company(
+        organizer=user_data
+    )
+>>>>>>> exception-working
     return StatisticCompany(**result)
 
 
 @router.get("/supplier", status_code=status.HTTP_200_OK, response_model=StatisticSupplier)
 async def get_supplier_statistic(
     user_data: UserDataRedis = Depends(get_user_from_redis),
-    session: AsyncSession = Depends(db_core.session_getter)
+    session: AsyncSession = Depends(get_session)
 ):
+<<<<<<< HEAD
     """Получить полную статистику поставщика"""
     try:
         statistic_service = StaticticService(session)
@@ -106,4 +113,11 @@ async def get_supplier_statistic(
             detail="Internal server error"
         )
 
+=======
+    """Get statistic dashboard for supplier"""
+    statistic_service = StaticticService(session)
+    result: dict = await statistic_service.get_statistics_by_supplier(
+        organizer=user_data
+    )
+>>>>>>> exception-working
     return StatisticSupplier(**result)

@@ -1,9 +1,9 @@
-from typing import Optional, Type, Iterable
+from typing import Optional, Type
 from dataclasses import dataclass
 
 from service.items_services.base import Model, BaseItem
 
-from exceptions import BadRequestError
+from exceptions.exceptions import BadRequestError
 
 
 class ExpenseWithInfoProductItem(BaseItem):

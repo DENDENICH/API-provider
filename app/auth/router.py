@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from enum import Enum
 
 from core import settings
 from core.db import db_core
@@ -20,7 +19,7 @@ from service.bussines_services.link_code import LinkCodeService
 from service.bussines_services.user import UserService
 from service.redis_service import UserDataRedis, redis_user
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 from logger import logger
 

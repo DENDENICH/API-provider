@@ -11,10 +11,13 @@ from pathlib import Path
 
 import yaml
 from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
 
 from starlette.middleware.cors import CORSMiddleware
-
 from middlewares import AuthorizeRequestMiddleware
+
+from exceptions.server_exception_handler import server_error_handlers
+from exceptions.user_exception_handlers import user_error_handlers
 
 
 @asynccontextmanager
@@ -27,6 +30,7 @@ async def lifespan(app: FastAPI):
     
 
 app_main = FastAPI(
+    default_response_class=ORJSONResponse,
     title="ROSSO API",
     debug=True,
     openapi_url="/openapi/rosso.json",
@@ -34,8 +38,9 @@ app_main = FastAPI(
     lifespan=lifespan,
 )
 
-#запуск обработчиков ошибок
-# error_handlers(app=app_main)
+# start error handlers
+user_error_handlers(app_main)
+server_error_handlers(app_main)
 
 # регистрация роутеров
 app_main.include_router(api_router)
