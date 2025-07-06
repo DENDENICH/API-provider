@@ -147,21 +147,11 @@ class FullAuthMiddleware(BaseHTTPMiddleware):
         if not current_user_id:  # before current_user
             if path in UNAUTHENTICATED_ONLY_PATHS:
                 response = await call_next(request)
-                if path == "/auth/login":
-                    if response.status_code == status.HTTP_200_OK:
-                        auth_user_id = request.state.auth_user_id # Выдаст ошибку - id пользователя мы ранее не клали в state
-                        refresh_token = _jwt.create_refresh_token(auth_user_id)
-                        access_token = _jwt.create_access_token(auth_user_id)
-                        response.set_cookie('Refresh-token', refresh_token)
-                        response.set_cookie('Bearer-token', access_token)
-                        return response
-
-                elif path == "/auth/register":
-                    return RedirectResponse(
-                        url=f"{settings.api.auth.prefix}/login",
-                        # TODO: JSON объект в ручку
-                    )
-
+                auth_user_id = request.state.auth_user_id # Выдаст ошибку - id пользователя мы ранее не клали в state
+                refresh_token = _jwt.create_refresh_token(auth_user_id)
+                access_token = _jwt.create_access_token(auth_user_id)
+                response.set_cookie('Refresh-token', refresh_token)
+                response.set_cookie('Bearer-token', access_token)
                 return response
             else:
                 # raise UnauthenticatedError
