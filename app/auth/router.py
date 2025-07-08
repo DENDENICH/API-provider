@@ -7,13 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core import settings
 from core.db import db_core
 
-from schemas.user import (
-    UserRegisterRequest,
-    UserLoginRequest,
-    AuthTokenSchemaAfterRegister,
-    AuthTokenSchemaAfterLogin,
-    UserTypeForNextRoute
-)
+from schemas.user import UserSchema, UserRegisterRequest, UserLoginRequest
 
 from auth.service.user_auth import UserAuthService
 
@@ -33,9 +27,9 @@ router = APIRouter(
     tags=settings.api.auth.tags
 )
 
-
-@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthTokenSchemaAfterRegister)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def registry(
+    request: Request,
     data: UserRegisterRequest,
     session: AsyncSession = Depends(db_core.session_getter)
 ):
@@ -54,12 +48,12 @@ async def registry(
         await session.flush()
 
         # создание пригласительного кода если запрос на регистрацию от сотрудника
-        if data.user_type == UserTypeForNextRoute.organizer:
-            next_route = "organizers/register"
-        else:
-            next_route = "/"
-            link_code_service = LinkCodeService(session=session)
-            await link_code_service.create_link_code(user_id=user.id)
+        # if data.user_type == UserTypeForNextRoute.organizer:
+        #     next_route = "organizers/register"
+        # else:
+        #     next_route = "/"
+        #     link_code_service = LinkCodeService(session=session)
+        #     await link_code_service.create_link_code(user_id=user.id)
 
         # установка пользовательских данных в redis
         await redis_user.set_data(
@@ -98,16 +92,16 @@ async def registry(
         )
 
     await session.commit()
+
+    request.state.user_id = user.id
     
-    # return AuthTokenSchemaAfterRegister(next_route=next_route, **token)
 
-
-@router.post("/login", status_code=status.HTTP_200_OK, response_model=AuthTokenSchemaAfterLogin)
+@router.post("/login", status_code=status.HTTP_200_OK)
 async def login(
-    data: UserLoginRequest,
     request: Request,
+    data: UserLoginRequest,
     session: AsyncSession = Depends(db_core.session_getter)
-) -> AuthTokenSchemaAfterLogin:
+):
     """Вход пользователя"""
     try:
         user_auth_service = UserAuthService(session=session)
@@ -159,10 +153,4 @@ async def login(
             detail="Internal server error"
         )
 
-    request.state.auth_user_id = user.id
-    # return AuthTokenSchemaAfterLogin(
-    #     role_organizer=user_context.organizer_role,
-    #     user_role=user_context.user_company_role,
-    #     **token
-    # )
-
+    request.state.user_id = user.id

@@ -112,7 +112,8 @@ PUBLIC_PATHS: set[str] = {
 
 
 class FullAuthMiddleware(BaseHTTPMiddleware):
-    async def auth_middleware(
+    async def dispatch(
+        self,
         request: Request,
         call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
@@ -138,18 +139,19 @@ class FullAuthMiddleware(BaseHTTPMiddleware):
             access_token = _jwt.create_access_token(user_id)
             new_access_token = True
 
+        current_user_id = None
         try:
             current_user_id = _jwt.decode_jwt(access_token).get('sub')
-        except:
-            current_user_id = None
-            # current_user = None
+        except ExpiredSignatureError as e:
+            current_user_id = _jwt.decode_jwt(refresh_token).get('sub')
+            new_access_token = True
+
         # current_user = await UserService().get_by_id(uow, current_user_id) # can be used for request.state.current_user
         if not current_user_id:  # before current_user
             if path in UNAUTHENTICATED_ONLY_PATHS:
                 response = await call_next(request)
-                auth_user_id = request.state.auth_user_id # Выдаст ошибку - id пользователя мы ранее не клали в state
-                refresh_token = _jwt.create_refresh_token(auth_user_id)
-                access_token = _jwt.create_access_token(auth_user_id)
+                refresh_token = _jwt.create_refresh_token(request.state.user_id)
+                access_token = _jwt.create_access_token(request.state.user_id)
                 response.set_cookie('Refresh-token', refresh_token)
                 response.set_cookie('Bearer-token', access_token)
                 return response

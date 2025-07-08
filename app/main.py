@@ -14,7 +14,7 @@ from fastapi import FastAPI
 
 from starlette.middleware.cors import CORSMiddleware
 
-from middlewares import AuthorizeRequestMiddleware, FullAuthMiddleware
+from middlewares import FullAuthMiddleware
 
 
 @asynccontextmanager

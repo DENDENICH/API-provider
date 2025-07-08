@@ -58,8 +58,8 @@ class AuthSettings(BaseSettings):
     private_key: Path = CORE_DIR / 'certs' / 'private.pem'
     public_key: Path = CORE_DIR / 'certs' / 'public.pem'
     algorithm: str = 'RS256'
-    access_token_expire_minutes: int = 3 # 12 hrs -> 720 minutes
-    refresh_token_expire_minutes: int = 1440 # 24 hrs
+    access_token_expire_minutes: int = 720 # 12 hrs -> 720 minutes
+    refresh_token_expire_minutes: int = 4320 # 24 hrs
 
 
 class RunConfig:

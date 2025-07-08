@@ -1,7 +1,6 @@
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from dataclasses import dataclass
-from datetime import timedelta, datetime
-from service.items_services.items import UserItem
+from datetime import timedelta, datetime, timezone
 import uuid
 
 import jwt
@@ -31,7 +30,7 @@ class JWT:
         expire_minutes -> время жизни токена"""
 
         to_encode = payload.copy()
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         exp = now + timedelta(minutes=expire_minutes)
         jti = str(uuid.uuid4())
 
