@@ -30,47 +30,11 @@ async def get_company_statistic(
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(get_session)
 ):
-<<<<<<< HEAD
-    """Получить полную статистику компании"""
-    try:
-        statistic_service = StaticticService(session)
-        result: dict = await statistic_service.get_statistics_by_company(
-            organizer=user_data
-        )
-    except NotFoundError as e:
-        logger.info(
-            msg="statisic is not found\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-    except BadRequestError as e:
-        logger.info(
-            msg="Bad request\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error gettint dashboard\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
-        )
-
-=======
     """Get statistic dashboard for company"""
     statistic_service = StaticticService(session)
     result: dict = await statistic_service.get_statistics_by_company(
         organizer=user_data
     )
->>>>>>> exception-working
     return StatisticCompany(**result)
 
 
@@ -79,45 +43,9 @@ async def get_supplier_statistic(
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(get_session)
 ):
-<<<<<<< HEAD
-    """Получить полную статистику поставщика"""
-    try:
-        statistic_service = StaticticService(session)
-        result: dict = await statistic_service.get_statistics_by_supplier(
-            organizer=user_data
-        )
-    except NotFoundError as e:
-        logger.info(
-            msg="statisic is not found\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-    except BadRequestError as e:
-        logger.info(
-            msg="Bad request\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error gettint dashboard\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
-        )
-
-=======
     """Get statistic dashboard for supplier"""
     statistic_service = StaticticService(session)
     result: dict = await statistic_service.get_statistics_by_supplier(
         organizer=user_data
     )
->>>>>>> exception-working
     return StatisticSupplier(**result)

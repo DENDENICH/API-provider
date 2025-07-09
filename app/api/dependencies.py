@@ -3,13 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from enum import Enum
 from fastapi import Request, Depends
 
-from service.redis_service import redis_user, UserDataRedis 
+from service.redis_service import redis_user, UserDataRedis
 
-<<<<<<< HEAD
-from exceptions import forbiden_error
-=======
 from exceptions.exceptions import ForbidenError
->>>>>>> exception-working
+
+from exceptions.exceptions import ForbidenError
+
 
 
 class UserRoleType(str, Enum):

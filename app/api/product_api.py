@@ -10,15 +10,20 @@ from fastapi import (
 
 from core import settings
 
-<<<<<<< HEAD
+
 from api.dependencies import check_is_supplier, get_user_from_redis
-=======
+
 from api.dependencies import (
     check_is_supplier, 
     get_user_from_redis,
     get_session
 )
->>>>>>> exception-working
+
+from api.dependencies import (
+    check_is_supplier, 
+    get_user_from_redis,
+    get_session
+)
 
 from schemas.product import (
     ProductRequestCreate,
@@ -63,38 +68,6 @@ async def get_products(
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(get_session),
 ):
-<<<<<<< HEAD
-    try:
-        service = ProductService(session=session)
-        products = await service.get_available_products_for_company(
-            company_id=user_data.organizer_id,
-            supplier_id=supplier_id,
-            add_quantity=add_quantity
-        )
-    except NotFoundError as e:
-        logger.error(
-            msg="Error getting products\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
-        )
-
-    except BadRequestError as e:
-        logger.error(
-            msg="Error getting products\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error getting products\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-=======
     """Get products"""
     service = ProductService(session=session)
     products = await service.get_available_products_for_company(
@@ -102,7 +75,6 @@ async def get_products(
         supplier_id=supplier_id,
         add_quantity=add_quantity
     )
->>>>>>> exception-working
     return ProductsResponse(products=[ProductResponse(id=product.id, **product.dict) for product in products])
     
 
@@ -112,38 +84,10 @@ async def get_product_by_id(
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(get_session)
 ):
-<<<<<<< HEAD
-    try:
-        service = ProductService(session)
-        product = await service.get_product_by_id(product_id)
-    except NotFoundError as e:
-        logger.error(
-            msg="Error getting products by id\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
-        )
-
-    except BadRequestError as e:
-        logger.error(
-            msg="Error getting products by id\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error getting products by id\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-=======
     """Get product by id"""
     service = ProductService(session)
     product = await service.get_product_by_id(product_id)
->>>>>>> exception-working
+
     return ProductResponse(id=product.id, **product.dict)
 
 

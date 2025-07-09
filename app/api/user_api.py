@@ -37,48 +37,11 @@ async def get_all_employee(
     user_data: UserDataRedis = Depends(check_is_admin),
     session: AsyncSession = Depends(get_session)
 ):
-<<<<<<< HEAD
-    """Получить все учетые записи пользователей в компании"""
-    try:
-        user_service = UserService(session=session)
-        users_company = await user_service.get_all_employ_by_organizer_id(
-            organizer_id=user_data.organizer_id
-        )
-        
-    except NotFoundError as e:
-        logger.info(
-            msg="Users is not found by organizer id -> \n{}".format(user_data.organizer_id)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-    except BadRequestError as e:
-        logger.info(
-            msg="Bad request\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error creating user\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
-        )
-=======
     """Get all account user's by organizer"""
     user_service = UserService(session=session)
     users_company = await user_service.get_all_employ_by_organizer_id(
         organizer_id=user_data.organizer_id
     )
->>>>>>> exception-working
-
     return UsersCompanyWithUserSchema(
         users=[UserCompanyWithUserSchema(**u.dict) for u in users_company]
     )

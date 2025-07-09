@@ -40,45 +40,6 @@ async def get_supplies(
     user_data: UserDataRedis = Depends(get_user_from_redis),
     session: AsyncSession = Depends(get_session)
 ):
-<<<<<<< HEAD
-    """Получить список всех поставок"""
-    try:
-        supply_service = SupplyService(session=session)
-        supplies = await supply_service.get_all_supplies_by_user_data(
-            limit=limit,
-            user_data=user_data,
-            is_wait_confirm=is_wait_confirm,
-        )
-
-    except NotFoundError as e:
-        logger.info(
-            msg="Supply is not found \n{}".format(user_data.organizer_id)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-    except BadRequestError as e:
-        logger.info(
-            msg="Bad request\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error getting supply\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
-        )
-
-                
-=======
     """Get list all supplies"""
     supply_service = SupplyService(session=session)
     supplies = await supply_service.get_all_supplies_by_user_data(
@@ -87,7 +48,6 @@ async def get_supplies(
         is_wait_confirm=is_wait_confirm,
     )
          
->>>>>>> exception-working
     return {"supplies": [supply.dict for supply in supplies]}
 
 

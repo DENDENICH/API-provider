@@ -6,7 +6,6 @@ from service.items_services.items import UserItem
 
 
 from auth.utils.hashing_password import hashing_password
-from auth.utils.jwt_processes import jwt_processes as jwt
 
 from exceptions.exceptions import NotFoundError, BadRequestError
 
@@ -37,14 +36,3 @@ class UserAuthService:
             password=hashed_password
         )
         return await self.user_repo.create(user)
-    
-    def get_jwt(self, user: UserItem, type_token: str = "Bearer") -> Dict[
-        Literal["access_token"] | Literal["type_token"], str  
-    ]:
-        """Формирование и получение jwt токена для аутентификации"""
-        token = jwt.encode_jwt(payload={'sub': str(user.id)})
-        return {
-            "access_token": token,
-            "type_token": type_token
-        }
-

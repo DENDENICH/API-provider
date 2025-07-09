@@ -37,47 +37,11 @@ async def get_suppliers(
     user_data: UserDataRedis = Depends(check_is_admin),
     session: AsyncSession = Depends(get_session)
 ):
-<<<<<<< HEAD
-    """Получить поставщиков компании"""
-    try:
-        supplier_service = SupplierService(session=session)
-        suppliers: List[OrganizerItem] = await supplier_service.get_supplier_available_company(
-            company_id=user_data.organizer_id
-        )
-    except NotFoundError as e:
-        logger.info(
-            msg="Suppliers is not found \n{}".format(user_data.organizer_id)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-    except BadRequestError as e:
-        logger.info(
-            msg="Bad request\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error getting suppliers\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
-        )
-=======
     """Get suppliers by company"""
     supplier_service = SupplierService(session=session)
     suppliers: List[OrganizerItem] = await supplier_service.get_supplier_available_company(
         company_id=user_data.organizer_id
     )
->>>>>>> exception-working
-
     return SuppliersResponse(
         organizers=[OrganizerResponse(id=supplier.id, **supplier.dict) for supplier in suppliers]
     )
@@ -89,47 +53,11 @@ async def get_supplier_by_inn(
     user_data: UserDataRedis = Depends(check_is_admin), 
     session: AsyncSession = Depends(get_session)
 ):
-<<<<<<< HEAD
-    """Получить поставщика по ИНН"""
-    try:
-        organizer_service = OrganizerService(session=session)
-        supplier: OrganizerItem = await organizer_service.get_supplier_by_inn(
-            supplier_inn=supplier_inn
-        )
-    except NotFoundError as e:
-        logger.info(
-            msg="Supplier is not found \n{}".format(user_data.organizer_id)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-    except BadRequestError as e:
-        logger.info(
-            msg="Bad request\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error getting supplier\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
-        )
-=======
     """Get supplier by inn"""
     organizer_service = OrganizerService(session=session)
     supplier: OrganizerItem = await organizer_service.get_supplier_by_inn(
         supplier_inn=supplier_inn
     )
->>>>>>> exception-working
-
     return OrganizerResponse(id=supplier.id, **supplier.dict)
 
 

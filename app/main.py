@@ -14,7 +14,9 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
 from starlette.middleware.cors import CORSMiddleware
-from middlewares import AuthorizeRequestMiddleware
+
+from middlewares import FullAuthMiddleware
+
 
 from exceptions.server_exception_handler import server_error_handlers
 from exceptions.user_exception_handlers import user_error_handlers
@@ -47,7 +49,8 @@ app_main.include_router(api_router)
 app_main.include_router(auth_router)
 
 # регистрация middlewares
-app_main.add_middleware(AuthorizeRequestMiddleware)
+# app_main.add_middleware(AuthorizeRequestMiddleware)
+app_main.add_middleware(FullAuthMiddleware) # Full auth middleware with cookies
 # TODO: донастроить параметры CORS - добавить домен и порт фронтенд приложения
 app_main.add_middleware(
     CORSMiddleware,

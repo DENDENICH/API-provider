@@ -44,50 +44,15 @@ async def get_expenses(
     user_data: UserDataRedis = Depends(get_user_from_redis),
 ):
     """Получить все расходы"""
-<<<<<<< HEAD
-    try:
-        expense_service: ExpenseInterface = ExpenseFactory.make_expense_service(
-            session=session,
-            organizer_role=user_data.organizer_role
-        )
-        expenses: List[ExpenseWithInfoProductItem] = await expense_service.get_expenses_by_organizer(
-            organizer_id=user_data.organizer_id
-        )
-        
-    except NotFoundError as e:
-        logger.error(
-            msg="Error getting expenses\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
-        )
 
-    except BadRequestError as e:
-        logger.error(
-            msg="Error getting expenses\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
-        )
-
-    except Exception as e:
-        await session.rollback()
-        logger.error(
-            msg="Error getting expenses\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-=======
-    expense_service: ExpenseInterface = ExpenseFactory.make_expense_service(
+  expense_service: ExpenseInterface = ExpenseFactory.make_expense_service(
         session=session,
         organizer_role=user_data.organizer_role
     )
     expenses: List[ExpenseWithInfoProductItem] = await expense_service.get_expenses_by_organizer(
         organizer_id=user_data.organizer_id
     )
->>>>>>> exception-working
-    
+
     return ExpensesResponse(
             expenses=[expense.dict for expense in expenses]
         )
@@ -100,40 +65,7 @@ async def get_expense_by_id(
     user_data: UserDataRedis = Depends(get_user_from_redis),
 ):
     """Получить расход по его id"""
-<<<<<<< HEAD
-    try:
-        expense_service: ExpenseInterface = ExpenseFactory.make_expense_service(
-            session=session,
-            organizer_role=user_data.organizer_role
-        )
-        expense = await expense_service.get_expense(
-            expense_id=expenses_id,
-            organizer_id=user_data.organizer_id
-        )
-    except NotFoundError as e:
-        logger.error(
-            msg="Error getting expenses\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
-        )
-
-    except BadRequestError as e:
-        logger.error(
-            msg="Error getting expenses\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
-        )
-
-    except Exception as e:
-        logger.error(
-            msg="Error getting expenses\n{}".format(e)
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-=======
+  
     expense_service: ExpenseInterface = ExpenseFactory.make_expense_service(
         session=session,
         organizer_role=user_data.organizer_role
@@ -143,7 +75,6 @@ async def get_expense_by_id(
         organizer_id=user_data.organizer_id
     )
     
->>>>>>> exception-working
     return ExpenseResponse(**expense.dict)
 
 
