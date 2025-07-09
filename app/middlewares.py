@@ -1,121 +1,38 @@
-from contextlib import asynccontextmanager
 from typing import Awaitable, Callable
 
 from core import settings
 from core.db import db_core
 
-from fastapi import FastAPI
-from jwt import (
-    ExpiredSignatureError,
-    ImmatureSignatureError,
-    InvalidAlgorithmError,
-    InvalidAudienceError,
-    InvalidKeyError,
-    InvalidSignatureError,
-    InvalidTokenError,
-    MissingRequiredClaimError,
-)
+from jwt import ExpiredSignatureError
+
 from starlette import status
-from starlette.middleware.base import (
-    RequestResponseEndpoint,
-    BaseHTTPMiddleware,
-)
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse, RedirectResponse
+from starlette.responses import Response, JSONResponse
 
 from auth.utils.jwt_processes import jwt_processes as _jwt
 
 # Включение/выключение аутентификации. Используется False при дебаге
-AUTH_ON = True  
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # startup
-    yield
-    # shutdown
-    print("dispose engine") # why not logging.info?
-    await db_core.dispose()
-
-
-# class AuthorizeRequestMiddleware(BaseHTTPMiddleware):
-#     async def dispatch(
-#         self, request: Request, call_next: RequestResponseEndpoint
-#     ) -> Response:
-#         # if os.getenv("AUTH_ON", "False") != "True":
-#         #     request.state.user_id = "test"
-#         #     return await call_next(request)
-
-#         if not AUTH_ON:
-#             request.state.user_id = "test"
-#             return await call_next(request) 
-
-#         elif request.url.path in [
-#             "/docs", 
-#             "/openapi/rosso.json",
-#             f"{settings.api.auth.prefix}/register",
-#             f"{settings.api.auth.prefix}/login"
-#         ]:
-#             return await call_next(request)
-        
-#         elif request.method == "OPTIONS":
-#             return await call_next(request)
-
-#         bearer_token = request.headers.get("Authorization")
-#         if not bearer_token:
-#             return JSONResponse(
-#                 status_code=status.HTTP_401_UNAUTHORIZED,
-#                 content={
-#                     "detail": "Missing access token",
-#                     "body": "Missing access token",
-#                 },
-#             )
-#         try:
-#             auth_token = bearer_token.split(" ")[1].strip()
-#             token_payload = jwt.decode_jwt(auth_token)
-#         except (
-#             ExpiredSignatureError,
-#             ImmatureSignatureError,
-#             InvalidAlgorithmError,
-#             InvalidAudienceError,
-#             InvalidKeyError,
-#             InvalidSignatureError,
-#             InvalidTokenError,
-#             MissingRequiredClaimError,
-#         ) as error:
-#             return JSONResponse(
-#                 status_code=status.HTTP_401_UNAUTHORIZED,
-#                 content={"detail": str(error), "body": str(error)},
-#             )
-#         except Exception as error:
-#             return JSONResponse(
-#                 status_code=status.HTTP_401_UNAUTHORIZED,
-#                 content={"detail": "Invalid token", "body": "Invalid token"},
-#             )
-#         else:
-#             request.state.user_id = int(token_payload["sub"])
-#         return await call_next(request)
-
-# adding refresh token logic
+AUTH_ON = True
 
 
 UNAUTHENTICATED_ONLY_PATHS: set[str] = {
-   f"{settings.api.auth.prefix}/register",
-   f"{settings.api.auth.prefix}/login"
+    f"{settings.api.auth.prefix}/register",
+    f"{settings.api.auth.prefix}/login"
 }
 
 PUBLIC_PATHS: set[str] = {
-	"/docs", 
-   "/openapi/rosso.json",
-	"/redoc"
+    "/docs",
+    "/openapi/rosso.json",
+    "/redoc"
 }
 
 
 class FullAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
-        self,
-        request: Request,
-        call_next: Callable[[Request], Awaitable[Response]]
+            self,
+            request: Request,
+            call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
 
         path = request.url.path
@@ -145,6 +62,9 @@ class FullAuthMiddleware(BaseHTTPMiddleware):
         except ExpiredSignatureError as e:
             current_user_id = _jwt.decode_jwt(refresh_token).get('sub')
             new_access_token = True
+
+        # get db session
+        request.state.session = db_core.get_session()
 
         # current_user = await UserService().get_by_id(uow, current_user_id) # can be used for request.state.current_user
         if not current_user_id:  # before current_user

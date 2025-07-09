@@ -1,8 +1,11 @@
 from typing import AsyncGenerator
+from asyncio import current_task
+
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     AsyncSession,
     async_sessionmaker,
+    async_scoped_session
 )
 from core import settings
 
@@ -37,6 +40,12 @@ class DBCore:
         """Генерация сессии"""
         async with self.session_maker() as session:
             yield session
+
+    @property
+    async def get_async_session(self) -> AsyncSession:
+        """Создание и возврат объекта асинхронной сессии"""
+        session = async_scoped_session(self.session_maker, scopefunc=current_task)
+        return session()
 
     async def dispose(self) -> None:
         """Выключение и закрытие конекта с БД"""

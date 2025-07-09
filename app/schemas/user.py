@@ -1,9 +1,6 @@
 from enum import Enum
-from typing import Optional
 from pydantic import BaseModel, EmailStr
 
-
-# TODO: Добавить фильтры получения всех сущностей во всех схемах
 
 class UserRole(str, Enum):
     company = "admin"

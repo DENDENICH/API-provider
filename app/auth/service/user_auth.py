@@ -1,3 +1,4 @@
+from typing import Dict, Literal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.repositories import UserRepository
@@ -16,7 +17,7 @@ class UserAuthService:
 
     async def check_login_user(self, email: str, password: str) -> UserItem:
         """Получить пользователя по email"""
-        if (user := await self.user_repo.get_by_email(email)) is None: # assume this returns pydantic schema
+        if (user := await self.user_repo.get_by_email(email)) is None:
             raise NotFoundError("User not found")
         if not hashing_password.check_password(password=password, hash=user.password):
             raise NotFoundError("User not found")
@@ -35,4 +36,3 @@ class UserAuthService:
             password=hashed_password
         )
         return await self.user_repo.create(user)
-

@@ -34,8 +34,9 @@ app_main = FastAPI(
     lifespan=lifespan,
 )
 
-#запуск обработчиков ошибок
-# error_handlers(app=app_main)
+# start error handlers
+user_error_handlers(app_main)
+server_error_handlers(app_main)
 
 # регистрация роутеров
 app_main.include_router(api_router)
