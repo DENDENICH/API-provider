@@ -7,7 +7,7 @@ from service.items_services.items import UserItem
 
 from auth.utils.hashing_password import hashing_password
 
-from exceptions import NotFoundError, BadRequestError
+from exceptions.exceptions import NotFoundError, BadRequestError
 
 
 class UserAuthService:

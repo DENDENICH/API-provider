@@ -10,7 +10,14 @@ from fastapi import (
 
 from core import settings
 
+
 from api.dependencies import check_is_supplier, get_user_from_redis
+
+from api.dependencies import (
+    check_is_supplier, 
+    get_user_from_redis,
+    get_session
+)
 
 from api.dependencies import (
     check_is_supplier, 
@@ -80,6 +87,7 @@ async def get_product_by_id(
     """Get product by id"""
     service = ProductService(session)
     product = await service.get_product_by_id(product_id)
+
     return ProductResponse(id=product.id, **product.dict)
 
 

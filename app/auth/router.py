@@ -14,6 +14,7 @@ from service.redis_service import UserDataRedis, redis_user
 from api.dependencies import get_session
 
 
+
 router = APIRouter(
     prefix=settings.api.auth.prefix,
     tags=settings.api.auth.tags

@@ -44,13 +44,15 @@ async def get_expenses(
     user_data: UserDataRedis = Depends(get_user_from_redis),
 ):
     """Получить все расходы"""
-    expense_service: ExpenseInterface = ExpenseFactory.make_expense_service(
+
+  expense_service: ExpenseInterface = ExpenseFactory.make_expense_service(
         session=session,
         organizer_role=user_data.organizer_role
     )
     expenses: List[ExpenseWithInfoProductItem] = await expense_service.get_expenses_by_organizer(
         organizer_id=user_data.organizer_id
     )
+
     return ExpensesResponse(
             expenses=[expense.dict for expense in expenses]
         )
@@ -63,6 +65,7 @@ async def get_expense_by_id(
     user_data: UserDataRedis = Depends(get_user_from_redis),
 ):
     """Получить расход по его id"""
+  
     expense_service: ExpenseInterface = ExpenseFactory.make_expense_service(
         session=session,
         organizer_role=user_data.organizer_role

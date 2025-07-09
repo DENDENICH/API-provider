@@ -7,6 +7,8 @@ from service.redis_service import redis_user, UserDataRedis
 
 from exceptions.exceptions import ForbidenError
 
+from exceptions.exceptions import ForbidenError
+
 
 
 class UserRoleType(str, Enum):
